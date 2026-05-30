@@ -92,9 +92,16 @@ export function Footer() {
             <Link href="/terms" className="hover:text-zinc-900">Terms</Link>
             <Link href="/sitemap.xml" className="hover:text-zinc-900">Sitemap</Link>
           </div>
-          <p className="flex items-center gap-2">
-            Secured by Razorpay · COD available
-          </p>
+          <div className="flex items-center gap-2">
+            {["UPI", "VISA", "Mastercard", "RuPay", "COD"].map((m) => (
+              <span
+                key={m}
+                className="rounded-md border border-black/10 bg-white px-2 py-1 text-[10px] font-bold tracking-wide text-zinc-700"
+              >
+                {m}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
