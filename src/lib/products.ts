@@ -831,3 +831,17 @@ export const categories: CategoryMeta[] = [
 ];
 
 export function categoryCount(name: Category) { return products.filter((p) => p.category === name).length; }
+
+/** First real product photo for a category (for tiles/galleries). */
+export function categoryImage(name: Category): string | undefined {
+  const inCat = products.filter((p) => p.category === name && p.images[0]?.url?.startsWith("http"));
+  return (inCat[0] ?? products.find((p) => p.images[0]?.url?.startsWith("http")))?.images[0]?.url;
+}
+
+/** A spread of real product photos for showcase galleries. */
+export function galleryImages(count = 8): { url: string; name: string; color: string }[] {
+  return products
+    .filter((p) => p.images[0]?.url?.startsWith("http"))
+    .slice(0, count)
+    .map((p) => ({ url: p.images[0].url, name: p.name, color: p.bodyColor }));
+}

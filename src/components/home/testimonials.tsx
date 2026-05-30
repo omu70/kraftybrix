@@ -1,7 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { BadgeCheck, Quote } from "lucide-react";
 import { Stars } from "@/components/ui/stars";
+import { galleryImages } from "@/lib/products";
+
+const gimgs = galleryImages(8);
 
 const reviews = [
   { name: "Arjun M.", role: "Collector, Mumbai", text: "The Velocità Rosso is the best display piece I own — and I own die-cast worth 10x. The clutch on these bricks is unreal.", rating: 5 },
@@ -23,15 +27,15 @@ function Row({ reverse }: { reverse?: boolean }) {
             <Quote className="text-black/15" size={26} />
           </div>
           <blockquote className="mt-4 text-sm leading-relaxed text-black/75">“{r.text}”</blockquote>
-          <figcaption className="mt-5 flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-red/20 text-sm font-bold text-brand-red">
-              {r.name[0]}
+          <figcaption className="mt-5 flex items-center gap-3">
+            <span className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-black/10 bg-white">
+              <Image src={gimgs[i % gimgs.length].url} alt={gimgs[i % gimgs.length].name} fill sizes="44px" className="object-contain p-1" />
             </span>
             <div>
               <p className="flex items-center gap-1 text-sm font-semibold">
                 {r.name} <BadgeCheck size={14} className="text-brand-blue" />
               </p>
-              <p className="text-xs text-black/45">{r.role}</p>
+              <p className="text-xs text-black/45">{gimgs[i % gimgs.length].name}</p>
             </div>
           </figcaption>
         </figure>

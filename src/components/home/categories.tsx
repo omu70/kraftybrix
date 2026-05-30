@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { categories, categoryCount } from "@/lib/products";
+import { categories, categoryCount, categoryImage } from "@/lib/products";
 import { Reveal } from "@/components/ui/reveal";
-import { BrickCarArt } from "@/components/brand/brick-car-art";
 
 export function Categories() {
   return (
@@ -20,6 +20,7 @@ export function Categories() {
           {categories.map((cat, i) => {
             // make a couple of cards span larger for an editorial grid
             const big = i === 0 || i === 3;
+            const img = categoryImage(cat.name);
             return (
               <motion.div
                 key={cat.slug}
@@ -31,20 +32,24 @@ export function Categories() {
               >
                 <Link
                   href={`/collection?category=${encodeURIComponent(cat.name)}`}
-                  className="group relative flex h-full flex-col justify-end overflow-hidden rounded-2xl border border-black/10 p-6"
-                  style={{ background: `linear-gradient(150deg, ${cat.from}22, #ffffff 72%)` }}
+                  className="group relative flex h-full flex-col justify-end overflow-hidden rounded-2xl border border-black/10 bg-white p-6 shadow-sm transition-shadow hover:shadow-card"
                 >
-                  {/* animated glow */}
+                  {/* tinted wash + sporty diagonal speed stripe */}
+                  <div className="absolute inset-0" style={{ background: `linear-gradient(150deg, ${cat.from}1f, #ffffff 72%)` }} />
                   <div
-                    className="absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-30 blur-3xl transition-all duration-500 group-hover:opacity-60 group-hover:scale-125"
+                    className="absolute -right-8 top-0 h-full w-24 -skew-x-12 opacity-20 transition-all duration-500 group-hover:opacity-40"
                     style={{ background: cat.from }}
                   />
-                  {/* brick-car illustration that zooms on hover */}
-                  <BrickCarArt
-                    color={cat.from}
-                    shadow={false}
-                    className="absolute left-1/2 top-[44%] w-[70%] -translate-x-1/2 -translate-y-1/2 opacity-90 drop-shadow-xl transition-transform duration-500 group-hover:scale-110"
-                  />
+                  {/* real product photo */}
+                  {img && (
+                    <Image
+                      src={img}
+                      alt={cat.name}
+                      fill
+                      sizes="(max-width:1024px) 50vw, 340px"
+                      className="object-contain p-6 drop-shadow-xl transition-transform duration-500 ease-out group-hover:scale-110 group-hover:-rotate-2"
+                    />
+                  )}
                   <div className="relative z-10">
                     <div className="flex items-center justify-between">
                       <h3 className="font-display text-xl font-bold">{cat.name}</h3>
