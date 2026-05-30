@@ -1,0 +1,235 @@
+// KraftyBrix — PostgreSQL (Neon) schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth (NextAuth + guest) ──────────────────────────────────
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String     @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role       @default(CUSTOMER)
+  passwordHash  String? // for email/password login
+  accounts      Account[]
+  sessions      Session[]
+  orders        Order[]
+  addresses     Address[]
+  reviews       Review[]
+  wishlist      Wishlist[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Catalogue ────────────────────────────────────────────────
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  blurb    String?
+  products Product[]
+}
+
+model Product {
+  id           String      @id @default(cuid())
+  slug         String      @unique
+  name         String
+  brand        String
+  tagline      String
+  description  String      @db.Text
+  price        Int // stored in paise/whole INR
+  salePrice    Int?
+  pieces       Int
+  buildHours   Int
+  difficulty   Difficulty  @default(Intermediate)
+  ageRange     String      @default("14+")
+  scale        String      @default("1:10")
+  bodyColor    String      @default("#FF2D20")
+  accentColor  String      @default("#111111")
+  stock        Int         @default(0)
+  bestSeller   Boolean     @default(false)
+  isNew        Boolean     @default(false)
+  limited      Boolean     @default(false)
+  rating       Float       @default(0)
+  reviewCount  Int         @default(0)
+  images       String[]
+  categoryId   String
+  category     Category    @relation(fields: [categoryId], references: [id])
+  reviews      Review[]
+  orderItems   OrderItem[]
+  wishlist     Wishlist[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([categoryId])
+  @@index([bestSeller])
+}
+
+enum Difficulty {
+  Beginner
+  Intermediate
+  Advanced
+  Master
+}
+
+// ─── Orders ───────────────────────────────────────────────────
+model Order {
+  id              String       @id @default(cuid())
+  orderNumber     String       @unique
+  userId          String?
+  user            User?        @relation(fields: [userId], references: [id])
+  guestEmail      String?
+  status          OrderStatus  @default(PENDING)
+  paymentMethod   PaymentMethod
+  paymentStatus   PaymentStatus @default(PENDING)
+  razorpayOrderId String?
+  razorpayPaymentId String?
+  subtotal        Int
+  discount        Int          @default(0)
+  shipping        Int          @default(0)
+  total           Int
+  couponCode      String?
+  items           OrderItem[]
+  shippingAddress Json
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentMethod {
+  RAZORPAY
+  COD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Int
+  quantity  Int
+}
+
+// ─── Customer data ────────────────────────────────────────────
+model Address {
+  id         String  @id @default(cuid())
+  userId     String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName   String
+  phone      String
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  pincode    String
+  isDefault  Boolean @default(false)
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  rating     Int
+  title      String?
+  body       String   @db.Text
+  verified   Boolean  @default(false)
+  mediaUrls  String[]
+  createdAt  DateTime @default(now())
+
+  @@index([productId])
+}
+
+model Wishlist {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+// ─── Marketing ────────────────────────────────────────────────
+model Coupon {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  type        CouponType @default(PERCENT)
+  value       Int
+  minSpend    Int        @default(0)
+  maxUses     Int?
+  usedCount   Int        @default(0)
+  active      Boolean    @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime   @default(now())
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --bg: #000000;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-ink-900 text-zinc-900 font-sans antialiased;
+    background-image: radial-gradient(
+      120% 80% at 50% -10%,
+      rgba(0, 102, 255, 0.06) 0%,
+      transparent 55%
+    );
+  }
+  ::selection {
+    background: rgba(255, 45, 32, 0.22);
+    color: #0b0c0e;
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #eef1f4;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cfd4dc;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #ff2d20;
+  }
+}
+
+@layer components {
+  .container-wide {
+    @apply mx-auto w-full max-w-[1400px] px-6 lg:px-10;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-muted;
+  }
+  .h-display {
+    @apply font-display font-bold leading-[0.95] tracking-tight;
+  }
+  /* Gradient text accent */
+  .text-gradient {
+    @apply bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-500 bg-clip-text text-transparent;
+  }
+  .text-gradient-red {
+    background: linear-gradient(90deg, #0b0c0e 0%, #ff2d20 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* Glass panel */
+  .glass {
+    @apply border border-black/10 bg-black/[0.02] backdrop-blur-xl;
+  }
+  .glass-strong {
+    @apply border border-black/10 bg-ink-800/80 backdrop-blur-2xl;
+  }
+  /* Hairline divider */
+  .hairline {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-black/15 to-transparent;
+  }
+}
+
+@layer utilities {
+  .perspective {
+    perspective: 1200px;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* shimmer skeleton */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #1a1a1a 25%,
+      #242424 37%,
+      #1a1a1a 63%
+    );
+    background-size: 400% 100%;
+    @apply animate-shimmer;
+  }
+}
