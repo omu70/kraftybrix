@@ -21,7 +21,7 @@ export function ProductViewer({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-3xl border border-white/10 bg-ink-800",
+        "relative overflow-hidden rounded-3xl border border-black/10 bg-ink-800",
         fullscreen ? "fixed inset-4 z-[80]" : "aspect-square w-full"
       )}
       style={{ background: `radial-gradient(120% 100% at 30% 10%, ${bodyColor}1f, #ffffff 72%)` }}
@@ -49,20 +49,20 @@ export function ProductViewer({
       </Canvas>
 
       {/* controls */}
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-ink-900/80 p-1.5 backdrop-blur">
+      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-black/10 bg-ink-900/80 p-1.5 backdrop-blur">
         <ViewerBtn active={exploded} onClick={() => setExploded((v) => !v)} icon={Layers} label="Exploded" />
         <ViewerBtn onClick={() => setResetKey((k) => k + 1)} icon={RotateCcw} label="Reset" />
         <ViewerBtn onClick={() => setFullscreen((v) => !v)} icon={Maximize2} label="Fullscreen" />
       </div>
 
-      <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-1.5 text-xs text-white/40">
+      <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-1.5 text-xs text-black/40">
         <Move3d size={14} /> Drag to rotate
       </div>
 
       {fullscreen && (
         <button
           onClick={() => setFullscreen(false)}
-          className="absolute right-4 top-4 rounded-full bg-white/10 px-4 py-2 text-sm backdrop-blur"
+          className="absolute right-4 top-4 rounded-full bg-black/[0.06] px-4 py-2 text-sm backdrop-blur"
         >
           Close
         </button>
@@ -87,7 +87,7 @@ function ViewerBtn({
       onClick={onClick}
       className={cn(
         "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium transition",
-        active ? "bg-brand-red text-white" : "text-white/70 hover:bg-white/10 hover:text-cream"
+        active ? "bg-brand-red text-white" : "text-black/70 hover:bg-black/[0.06] hover:text-cream"
       )}
     >
       <Icon size={15} /> {label}

@@ -26,10 +26,10 @@ export function BestSellers() {
               <h2 className="h-display mt-3 text-4xl sm:text-5xl">Best sellers</h2>
             </div>
             <div className="hidden items-center gap-2 sm:flex">
-              <button onClick={() => scrollBy(-1)} aria-label="Previous" className="grid h-11 w-11 place-items-center rounded-full border border-white/15 hover:border-white/40">
+              <button onClick={() => scrollBy(-1)} aria-label="Previous" className="grid h-11 w-11 place-items-center rounded-full border border-black/15 hover:border-black/40">
                 <ChevronLeft size={18} />
               </button>
-              <button onClick={() => scrollBy(1)} aria-label="Next" className="grid h-11 w-11 place-items-center rounded-full border border-white/15 hover:border-white/40">
+              <button onClick={() => scrollBy(1)} aria-label="Next" className="grid h-11 w-11 place-items-center rounded-full border border-black/15 hover:border-black/40">
                 <ChevronRight size={18} />
               </button>
             </div>

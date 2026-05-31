@@ -24,13 +24,13 @@ export function GarageBuilder() {
     .slice(0, 3);
 
   return (
-    <section id="garage" className="relative border-y border-white/10 bg-ink-800/40 py-24">
+    <section id="garage" className="relative border-y border-black/10 bg-ink-800/40 py-24">
       <div className="container-wide">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow justify-center"><span className="h-px w-8 bg-brand-red" /> Dream garage builder</p>
             <h2 className="h-display mt-3 text-4xl sm:text-5xl">What kind of driver are you?</h2>
-            <p className="mt-4 text-white/60">Pick a vibe. We'll curate the perfect starter shelf.</p>
+            <p className="mt-4 text-black/60">Pick a vibe. We'll curate the perfect starter shelf.</p>
           </div>
         </Reveal>
 

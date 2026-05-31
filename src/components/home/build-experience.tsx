@@ -55,14 +55,14 @@ export function BuildExperience() {
           <div className="grid gap-10 lg:grid-cols-3">
             {steps.map((s) => (
               <div key={s.n} className="be-step relative">
-                <div className="relative z-10 grid h-24 w-24 place-items-center rounded-2xl border border-white/10 bg-ink-800">
+                <div className="relative z-10 grid h-24 w-24 place-items-center rounded-2xl border border-black/10 bg-ink-800">
                   <s.icon size={34} className="text-brand-red" />
                   <span className="absolute -right-2 -top-2 grid h-8 w-8 place-items-center rounded-full bg-brand-red font-display text-sm font-bold">
                     {s.n}
                   </span>
                 </div>
                 <h3 className="mt-7 font-display text-2xl font-bold">{s.title}</h3>
-                <p className="mt-3 max-w-xs text-white/55">{s.body}</p>
+                <p className="mt-3 max-w-xs text-black/55">{s.body}</p>
               </div>
             ))}
           </div>

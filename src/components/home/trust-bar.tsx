@@ -13,9 +13,9 @@ const items = [
 
 export function TrustBar() {
   return (
-    <section className="relative border-y border-white/10 bg-ink-900">
+    <section className="relative border-y border-black/10 bg-ink-900">
       <div className="container-wide">
-        <div className="grid grid-cols-2 divide-x divide-white/5 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 divide-x divide-black/5 md:grid-cols-3 lg:grid-cols-5">
           {items.map((it, i) => (
             <motion.div
               key={it.title}
@@ -28,7 +28,7 @@ export function TrustBar() {
               <it.icon size={26} className="shrink-0 text-brand-red" />
               <div className="leading-tight">
                 <p className="text-sm font-semibold text-cream">{it.title}</p>
-                <p className="text-xs text-white/50">{it.sub}</p>
+                <p className="text-xs text-black/50">{it.sub}</p>
               </div>
             </motion.div>
           ))}

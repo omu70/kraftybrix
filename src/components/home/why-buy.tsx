@@ -46,7 +46,7 @@ export function WhyBuy() {
               The car you can't afford —{" "}
               <span className="text-gradient-red">built by your own hands</span>
             </h2>
-            <p className="mt-4 text-white/60">
+            <p className="mt-4 text-black/60">
               Real supercars cost crores. A KraftyBrix lets you build, own and display the icon —
               for the price of a night out.
             </p>
@@ -58,13 +58,13 @@ export function WhyBuy() {
             <Reveal key={r.title} i={i}>
               <motion.div
                 whileHover={{ y: -6 }}
-                className="group h-full rounded-3xl border border-white/10 bg-ink-800 p-8 shadow-sm transition-shadow hover:shadow-card"
+                className="group h-full rounded-3xl border border-black/10 bg-ink-800 p-8 shadow-sm transition-shadow hover:shadow-card"
               >
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-red/10 text-brand-red transition group-hover:bg-brand-red group-hover:text-white">
                   <r.icon size={22} />
                 </div>
                 <h3 className="mt-5 font-display text-xl font-bold">{r.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/55">{r.body}</p>
+                <p className="mt-2 text-sm leading-relaxed text-black/55">{r.body}</p>
               </motion.div>
             </Reveal>
           ))}
@@ -72,7 +72,7 @@ export function WhyBuy() {
 
         {/* Risk reversal — kills the "what if" objection */}
         <Reveal>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-black/10 bg-black/[0.06] sm:grid-cols-2 lg:grid-cols-4">
             {promises.map((p) => (
               <div key={p.label} className="flex items-center gap-3 bg-ink-800 px-6 py-5">
                 <p.icon size={22} className="shrink-0 text-brand-red" />
@@ -87,7 +87,7 @@ export function WhyBuy() {
             <Link href="/collection">
               <Button size="lg">Start your collection</Button>
             </Link>
-            <span className="text-sm text-white/50">
+            <span className="text-sm text-black/50">
               ⭐ 4.9/5 from 3,000+ happy builders
             </span>
           </div>

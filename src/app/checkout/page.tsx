@@ -112,7 +112,7 @@ export default function CheckoutPage() {
     return (
       <div className="container-wide grid min-h-[60vh] place-items-center pt-28 text-center">
         <div>
-          <p className="text-white/60">Your cart is empty.</p>
+          <p className="text-black/60">Your cart is empty.</p>
           <Link href="/collection"><Button className="mt-6">Browse the collection</Button></Link>
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function CheckoutPage() {
     <div className="container-wide pt-28">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <h1 className="h-display text-4xl">Checkout</h1>
-      <p className="mt-2 flex items-center gap-2 text-sm text-white/50">
+      <p className="mt-2 flex items-center gap-2 text-sm text-black/50">
         <Lock size={14} /> Secure 256-bit encrypted checkout
       </p>
 
@@ -155,26 +155,26 @@ export default function CheckoutPage() {
 
         {/* summary */}
         <aside className="lg:sticky lg:top-28 lg:self-start">
-          <div className="rounded-2xl border border-white/10 bg-ink-800 p-6">
+          <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
             <h2 className="font-display text-lg font-bold">Order summary</h2>
             <ul className="mt-4 space-y-3">
               {lines.map((l) => (
                 <li key={l.productId} className="flex justify-between text-sm">
-                  <span className="text-white/70">{l.name} × {l.qty}</span>
+                  <span className="text-black/70">{l.name} × {l.qty}</span>
                   <span>{formatPrice(l.price * l.qty)}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-5 border-t border-white/10 pt-4">
+            <div className="mt-5 border-t border-black/10 pt-4">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Tag size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                  <Tag size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
                   <input
                     value={coupon}
                     onChange={(e) => setCoupon(e.target.value)}
                     placeholder="Coupon code (try BRICK10)"
-                    className="w-full rounded-lg border border-white/15 bg-ink-900 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-brand-red"
+                    className="w-full rounded-lg border border-black/15 bg-ink-900 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-brand-red"
                   />
                 </div>
                 <Button variant="secondary" size="sm" onClick={onApplyCoupon}>Apply</Button>
@@ -183,11 +183,11 @@ export default function CheckoutPage() {
               {couponErr && <p className="mt-2 text-xs text-brand-red">{couponErr}</p>}
             </div>
 
-            <dl className="mt-5 space-y-2 border-t border-white/10 pt-4 text-sm">
+            <dl className="mt-5 space-y-2 border-t border-black/10 pt-4 text-sm">
               <Row label="Subtotal" value={formatPrice(subtotal)} />
               {discount > 0 && <Row label="Discount" value={`− ${formatPrice(discount)}`} green />}
               <Row label="Shipping" value={shipping === 0 ? "Free" : formatPrice(shipping)} />
-              <div className="flex justify-between border-t border-white/10 pt-3 text-base font-bold">
+              <div className="flex justify-between border-t border-black/10 pt-3 text-base font-bold">
                 <span>Total</span><span>{formatPrice(total)}</span>
               </div>
             </dl>
@@ -195,7 +195,7 @@ export default function CheckoutPage() {
             <Button size="lg" className="mt-6 w-full" disabled={!formValid || placing} onClick={placeOrder}>
               {placing ? "Processing…" : method === "COD" ? `Place order · ${formatPrice(total)}` : `Pay ${formatPrice(total)}`}
             </Button>
-            {!formValid && <p className="mt-2 text-center text-xs text-white/40">Fill in your shipping details to continue</p>}
+            {!formValid && <p className="mt-2 text-center text-xs text-black/40">Fill in your shipping details to continue</p>}
           </div>
         </aside>
       </div>
@@ -209,18 +209,18 @@ function Field({ name, placeholder, form, setForm, className }: { name: keyof Fo
       value={form[name]}
       onChange={(e) => setForm({ ...form, [name]: e.target.value })}
       placeholder={placeholder}
-      className={`rounded-lg border border-white/15 bg-ink-900 px-4 py-3 text-sm outline-none focus:border-brand-red ${className ?? ""}`}
+      className={`rounded-lg border border-black/15 bg-ink-900 px-4 py-3 text-sm outline-none focus:border-brand-red ${className ?? ""}`}
     />
   );
 }
 
 function MethodCard({ active, onClick, icon: Icon, title, sub }: { active: boolean; onClick: () => void; icon: typeof CreditCard; title: string; sub: string }) {
   return (
-    <button onClick={onClick} className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${active ? "border-brand-red bg-brand-red/10" : "border-white/15 hover:border-white/30"}`}>
-      <Icon size={20} className={active ? "text-brand-red" : "text-white/60"} />
+    <button onClick={onClick} className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${active ? "border-brand-red bg-brand-red/10" : "border-black/15 hover:border-black/30"}`}>
+      <Icon size={20} className={active ? "text-brand-red" : "text-black/60"} />
       <div>
         <p className="font-medium">{title}</p>
-        <p className="text-xs text-white/50">{sub}</p>
+        <p className="text-xs text-black/50">{sub}</p>
       </div>
     </button>
   );
@@ -229,7 +229,7 @@ function MethodCard({ active, onClick, icon: Icon, title, sub }: { active: boole
 function Row({ label, value, green }: { label: string; value: string; green?: boolean }) {
   return (
     <div className="flex justify-between">
-      <dt className="text-white/55">{label}</dt>
+      <dt className="text-black/55">{label}</dt>
       <dd className={green ? "text-green-400" : ""}>{value}</dd>
     </div>
   );

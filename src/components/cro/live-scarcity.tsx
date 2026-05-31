@@ -30,12 +30,12 @@ export function LiveScarcity({ productId }: { productId: string }) {
       <div className="flex items-center gap-2 text-sm">
         <Flame size={16} className="text-brand-red" />
         <span className="font-semibold text-cream">Only {left} left</span>
-        <span className="text-white/55">— selling fast</span>
+        <span className="text-black/55">— selling fast</span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/[0.06]">
         <div className="h-full rounded-full bg-gradient-to-r from-brand-red to-orange-400" style={{ width: `${Math.min(90, left * 11)}%` }} />
       </div>
-      <p className="flex items-center gap-2 text-xs text-white/55">
+      <p className="flex items-center gap-2 text-xs text-black/55">
         <Eye size={14} className="text-brand-blue" />
         <span className="font-semibold text-cream">{viewers}</span> people are viewing this right now
       </p>

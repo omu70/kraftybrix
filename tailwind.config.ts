@@ -15,14 +15,14 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Dark luxury surface scale (ink = surfaces, darkest → lighter)
+        // Light premium surface scale (ink = surfaces, light → slightly deeper)
         ink: {
-          DEFAULT: "#0A0A0A",
-          900: "#0A0A0A", // page background
-          800: "#141414", // cards / elevated
-          700: "#1A1A1A",
-          600: "#242424",
-          500: "#2E2E2E",
+          DEFAULT: "#FFFFFF",
+          900: "#F6F7F9", // page background
+          800: "#FFFFFF", // cards / elevated
+          700: "#EEF1F4",
+          600: "#E4E7EC",
+          500: "#D7DBE2",
         },
         brand: {
           red: "#FF2D20",
@@ -30,24 +30,24 @@ const config: Config = {
           gold: "#F5A623",
           white: "#FFFFFF",
         },
-        cream: "#F0EDE6", // warm off-white primary text
-        border: "rgba(255,255,255,0.10)",
-        muted: "rgba(240,237,230,0.55)",
+        cream: "#15171A", // primary text (named cream for compat; now near-black)
+        border: "rgba(15,18,25,0.10)",
+        muted: "rgba(15,18,25,0.55)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Space Grotesk", "sans-serif"],
         sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        glow: "0 10px 50px -10px rgba(245,166,35,0.45)",
+        glow: "0 10px 40px -10px rgba(255,45,32,0.45)",
         "glow-blue": "0 10px 40px -10px rgba(0,102,255,0.4)",
-        card: "0 24px 60px -24px rgba(0,0,0,0.8)",
+        card: "0 18px 50px -24px rgba(15,18,25,0.30)",
       },
       backgroundImage: {
         "grid-faint":
-          "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
+          "linear-gradient(to right, rgba(15,18,25,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,18,25,0.05) 1px, transparent 1px)",
         "radial-spot":
-          "radial-gradient(ellipse 60% 50% at 60% 55%, rgba(245,166,35,0.14) 0%, transparent 70%)",
+          "radial-gradient(60% 60% at 50% 30%, rgba(255,45,32,0.10) 0%, transparent 70%)",
       },
       keyframes: {
         "fade-up": {

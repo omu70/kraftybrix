@@ -62,7 +62,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.18 }}
-            className="mt-6 max-w-lg text-lg text-white/60"
+            className="mt-6 max-w-lg text-lg text-black/60"
           >
             Premium brick-built supercars, hypercars and icons — engineered down
             to the last stud. Build it. Display it. Own the dream.
@@ -93,15 +93,15 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.5 }}
-            className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-white/55"
+            className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-black/55"
           >
             <span className="flex items-center gap-1.5">
               <Star size={15} className="fill-brand-gold text-brand-gold" />
               <span className="font-semibold text-cream">4.9</span> · 3,000+ builders
             </span>
-            <span className="h-4 w-px bg-white/15" />
+            <span className="h-4 w-px bg-black/15" />
             <span>Lifetime guarantee</span>
-            <span className="h-4 w-px bg-white/15" />
+            <span className="h-4 w-px bg-black/15" />
             <span>Ships in 24h</span>
           </motion.div>
         </motion.div>
@@ -121,7 +121,7 @@ export function Hero() {
           <Link href={`/product/${HERO_PRODUCT.slug}`} className="group block">
             {/* bright studio lightbox so the product reads premium on dark */}
             <div
-              className="relative overflow-hidden rounded-[32px] border border-white/10 shadow-card"
+              className="relative overflow-hidden rounded-[32px] border border-black/10 shadow-card"
               style={{ background: "radial-gradient(75% 75% at 50% 40%, #ffffff 0%, #e9ecf2 100%)" }}
             >
               <motion.div
@@ -134,14 +134,14 @@ export function Hero() {
                   width={760}
                   height={620}
                   priority
-                  className="mx-auto w-full object-contain p-8 transition-transform duration-700 group-hover:scale-[1.04]"
+                  className="mx-auto w-full mix-blend-multiply object-contain p-8 transition-transform duration-700 group-hover:scale-[1.04]"
                 />
               </motion.div>
             </div>
           </Link>
           {/* floating spec chip */}
           <div className="absolute -bottom-4 left-3 glass-strong rounded-2xl px-4 py-3">
-            <p className="text-xs text-white/50">Featured build</p>
+            <p className="text-xs text-black/50">Featured build</p>
             <p className="font-display font-bold leading-tight text-cream">{HERO_PRODUCT.name}</p>
             <p className="text-sm font-semibold text-brand-gold">
               ₹{(HERO_PRODUCT.salePrice ?? HERO_PRODUCT.price).toLocaleString("en-IN")}
@@ -154,7 +154,7 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, y: [0, 8, 0] }}
         transition={{ delay: 1, duration: 2, repeat: Infinity }}
-        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-white/40"
+        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-black/40"
       >
         <ChevronDown size={26} />
       </motion.div>

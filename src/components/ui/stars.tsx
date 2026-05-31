@@ -22,7 +22,7 @@ export function Stars({
               key={i}
               width={size}
               height={size}
-              className={filled ? "fill-brand-red text-brand-red" : "text-white/25"}
+              className={filled ? "fill-brand-red text-brand-red" : "text-black/25"}
             />
           );
         })}

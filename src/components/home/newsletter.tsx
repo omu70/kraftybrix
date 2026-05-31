@@ -22,7 +22,7 @@ export function Newsletter() {
   return (
     <section className="relative py-28">
       <div className="container-wide">
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-ink-800 p-10 sm:p-16">
+        <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-ink-800 p-10 sm:p-16">
           <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand-red/20 blur-3xl" />
           <div className="absolute -bottom-24 -left-10 h-72 w-72 rounded-full bg-brand-blue/20 blur-3xl" />
 
@@ -32,7 +32,7 @@ export function Newsletter() {
               <h2 className="h-display mt-3 text-4xl sm:text-5xl text-balance">
                 Get early access to every new drop
               </h2>
-              <p className="mt-4 max-w-md text-white/60">
+              <p className="mt-4 max-w-md text-black/60">
                 Limited editions sell out in hours. Subscribers get a 24-hour head start, plus an exclusive welcome offer.
               </p>
             </div>
@@ -50,20 +50,20 @@ export function Newsletter() {
                   name="name"
                   required
                   placeholder="Your name"
-                  className="w-full rounded-xl border border-white/15 bg-ink-900 px-5 py-4 text-sm outline-none transition focus:border-brand-red"
+                  className="w-full rounded-xl border border-black/15 bg-ink-900 px-5 py-4 text-sm outline-none transition focus:border-brand-red"
                 />
                 <input
                   name="email"
                   type="email"
                   required
                   placeholder="you@email.com"
-                  className="w-full rounded-xl border border-white/15 bg-ink-900 px-5 py-4 text-sm outline-none transition focus:border-brand-red"
+                  className="w-full rounded-xl border border-black/15 bg-ink-900 px-5 py-4 text-sm outline-none transition focus:border-brand-red"
                 />
                 <Button type="submit" size="lg" disabled={pending} className="w-full group">
                   {pending ? "Joining…" : "Join the drop list"}
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </Button>
-                <p className="text-center text-xs text-white/40">No spam. Unsubscribe anytime.</p>
+                <p className="text-center text-xs text-black/40">No spam. Unsubscribe anytime.</p>
               </form>
             )}
           </div>

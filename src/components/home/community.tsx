@@ -35,7 +35,7 @@ export function Community() {
           {posts.map((p, i) => (
             <Reveal key={i} i={i}>
               <div
-                className="group relative aspect-[4/5] overflow-hidden rounded-2xl border border-white/10"
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl border border-black/10"
                 style={{ background: `radial-gradient(120% 100% at 50% 0%, ${p.color}1f, #ffffff 72%)` }}
               >
                 <Image
@@ -43,7 +43,7 @@ export function Community() {
                   alt={p.name}
                   fill
                   sizes="(max-width:768px) 50vw, 220px"
-                  className="object-contain p-4 transition-transform duration-500 group-hover:scale-110"
+                  className="mix-blend-multiply object-contain p-4 transition-transform duration-500 group-hover:scale-110"
                 />
                 {p.video && (
                   <div className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/50 backdrop-blur">
@@ -51,13 +51,13 @@ export function Community() {
                   </div>
                 )}
                 <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/80 to-transparent p-3">
-                  <span className="text-xs font-medium text-white/90">{p.user}</span>
+                  <span className="text-xs font-medium text-black/90">{p.user}</span>
                   <div className="flex items-center gap-2 text-white">
                     <button onClick={() => setLiked((s) => ({ ...s, [i]: !s[i] }))} className="flex items-center gap-1 text-xs">
-                      <Heart size={14} className={liked[i] ? "fill-brand-red text-brand-red" : "text-white/80"} />
+                      <Heart size={14} className={liked[i] ? "fill-brand-red text-brand-red" : "text-black/80"} />
                       {(p.likes + (liked[i] ? 1 : 0)).toLocaleString("en-IN")}
                     </button>
-                    <Share2 size={14} className="text-white/70 hover:text-white" />
+                    <Share2 size={14} className="text-black/70 hover:text-white" />
                   </div>
                 </div>
               </div>
