@@ -1,26 +1,18 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles, ChevronDown } from "lucide-react";
+import { ArrowRight, Sparkles, ChevronDown, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Magnetic } from "@/components/ui/magnetic";
+import { products } from "@/lib/products";
 
-// 3D loaded client-side only — keeps the hero copy in the initial HTML for LCP/SEO.
-const CarScene = dynamic(
-  () => import("@/components/three/car-scene").then((m) => m.CarScene),
-  { ssr: false, loading: () => <SceneSkeleton /> }
-);
-
-function SceneSkeleton() {
-  return (
-    <div className="absolute inset-0 grid place-items-center">
-      <div className="h-40 w-72 animate-pulse rounded-2xl bg-black/[0.02]" />
-    </div>
-  );
-}
+const HERO_PRODUCT =
+  products.find((p) => p.slug.includes("sian")) ??
+  products.find((p) => p.category === "Hypercars") ??
+  products[0];
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -28,32 +20,29 @@ export function Hero() {
     target: ref,
     offset: ["start start", "end start"],
   });
-  // Car drifts up + shrinks slightly, copy rises and fades as you scroll away.
-  const carY = useTransform(scrollYProgress, [0, 1], [0, -120]);
-  const carScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
-  const carOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const copyY = useTransform(scrollYProgress, [0, 1], [0, 90]);
-  const copyOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  // Gentle parallax only — never gate visibility on scroll.
+  const imgY = useTransform(scrollYProgress, [0, 1], [0, -80]);
+  const copyY = useTransform(scrollYProgress, [0, 1], [0, 60]);
 
   return (
-    <section ref={ref} className="relative flex min-h-[100svh] items-center overflow-hidden">
-      {/* Backdrop layers */}
-      <div className="absolute inset-0 bg-radial-spot opacity-80" />
-      <div className="absolute inset-0 bg-grid-faint [background-size:60px_60px] opacity-40 [mask-image:radial-gradient(70%_60%_at_50%_40%,black,transparent)]" />
+    <section
+      ref={ref}
+      className="relative flex min-h-[100svh] items-center overflow-hidden pt-24"
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-radial-spot opacity-90" />
+      <div className="absolute inset-0 bg-grid-faint [background-size:60px_60px] opacity-[0.5] [mask-image:radial-gradient(80%_70%_at_60%_40%,black,transparent)]" />
+      <div className="absolute -right-40 top-1/4 h-[520px] w-[520px] rounded-full bg-brand-red/15 blur-[120px]" />
+      <div className="absolute -left-40 bottom-0 h-[420px] w-[420px] rounded-full bg-brand-blue/15 blur-[120px]" />
 
-      {/* 3D canvas — parallax on scroll */}
-      <motion.div style={{ y: carY, scale: carScale, opacity: carOpacity }} className="absolute inset-0 z-0">
-        <CarScene />
-      </motion.div>
-
-      {/* Copy — parallax on scroll */}
-      <motion.div style={{ y: copyY, opacity: copyOpacity }} className="container-wide relative z-10 pointer-events-none">
-        <div className="max-w-2xl pt-20">
+      <div className="container-wide relative z-10 grid items-center gap-10 pb-16 lg:grid-cols-[1.05fr_1fr]">
+        {/* Copy */}
+        <motion.div style={{ y: copyY }} className="max-w-xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="eyebrow pointer-events-auto"
+            className="eyebrow"
           >
             <Sparkles size={14} className="text-brand-red" />
             Collector-grade brick automotive
@@ -73,17 +62,17 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.18 }}
-            className="mt-6 max-w-lg text-lg text-black/65"
+            className="mt-6 max-w-lg text-lg text-black/60"
           >
-            Premium brick-built automotive collectibles for enthusiasts who
-            never stop dreaming. Engineered down to the last stud.
+            Premium brick-built supercars, hypercars and icons — engineered down
+            to the last stud. Build it. Display it. Own the dream.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.28 }}
-            className="pointer-events-auto mt-9 flex flex-wrap items-center gap-4"
+            className="mt-9 flex flex-wrap items-center gap-4"
           >
             <Magnetic>
               <Link href="/collection">
@@ -95,32 +84,66 @@ export function Hero() {
             </Magnetic>
             <Magnetic>
               <Link href="/#garage">
-                <Button size="lg" variant="secondary">
-                  Explore Garage
-                </Button>
+                <Button size="lg" variant="secondary">Explore Garage</Button>
               </Link>
             </Magnetic>
           </motion.div>
 
-          {/* Trust signals — CRO */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.5 }}
-            className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-black/55"
+            className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-black/55"
           >
-            <span className="flex items-center gap-2">
-              <span className="text-brand-red font-semibold">4.9★</span> 12,000+ reviews
+            <span className="flex items-center gap-1.5">
+              <Star size={15} className="fill-brand-red text-brand-red" />
+              <span className="font-semibold text-zinc-900">4.9</span> · 3,000+ builders
             </span>
             <span className="h-4 w-px bg-black/15" />
-            <span>Lifetime brick guarantee</span>
+            <span>Lifetime guarantee</span>
             <span className="h-4 w-px bg-black/15" />
             <span>Ships in 24h</span>
           </motion.div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Scroll cue */}
+        {/* Visual — real product hero image */}
+        <motion.div
+          style={{ y: imgY }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="relative"
+        >
+          <div
+            className="absolute inset-0 -z-10 rounded-[40px] blur-2xl"
+            style={{ background: `radial-gradient(60% 60% at 50% 45%, ${HERO_PRODUCT.bodyColor}55, transparent 70%)` }}
+          />
+          <Link href={`/product/${HERO_PRODUCT.slug}`} className="group block">
+            <motion.div
+              animate={{ y: [0, -14, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Image
+                src={HERO_PRODUCT.images[0].url}
+                alt={HERO_PRODUCT.name}
+                width={760}
+                height={620}
+                priority
+                className="mx-auto w-full max-w-xl object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-[1.03]"
+              />
+            </motion.div>
+          </Link>
+          {/* floating spec chip */}
+          <div className="absolute bottom-2 left-2 glass rounded-2xl px-4 py-3 backdrop-blur-xl">
+            <p className="text-xs text-black/50">Featured build</p>
+            <p className="font-display font-bold leading-tight">{HERO_PRODUCT.name}</p>
+            <p className="text-sm font-semibold text-brand-red">
+              ₹{(HERO_PRODUCT.salePrice ?? HERO_PRODUCT.price).toLocaleString("en-IN")}
+            </p>
+          </div>
+        </motion.div>
+      </div>
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, y: [0, 8, 0] }}

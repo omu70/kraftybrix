@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Instagram, Youtube, Twitter, Facebook } from "lucide-react";
+import { Logo } from "@/components/layout/logo";
 
 const cols = [
   {
@@ -41,15 +41,7 @@ export function Footer() {
       <div className="container-wide py-16">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
-            <Link href="/" className="flex items-center" aria-label="KraftyBrix home">
-              <Image
-                src="/logo.png"
-                alt="KraftyBrix"
-                width={200}
-                height={60}
-                className="h-12 w-auto object-contain"
-              />
-            </Link>
+            <Logo className="h-12" />
             <p className="mt-4 max-w-xs text-sm text-black/55">
               Premium brick-built automotive collectibles for enthusiasts who
               never stop dreaming. Build the garage you've always dreamed of.

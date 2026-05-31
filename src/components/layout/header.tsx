@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/layout/logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Heart, User, Menu, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -48,16 +48,7 @@ export function Header() {
       </div>
 
       <div className="container-wide flex h-16 items-center justify-between gap-6">
-        <Link href="/" className="flex items-center" aria-label="KraftyBrix home">
-          <Image
-            src="/logo.png"
-            alt="KraftyBrix"
-            width={180}
-            height={54}
-            priority
-            className="h-10 w-auto object-contain"
-          />
-        </Link>
+        <Logo className="h-10" />
 
         <nav className="hidden items-center gap-8 lg:flex">
           {nav.map((item) => (
