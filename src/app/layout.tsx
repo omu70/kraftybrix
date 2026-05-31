@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { PromoModal } from "@/components/cro/promo-modal";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { Analytics } from "@/components/analytics";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
         />
+        <ScrollProgress />
         <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useRef } from "react";
+import { Suspense, useRef, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Environment,
@@ -53,6 +53,18 @@ function Particles({ count = 140 }: { count?: number }) {
   );
 }
 
+/** Rotates the car as the page scrolls — ties the 3D to scroll position. */
+function ScrollSpin({ children }: { children: ReactNode }) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(() => {
+    if (!ref.current) return;
+    const sy = typeof window !== "undefined" ? window.scrollY : 0;
+    const target = sy * 0.0016;
+    ref.current.rotation.y += (target - ref.current.rotation.y) * 0.08;
+  });
+  return <group ref={ref}>{children}</group>;
+}
+
 /** Camera follows the pointer for a subtle parallax. */
 function PointerCamera() {
   const { camera } = useThree();
@@ -100,9 +112,11 @@ export function CarScene({
         <spotLight position={[-8, 6, -4]} angle={0.5} intensity={3} color="#0066FF" />
         <spotLight position={[8, 4, 6]} angle={0.6} intensity={2.2} color="#FF2D20" />
 
-        <Float speed={1.2} rotationIntensity={0.15} floatIntensity={0.4}>
-          <BrickCar bodyColor={bodyColor} accentColor={accentColor} />
-        </Float>
+        <ScrollSpin>
+          <Float speed={1.2} rotationIntensity={0.15} floatIntensity={0.4}>
+            <BrickCar bodyColor={bodyColor} accentColor={accentColor} />
+          </Float>
+        </ScrollSpin>
 
         <Particles />
 

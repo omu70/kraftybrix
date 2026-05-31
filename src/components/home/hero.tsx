@@ -2,7 +2,8 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Magnetic } from "@/components/ui/magnetic";
@@ -22,19 +23,31 @@ function SceneSkeleton() {
 }
 
 export function Hero() {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  // Car drifts up + shrinks slightly, copy rises and fades as you scroll away.
+  const carY = useTransform(scrollYProgress, [0, 1], [0, -120]);
+  const carScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const carOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const copyY = useTransform(scrollYProgress, [0, 1], [0, 90]);
+  const copyOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+
   return (
-    <section className="relative flex min-h-[100svh] items-center overflow-hidden">
+    <section ref={ref} className="relative flex min-h-[100svh] items-center overflow-hidden">
       {/* Backdrop layers */}
       <div className="absolute inset-0 bg-radial-spot opacity-80" />
       <div className="absolute inset-0 bg-grid-faint [background-size:60px_60px] opacity-40 [mask-image:radial-gradient(70%_60%_at_50%_40%,black,transparent)]" />
 
-      {/* 3D canvas */}
-      <div className="absolute inset-0 z-0">
+      {/* 3D canvas — parallax on scroll */}
+      <motion.div style={{ y: carY, scale: carScale, opacity: carOpacity }} className="absolute inset-0 z-0">
         <CarScene />
-      </div>
+      </motion.div>
 
-      {/* Copy */}
-      <div className="container-wide relative z-10 pointer-events-none">
+      {/* Copy — parallax on scroll */}
+      <motion.div style={{ y: copyY, opacity: copyOpacity }} className="container-wide relative z-10 pointer-events-none">
         <div className="max-w-2xl pt-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -105,7 +118,7 @@ export function Hero() {
             <span>Ships in 24h</span>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Scroll cue */}
       <motion.div
