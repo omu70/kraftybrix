@@ -27,12 +27,15 @@ export function Hero() {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-[100svh] items-center overflow-hidden pt-24"
+      className="relative flex min-h-[100svh] items-center overflow-hidden bg-charcoal pt-24 text-white"
     >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-radial-spot opacity-90" />
-      <div className="absolute inset-0 bg-grid-faint [background-size:60px_60px] opacity-[0.5] [mask-image:radial-gradient(80%_70%_at_60%_40%,black,transparent)]" />
-      <div className="absolute -right-40 top-1/4 h-[520px] w-[520px] rounded-full bg-brand-red/15 blur-[120px]" />
+      {/* Warm studio backdrop */}
+      <div
+        className="absolute inset-0"
+        style={{ background: "radial-gradient(ellipse 60% 50% at 62% 52%, rgba(245,166,35,0.16) 0%, transparent 70%)" }}
+      />
+      <div className="absolute inset-0 bg-grid-faint [background-size:60px_60px] opacity-[0.35] [mask-image:radial-gradient(80%_70%_at_60%_40%,black,transparent)]" />
+      <div className="absolute -right-40 top-1/4 h-[520px] w-[520px] rounded-full bg-brand-orange/20 blur-[120px]" />
       <div className="absolute -left-40 bottom-0 h-[420px] w-[420px] rounded-full bg-brand-blue/15 blur-[120px]" />
 
       <div className="container-wide relative z-10 grid items-center gap-10 pb-16 lg:grid-cols-[1.05fr_1fr]">
@@ -42,7 +45,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="eyebrow"
+            className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-white/55"
           >
             <Sparkles size={14} className="text-brand-gold" />
             Collector-grade brick automotive
@@ -55,14 +58,16 @@ export function Hero() {
             className="h-display mt-5 text-5xl text-balance sm:text-6xl lg:text-7xl"
           >
             Build The Garage{" "}
-            <span className="text-gradient-red">You've Always Dreamed Of</span>
+            <span className="bg-gradient-to-r from-white to-brand-gold bg-clip-text text-transparent">
+              You've Always Dreamed Of
+            </span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.18 }}
-            className="mt-6 max-w-lg text-lg text-black/60"
+            className="mt-6 max-w-lg text-lg text-white/65"
           >
             Premium brick-built supercars, hypercars and icons — engineered down
             to the last stud. Build it. Display it. Own the dream.
@@ -93,15 +98,15 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.5 }}
-            className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-black/55"
+            className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-white/55"
           >
             <span className="flex items-center gap-1.5">
               <Star size={15} className="fill-brand-gold text-brand-gold" />
-              <span className="font-semibold text-cream">4.9</span> · 3,000+ builders
+              <span className="font-semibold text-white">4.9</span> · 3,000+ builders
             </span>
-            <span className="h-4 w-px bg-black/15" />
+            <span className="h-4 w-px bg-white/15" />
             <span>Lifetime guarantee</span>
-            <span className="h-4 w-px bg-black/15" />
+            <span className="h-4 w-px bg-white/15" />
             <span>Ships in 24h</span>
           </motion.div>
         </motion.div>
@@ -121,7 +126,7 @@ export function Hero() {
           <Link href={`/product/${HERO_PRODUCT.slug}`} className="group block">
             {/* bright studio lightbox so the product reads premium on dark */}
             <div
-              className="relative overflow-hidden rounded-[32px] border border-black/10 shadow-card"
+              className="relative overflow-hidden rounded-[32px] border border-white/10 shadow-card"
               style={{ background: "radial-gradient(75% 75% at 50% 40%, #ffffff 0%, #e9ecf2 100%)" }}
             >
               <motion.div
@@ -154,7 +159,7 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, y: [0, 8, 0] }}
         transition={{ delay: 1, duration: 2, repeat: Infinity }}
-        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-black/40"
+        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-white/40"
       >
         <ChevronDown size={26} />
       </motion.div>

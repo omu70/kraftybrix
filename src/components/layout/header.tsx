@@ -36,10 +36,8 @@ export function Header() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-500",
-        scrolled
-          ? "border-b border-black/10 bg-ink-900/80 backdrop-blur-xl"
-          : "bg-transparent"
+        "fixed inset-x-0 top-0 z-50 transition-all duration-500 border-b backdrop-blur-xl",
+        scrolled ? "border-black/10 bg-ink-900/90 shadow-sm" : "border-transparent bg-ink-900/80"
       )}
     >
       {/* Announcement bar */}
