@@ -57,9 +57,9 @@ export function PromoModal() {
             exit={{ scale: 0.9, y: 30, opacity: 0 }}
             transition={{ type: "spring", damping: 24, stiffness: 280 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-black/10 bg-ink-800"
+            className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-ink-800"
           >
-            <button onClick={() => setOpen(false)} aria-label="Close" className="absolute right-4 top-4 z-10 text-black/50 hover:text-zinc-900">
+            <button onClick={() => setOpen(false)} aria-label="Close" className="absolute right-4 top-4 z-10 text-white/50 hover:text-cream">
               <X size={22} />
             </button>
 
@@ -72,7 +72,7 @@ export function PromoModal() {
               <h2 className="h-display mt-3 text-4xl">
                 Unlock <span className="text-gradient-red">10% off</span><br />your first model
               </h2>
-              <p className="mt-3 text-black/60">
+              <p className="mt-3 text-white/60">
                 Join 12,000+ collectors. Free express shipping over ₹9,999 and a lifetime brick guarantee on every kit.
               </p>
 
@@ -81,7 +81,7 @@ export function PromoModal() {
                 className="group mx-auto mt-6 flex items-center gap-3 rounded-xl border border-dashed border-brand-red/60 bg-brand-red/10 px-6 py-3 font-display text-lg font-bold tracking-wider"
               >
                 BRICK10
-                {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} className="text-black/60 group-hover:text-zinc-900" />}
+                {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} className="text-white/60 group-hover:text-cream" />}
               </button>
 
               <a
@@ -91,7 +91,7 @@ export function PromoModal() {
               >
                 Claim & shop the collection
               </a>
-              <button onClick={() => setOpen(false)} className="mt-3 text-xs text-black/40 hover:text-zinc-900">
+              <button onClick={() => setOpen(false)} className="mt-3 text-xs text-white/40 hover:text-cream">
                 No thanks, I'll pay full price
               </button>
             </div>

@@ -38,7 +38,7 @@ export function Header() {
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-500",
         scrolled
-          ? "border-b border-black/10 bg-ink-900/80 backdrop-blur-xl"
+          ? "border-b border-white/10 bg-ink-900/80 backdrop-blur-xl"
           : "bg-transparent"
       )}
     >
@@ -55,7 +55,7 @@ export function Header() {
             <Magnetic key={item.label} strength={0.2}>
               <Link
                 href={item.href}
-                className="text-sm font-medium text-black/75 transition-colors hover:text-zinc-900"
+                className="text-sm font-medium text-white/75 transition-colors hover:text-cream"
               >
                 {item.label}
               </Link>
@@ -66,21 +66,21 @@ export function Header() {
         <div className="flex items-center gap-1.5">
           <button
             aria-label="Search"
-            className="grid h-10 w-10 place-items-center rounded-full text-black/75 transition hover:bg-black/[0.04] hover:text-zinc-900"
+            className="grid h-10 w-10 place-items-center rounded-full text-white/75 transition hover:bg-white/5 hover:text-cream"
           >
             <Search size={19} />
           </button>
           <Link
             href="/account"
             aria-label="Account"
-            className="hidden h-10 w-10 place-items-center rounded-full text-black/75 transition hover:bg-black/[0.04] hover:text-zinc-900 sm:grid"
+            className="hidden h-10 w-10 place-items-center rounded-full text-white/75 transition hover:bg-white/5 hover:text-cream sm:grid"
           >
             <User size={19} />
           </Link>
           <Link
             href="/account/wishlist"
             aria-label="Wishlist"
-            className="relative grid h-10 w-10 place-items-center rounded-full text-black/75 transition hover:bg-black/[0.04] hover:text-zinc-900"
+            className="relative grid h-10 w-10 place-items-center rounded-full text-white/75 transition hover:bg-white/5 hover:text-cream"
           >
             <Heart size={19} />
             {wishCount > 0 && (
@@ -92,7 +92,7 @@ export function Header() {
           <button
             onClick={openCart}
             aria-label="Open cart"
-            className="relative grid h-10 w-10 place-items-center rounded-full text-zinc-900 transition hover:bg-black/[0.04]"
+            className="relative grid h-10 w-10 place-items-center rounded-full text-cream transition hover:bg-white/5"
           >
             <ShoppingBag size={19} />
             <AnimatePresence>
@@ -112,7 +112,7 @@ export function Header() {
           <button
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Menu"
-            className="grid h-10 w-10 place-items-center rounded-full text-zinc-900 lg:hidden"
+            className="grid h-10 w-10 place-items-center rounded-full text-cream lg:hidden"
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -125,7 +125,7 @@ export function Header() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-black/10 bg-ink-900/95 backdrop-blur-xl lg:hidden"
+            className="overflow-hidden border-t border-white/10 bg-ink-900/95 backdrop-blur-xl lg:hidden"
           >
             <div className="container-wide flex flex-col gap-1 py-4">
               {nav.map((item) => (
@@ -133,7 +133,7 @@ export function Header() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-lg px-3 py-3 text-base font-medium text-black/80 hover:bg-black/[0.04]"
+                  className="rounded-lg px-3 py-3 text-base font-medium text-white/80 hover:bg-white/5"
                 >
                   {item.label}
                 </Link>

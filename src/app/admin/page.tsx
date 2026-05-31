@@ -45,7 +45,7 @@ export default function AdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="h-display text-4xl">Admin</h1>
-          <p className="mt-1 text-black/50">KraftyBrix control center</p>
+          <p className="mt-1 text-white/50">KraftyBrix control center</p>
         </div>
         <Badge tone="red">Live</Badge>
       </div>
@@ -57,7 +57,7 @@ export default function AdminPage() {
               <button
                 key={n.key}
                 onClick={() => setSection(n.key)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${section === n.key ? "bg-brand-red text-white" : "text-black/60 hover:bg-black/[0.04]"}`}
+                className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${section === n.key ? "bg-brand-red text-white" : "text-white/60 hover:bg-white/5"}`}
               >
                 <n.icon size={17} /> {n.label}
               </button>
@@ -70,10 +70,10 @@ export default function AdminPage() {
             <>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {kpis.map((k) => (
-                  <div key={k.label} className="rounded-2xl border border-black/10 bg-ink-800 p-5">
+                  <div key={k.label} className="rounded-2xl border border-white/10 bg-ink-800 p-5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs uppercase tracking-wider text-black/45">{k.label}</span>
-                      <k.icon size={16} className="text-black/40" />
+                      <span className="text-xs uppercase tracking-wider text-white/45">{k.label}</span>
+                      <k.icon size={16} className="text-white/40" />
                     </div>
                     <p className="mt-3 font-display text-2xl font-bold">{k.value}</p>
                     <p className={`mt-1 flex items-center gap-1 text-xs ${k.up ? "text-green-400" : "text-brand-red"}`}>
@@ -84,40 +84,40 @@ export default function AdminPage() {
               </div>
 
               <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-                <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+                <div className="rounded-2xl border border-white/10 bg-ink-800 p-6">
                   <h3 className="font-display font-bold">Revenue trend</h3>
                   <div className="mt-6 flex h-44 items-end gap-2">
                     {sales.map((v, i) => (
                       <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-brand-red/30 to-brand-red transition-all hover:to-brand-blue" style={{ height: `${(v / 124) * 100}%` }} />
                     ))}
                   </div>
-                  <p className="mt-3 text-center text-xs text-black/40">Last 12 months</p>
+                  <p className="mt-3 text-center text-xs text-white/40">Last 12 months</p>
                 </div>
 
-                <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+                <div className="rounded-2xl border border-white/10 bg-ink-800 p-6">
                   <h3 className="font-display font-bold">Top products</h3>
                   <ul className="mt-4 space-y-3">
                     {products.slice(0, 4).map((p, i) => (
                       <li key={p.id} className="flex items-center justify-between text-sm">
                         <span className="flex items-center gap-3">
-                          <span className="text-black/40">{i + 1}</span>
+                          <span className="text-white/40">{i + 1}</span>
                           <span className="h-6 w-9 rounded" style={{ background: p.bodyColor }} />
                           {p.name}
                         </span>
-                        <span className="text-black/55">{p.reviewCount} sold</span>
+                        <span className="text-white/55">{p.reviewCount} sold</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+              <div className="rounded-2xl border border-white/10 bg-ink-800 p-6">
                 <h3 className="mb-4 font-display font-bold">Recent orders</h3>
                 <Table head={["Order", "Customer", "Total", "Status"]}>
                   {recentOrders.map((o) => (
-                    <tr key={o.id} className="border-t border-black/5">
+                    <tr key={o.id} className="border-t border-white/5">
                       <td className="py-3 font-medium">#{o.id}</td>
-                      <td className="py-3 text-black/70">{o.customer}</td>
+                      <td className="py-3 text-white/70">{o.customer}</td>
                       <td className="py-3">{formatPrice(o.total)}</td>
                       <td className="py-3"><Badge tone="neutral">{o.status}</Badge></td>
                     </tr>
@@ -128,16 +128,16 @@ export default function AdminPage() {
           )}
 
           {section === "products" && (
-            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+            <div className="rounded-2xl border border-white/10 bg-ink-800 p-6">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-display font-bold">Products ({products.length})</h3>
                 <button className="rounded-full bg-brand-red text-white px-4 py-2 text-sm font-semibold">+ Add product</button>
               </div>
               <Table head={["Product", "Category", "Price", "Stock", "Status"]}>
                 {products.map((p) => (
-                  <tr key={p.id} className="border-t border-black/5">
+                  <tr key={p.id} className="border-t border-white/5">
                     <td className="py-3 font-medium">{p.name}</td>
-                    <td className="py-3 text-black/60">{p.category}</td>
+                    <td className="py-3 text-white/60">{p.category}</td>
                     <td className="py-3">{formatPrice(p.salePrice ?? p.price)}</td>
                     <td className="py-3">{p.inStock ? "In stock" : "0"}</td>
                     <td className="py-3"><Badge tone={p.inStock ? "blue" : "neutral"}>{p.inStock ? "Active" : "Sold out"}</Badge></td>
@@ -148,16 +148,16 @@ export default function AdminPage() {
           )}
 
           {section === "orders" && (
-            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+            <div className="rounded-2xl border border-white/10 bg-ink-800 p-6">
               <h3 className="mb-4 font-display font-bold">All orders</h3>
               <Table head={["Order", "Customer", "Total", "Status"]}>
                 {recentOrders.map((o) => (
-                  <tr key={o.id} className="border-t border-black/5">
+                  <tr key={o.id} className="border-t border-white/5">
                     <td className="py-3 font-medium">#{o.id}</td>
-                    <td className="py-3 text-black/70">{o.customer}</td>
+                    <td className="py-3 text-white/70">{o.customer}</td>
                     <td className="py-3">{formatPrice(o.total)}</td>
                     <td className="py-3">
-                      <select defaultValue={o.status} className="rounded-lg border border-black/15 bg-ink-900 px-2 py-1 text-xs">
+                      <select defaultValue={o.status} className="rounded-lg border border-white/15 bg-ink-900 px-2 py-1 text-xs">
                         {["Pending", "Confirmed", "Processing", "Shipped", "Delivered"].map((s) => <option key={s}>{s}</option>)}
                       </select>
                     </td>
@@ -168,9 +168,9 @@ export default function AdminPage() {
           )}
 
           {!["dashboard", "products", "orders"].includes(section) && (
-            <div className="grid place-items-center rounded-2xl border border-dashed border-black/15 py-24 text-center text-black/50">
+            <div className="grid place-items-center rounded-2xl border border-dashed border-white/15 py-24 text-center text-white/50">
               <div>
-                <p className="font-display text-lg capitalize text-zinc-900">{section} management</p>
+                <p className="font-display text-lg capitalize text-cream">{section} management</p>
                 <p className="mt-2 text-sm">CRUD interface wired to Prisma + server actions. Add your data source to populate.</p>
               </div>
             </div>
@@ -186,7 +186,7 @@ function Table({ head, children }: { head: string[]; children: React.ReactNode }
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="text-xs uppercase tracking-wider text-black/40">
+          <tr className="text-xs uppercase tracking-wider text-white/40">
             {head.map((h) => <th key={h} className="pb-2 font-medium">{h}</th>)}
           </tr>
         </thead>

@@ -25,7 +25,7 @@ export function ProductMedia({
   return (
     <div>
       <div
-        className="relative aspect-square w-full overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm"
+        className="relative aspect-square w-full overflow-hidden rounded-3xl border border-white/5 bg-white shadow-sm"
         style={{ background: `radial-gradient(120% 100% at 30% 8%, ${bodyColor}14, #ffffff 70%)` }}
       >
         {mode === "3d" ? (
@@ -53,7 +53,7 @@ export function ProductMedia({
           onClick={() => setMode("photo")}
           className={cn(
             "flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition",
-            mode === "photo" ? "border-brand-red bg-brand-red text-white" : "border-black/10 text-black/60 hover:border-black/30"
+            mode === "photo" ? "border-brand-red bg-brand-red text-white" : "border-white/10 text-white/60 hover:border-white/30"
           )}
         >
           <ImageIcon size={16} /> Photo
@@ -62,7 +62,7 @@ export function ProductMedia({
           onClick={() => setMode("3d")}
           className={cn(
             "flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition",
-            mode === "3d" ? "border-brand-red bg-brand-red text-white" : "border-black/10 text-black/60 hover:border-black/30"
+            mode === "3d" ? "border-brand-red bg-brand-red text-white" : "border-white/10 text-white/60 hover:border-white/30"
           )}
         >
           <Box size={16} /> 360° 3D View

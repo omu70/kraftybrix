@@ -32,31 +32,31 @@ export function Categories() {
               >
                 <Link
                   href={`/collection?category=${encodeURIComponent(cat.name)}`}
-                  className="group relative flex h-full flex-col justify-end overflow-hidden rounded-2xl border border-black/10 bg-white p-6 shadow-sm transition-shadow hover:shadow-card"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-800 transition-all duration-300 hover:-translate-y-1 hover:border-brand-gold/50 hover:shadow-card"
                 >
-                  {/* tinted wash + sporty diagonal speed stripe */}
-                  <div className="absolute inset-0" style={{ background: `linear-gradient(150deg, ${cat.from}1f, #ffffff 72%)` }} />
+                  {/* bright studio lightbox panel — product floats on light */}
                   <div
-                    className="absolute -right-8 top-0 h-full w-24 -skew-x-12 opacity-20 transition-all duration-500 group-hover:opacity-40"
-                    style={{ background: cat.from }}
-                  />
-                  {/* real product photo */}
-                  {img && (
-                    <Image
-                      src={img}
-                      alt={cat.name}
-                      fill
-                      sizes="(max-width:1024px) 50vw, 340px"
-                      className="object-contain p-6 drop-shadow-xl transition-transform duration-500 ease-out group-hover:scale-110 group-hover:-rotate-2"
-                    />
-                  )}
-                  <div className="relative z-10">
+                    className="relative min-h-[110px] flex-1 overflow-hidden"
+                    style={{ background: `radial-gradient(80% 80% at 50% 40%, #ffffff 0%, ${cat.from}1a 100%)` }}
+                  >
+                    {img && (
+                      <Image
+                        src={img}
+                        alt={cat.name}
+                        fill
+                        sizes="(max-width:1024px) 50vw, 340px"
+                        className="object-contain p-5 transition-transform duration-500 ease-out group-hover:scale-110 group-hover:-rotate-2"
+                      />
+                    )}
+                  </div>
+                  {/* dark info bar */}
+                  <div className="p-5">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-display text-xl font-bold">{cat.name}</h3>
-                      <ArrowUpRight className="opacity-0 transition group-hover:opacity-100" size={20} />
+                      <h3 className="font-display text-lg font-bold text-cream">{cat.name}</h3>
+                      <ArrowUpRight className="text-brand-gold opacity-0 transition group-hover:opacity-100" size={18} />
                     </div>
-                    <p className="mt-1 text-sm text-black/55">{cat.blurb}</p>
-                    <span className="mt-2 inline-block text-xs font-medium text-black/40">
+                    <p className="mt-1 text-sm text-white/55">{cat.blurb}</p>
+                    <span className="mt-1 inline-block text-xs font-medium text-white/40">
                       {categoryCount(cat.name)} model{categoryCount(cat.name) === 1 ? "" : "s"}
                     </span>
                   </div>

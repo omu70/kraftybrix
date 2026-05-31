@@ -91,10 +91,10 @@ export default async function ProductPage({
 
       <div className="container-wide">
         {/* breadcrumb */}
-        <nav className="mb-6 flex items-center gap-2 text-sm text-black/45">
-          <Link href="/" className="hover:text-zinc-900">Home</Link> /
-          <Link href="/collection" className="hover:text-zinc-900">Collection</Link> /
-          <span className="text-black/70">{product.name}</span>
+        <nav className="mb-6 flex items-center gap-2 text-sm text-white/45">
+          <Link href="/" className="hover:text-cream">Home</Link> /
+          <Link href="/collection" className="hover:text-cream">Collection</Link> /
+          <span className="text-white/70">{product.name}</span>
         </nav>
 
         {/* hero: viewer + buy box */}
@@ -108,12 +108,12 @@ export default async function ProductPage({
         {/* build stats */}
         <div className="mt-20 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-black/10 bg-ink-800 p-6 text-center">
+            <div key={s.label} className="rounded-2xl border border-white/10 bg-ink-800 p-6 text-center">
               <s.icon className="mx-auto text-brand-red" size={26} />
               <div className="mt-3 font-display text-3xl font-bold">
                 {s.text ? s.text : <Counter to={s.value} suffix={s.suffix} />}
               </div>
-              <p className="mt-1 text-xs uppercase tracking-wider text-black/45">{s.label}</p>
+              <p className="mt-1 text-xs uppercase tracking-wider text-white/45">{s.label}</p>
             </div>
           ))}
         </div>

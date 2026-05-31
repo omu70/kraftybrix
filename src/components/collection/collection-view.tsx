@@ -71,7 +71,7 @@ export function CollectionView() {
           onChange={(e) => setMaxPrice(Number(e.target.value))}
           className="w-full accent-brand-red"
         />
-        <div className="flex justify-between text-xs text-black/40">
+        <div className="flex justify-between text-xs text-white/40">
           {PRICE_STEPS.map((s) => <span key={s}>₹{s / 1000}k</span>)}
         </div>
       </FilterGroup>
@@ -98,22 +98,22 @@ export function CollectionView() {
 
   return (
     <div className="container-wide pt-28">
-      <header className="border-b border-black/10 pb-8">
+      <header className="border-b border-white/10 pb-8">
         <p className="eyebrow"><span className="h-px w-8 bg-brand-red" /> The collection</p>
         <h1 className="h-display mt-3 text-4xl sm:text-5xl">Every dream, in brick</h1>
-        <p className="mt-3 text-black/55">{filtered.length} models</p>
+        <p className="mt-3 text-white/55">{filtered.length} models</p>
       </header>
 
       <div className="flex items-center justify-between gap-4 py-5">
-        <button onClick={() => setMobileFilters(true)} className="flex items-center gap-2 rounded-full border border-black/15 px-4 py-2 text-sm lg:hidden">
+        <button onClick={() => setMobileFilters(true)} className="flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm lg:hidden">
           <SlidersHorizontal size={16} /> Filters
         </button>
         <div className="ml-auto flex items-center gap-2 text-sm">
-          <span className="text-black/45">Sort:</span>
+          <span className="text-white/45">Sort:</span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as typeof sort)}
-            className="rounded-lg border border-black/15 bg-ink-800 px-3 py-2 outline-none"
+            className="rounded-lg border border-white/15 bg-ink-800 px-3 py-2 outline-none"
           >
             {sorts.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
           </select>
@@ -127,7 +127,7 @@ export function CollectionView() {
 
         <div>
           {filtered.length === 0 ? (
-            <div className="grid place-items-center rounded-2xl border border-black/10 py-24 text-center text-black/50">
+            <div className="grid place-items-center rounded-2xl border border-white/10 py-24 text-center text-white/50">
               No models match your filters.
             </div>
           ) : (
@@ -166,8 +166,8 @@ function FilterGroup({ title, children }: { title: string; children: React.React
 
 function CheckRow({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
   return (
-    <button onClick={onChange} className="flex w-full items-center gap-2.5 text-sm text-black/70 hover:text-zinc-900">
-      <span className={cn("grid h-4 w-4 place-items-center rounded border", checked ? "border-brand-red bg-brand-red" : "border-black/25")}>
+    <button onClick={onChange} className="flex w-full items-center gap-2.5 text-sm text-white/70 hover:text-cream">
+      <span className={cn("grid h-4 w-4 place-items-center rounded border", checked ? "border-brand-red bg-brand-red" : "border-white/25")}>
         {checked && <span className="h-1.5 w-1.5 rounded-sm bg-white" />}
       </span>
       {label}

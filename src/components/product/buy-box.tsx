@@ -42,7 +42,7 @@ export function BuyBox({ product }: { product: Product }) {
       </div>
 
       <h1 className="h-display mt-4 text-4xl sm:text-5xl">{product.name}</h1>
-      <p className="mt-2 text-lg text-black/60">{product.tagline}</p>
+      <p className="mt-2 text-lg text-white/60">{product.tagline}</p>
 
       <div className="mt-4 flex items-center gap-4">
         <Stars rating={product.rating} count={product.reviewCount} />
@@ -53,12 +53,12 @@ export function BuyBox({ product }: { product: Product }) {
         <span className="font-display text-4xl font-bold">{formatPrice(price)}</span>
         {off > 0 && (
           <>
-            <span className="pb-1 text-lg text-black/40 line-through">{formatPrice(product.price)}</span>
+            <span className="pb-1 text-lg text-white/40 line-through">{formatPrice(product.price)}</span>
             <span className="pb-1 font-semibold text-brand-red">Save {off}%</span>
           </>
         )}
       </div>
-      <p className="mt-1 text-xs text-black/45">Inclusive of all taxes · EMI from {formatPrice(Math.round(price / 6))}/mo</p>
+      <p className="mt-1 text-xs text-white/45">Inclusive of all taxes · EMI from {formatPrice(Math.round(price / 6))}/mo</p>
 
       {/* availability */}
       <div className="mt-5 flex items-center gap-2 text-sm">
@@ -66,7 +66,7 @@ export function BuyBox({ product }: { product: Product }) {
         {product.inStock ? (
           <span className="text-green-400">In stock — ships within 24 hours</span>
         ) : (
-          <span className="text-black/50">Out of stock</span>
+          <span className="text-white/50">Out of stock</span>
         )}
       </div>
 
@@ -74,12 +74,12 @@ export function BuyBox({ product }: { product: Product }) {
 
       {/* qty + actions */}
       <div className="mt-7 flex items-center gap-3">
-        <div className="flex items-center rounded-full border border-black/15">
-          <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="grid h-12 w-12 place-items-center text-black/70 hover:text-zinc-900" aria-label="Decrease">
+        <div className="flex items-center rounded-full border border-white/15">
+          <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="grid h-12 w-12 place-items-center text-white/70 hover:text-cream" aria-label="Decrease">
             <Minus size={16} />
           </button>
           <span className="w-10 text-center font-semibold">{qty}</span>
-          <button onClick={() => setQty((q) => q + 1)} className="grid h-12 w-12 place-items-center text-black/70 hover:text-zinc-900" aria-label="Increase">
+          <button onClick={() => setQty((q) => q + 1)} className="grid h-12 w-12 place-items-center text-white/70 hover:text-cream" aria-label="Increase">
             <Plus size={16} />
           </button>
         </div>
@@ -89,7 +89,7 @@ export function BuyBox({ product }: { product: Product }) {
         <button
           onClick={() => toggleWish(product.id)}
           aria-label="Wishlist"
-          className={`grid h-12 w-12 place-items-center rounded-full border border-black/15 transition ${wished ? "text-brand-red" : "text-black/60 hover:text-zinc-900"}`}
+          className={`grid h-12 w-12 place-items-center rounded-full border border-white/15 transition ${wished ? "text-brand-red" : "text-white/60 hover:text-cream"}`}
         >
           <Heart size={18} className={wished ? "fill-brand-red" : ""} />
         </button>
@@ -100,7 +100,7 @@ export function BuyBox({ product }: { product: Product }) {
       </Button>
 
       {/* trust row — CRO */}
-      <div className="mt-7 grid grid-cols-3 gap-3 border-t border-black/10 pt-6 text-center">
+      <div className="mt-7 grid grid-cols-3 gap-3 border-t border-white/10 pt-6 text-center">
         {[
           { icon: ShieldCheck, label: "Lifetime brick guarantee" },
           { icon: Truck, label: "Free insured shipping" },
@@ -108,7 +108,7 @@ export function BuyBox({ product }: { product: Product }) {
         ].map((t) => (
           <div key={t.label} className="flex flex-col items-center gap-2">
             <t.icon size={20} className="text-brand-red" />
-            <span className="text-xs text-black/55">{t.label}</span>
+            <span className="text-xs text-white/55">{t.label}</span>
           </div>
         ))}
       </div>

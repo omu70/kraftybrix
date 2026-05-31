@@ -19,14 +19,14 @@ export function ProductTabs({ product }: { product: Product }) {
 
   return (
     <div className="mt-20">
-      <div className="flex flex-wrap gap-1 border-b border-black/10">
+      <div className="flex flex-wrap gap-1 border-b border-white/10">
         {tabs.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className="relative px-5 py-3 text-sm font-medium transition"
           >
-            <span className={tab === t ? "text-zinc-900" : "text-black/50 hover:text-black/80"}>{t}</span>
+            <span className={tab === t ? "text-cream" : "text-white/50 hover:text-white/80"}>{t}</span>
             {tab === t && (
               <motion.span layoutId="tab-underline" className="absolute inset-x-3 -bottom-px h-0.5 bg-brand-red" />
             )}
@@ -44,14 +44,14 @@ export function ProductTabs({ product }: { product: Product }) {
             transition={{ duration: 0.3 }}
           >
             {tab === "Description" && (
-              <p className="max-w-3xl text-black/70 leading-relaxed">{product.description}</p>
+              <p className="max-w-3xl text-white/70 leading-relaxed">{product.description}</p>
             )}
 
             {tab === "Specifications" && (
-              <dl className="grid max-w-2xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-black/10 bg-black/[0.04] sm:grid-cols-2">
+              <dl className="grid max-w-2xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/5 sm:grid-cols-2">
                 {product.specs.map((s) => (
                   <div key={s.label} className="bg-ink-900 px-5 py-4">
-                    <dt className="text-xs uppercase tracking-wider text-black/40">{s.label}</dt>
+                    <dt className="text-xs uppercase tracking-wider text-white/40">{s.label}</dt>
                     <dd className="mt-1 font-medium">{s.value}</dd>
                   </div>
                 ))}
@@ -61,7 +61,7 @@ export function ProductTabs({ product }: { product: Product }) {
             {tab === "What's Included" && (
               <ul className="max-w-2xl space-y-3">
                 {product.whatsIncluded.map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-black/75">
+                  <li key={item} className="flex items-center gap-3 text-white/75">
                     <span className="grid h-6 w-6 place-items-center rounded-full bg-brand-red/15 text-brand-red">
                       <Check size={14} />
                     </span>
@@ -72,7 +72,7 @@ export function ProductTabs({ product }: { product: Product }) {
             )}
 
             {tab === "Shipping" && (
-              <div className="max-w-2xl space-y-4 text-black/70">
+              <div className="max-w-2xl space-y-4 text-white/70">
                 <p>Orders are dispatched within 24 hours via insured express courier. Free shipping on orders over ₹9,999.</p>
                 <p>Standard delivery: 2–5 business days across India. International delivery: 7–14 business days to 40+ countries.</p>
                 <p>Cash on Delivery available nationwide. 30-day hassle-free returns on unopened kits.</p>
@@ -80,12 +80,12 @@ export function ProductTabs({ product }: { product: Product }) {
             )}
 
             {tab === "FAQs" && (
-              <div className="max-w-2xl divide-y divide-black/10">
+              <div className="max-w-2xl divide-y divide-white/10">
                 {faqs.map((f, i) => (
                   <div key={i} className="py-4">
                     <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="flex w-full items-center justify-between text-left">
                       <span className="font-medium">{f.q}</span>
-                      <ChevronDown size={18} className={`shrink-0 text-black/50 transition ${openFaq === i ? "rotate-180" : ""}`} />
+                      <ChevronDown size={18} className={`shrink-0 text-white/50 transition ${openFaq === i ? "rotate-180" : ""}`} />
                     </button>
                     <AnimatePresence>
                       {openFaq === i && (
@@ -93,7 +93,7 @@ export function ProductTabs({ product }: { product: Product }) {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden text-sm text-black/60"
+                          className="overflow-hidden text-sm text-white/60"
                         >
                           <span className="block pt-3">{f.a}</span>
                         </motion.p>

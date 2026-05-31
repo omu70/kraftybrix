@@ -44,7 +44,7 @@ export function Hero() {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="eyebrow"
           >
-            <Sparkles size={14} className="text-brand-red" />
+            <Sparkles size={14} className="text-brand-gold" />
             Collector-grade brick automotive
           </motion.div>
 
@@ -62,7 +62,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.18 }}
-            className="mt-6 max-w-lg text-lg text-black/60"
+            className="mt-6 max-w-lg text-lg text-white/60"
           >
             Premium brick-built supercars, hypercars and icons — engineered down
             to the last stud. Build it. Display it. Own the dream.
@@ -93,15 +93,15 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.5 }}
-            className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-black/55"
+            className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-white/55"
           >
             <span className="flex items-center gap-1.5">
-              <Star size={15} className="fill-brand-red text-brand-red" />
-              <span className="font-semibold text-zinc-900">4.9</span> · 3,000+ builders
+              <Star size={15} className="fill-brand-gold text-brand-gold" />
+              <span className="font-semibold text-cream">4.9</span> · 3,000+ builders
             </span>
-            <span className="h-4 w-px bg-black/15" />
+            <span className="h-4 w-px bg-white/15" />
             <span>Lifetime guarantee</span>
-            <span className="h-4 w-px bg-black/15" />
+            <span className="h-4 w-px bg-white/15" />
             <span>Ships in 24h</span>
           </motion.div>
         </motion.div>
@@ -115,29 +115,35 @@ export function Hero() {
           className="relative"
         >
           <div
-            className="absolute inset-0 -z-10 rounded-[40px] blur-2xl"
+            className="absolute -inset-6 -z-10 rounded-[48px] blur-3xl"
             style={{ background: `radial-gradient(60% 60% at 50% 45%, ${HERO_PRODUCT.bodyColor}55, transparent 70%)` }}
           />
           <Link href={`/product/${HERO_PRODUCT.slug}`} className="group block">
-            <motion.div
-              animate={{ y: [0, -14, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            {/* bright studio lightbox so the product reads premium on dark */}
+            <div
+              className="relative overflow-hidden rounded-[32px] border border-white/10 shadow-card"
+              style={{ background: "radial-gradient(75% 75% at 50% 40%, #ffffff 0%, #e9ecf2 100%)" }}
             >
-              <Image
-                src={HERO_PRODUCT.images[0].url}
-                alt={HERO_PRODUCT.name}
-                width={760}
-                height={620}
-                priority
-                className="mx-auto w-full max-w-xl object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-[1.03]"
-              />
-            </motion.div>
+              <motion.div
+                animate={{ y: [0, -14, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Image
+                  src={HERO_PRODUCT.images[0].url}
+                  alt={HERO_PRODUCT.name}
+                  width={760}
+                  height={620}
+                  priority
+                  className="mx-auto w-full object-contain p-8 transition-transform duration-700 group-hover:scale-[1.04]"
+                />
+              </motion.div>
+            </div>
           </Link>
           {/* floating spec chip */}
-          <div className="absolute bottom-2 left-2 glass rounded-2xl px-4 py-3 backdrop-blur-xl">
-            <p className="text-xs text-black/50">Featured build</p>
-            <p className="font-display font-bold leading-tight">{HERO_PRODUCT.name}</p>
-            <p className="text-sm font-semibold text-brand-red">
+          <div className="absolute -bottom-4 left-3 glass-strong rounded-2xl px-4 py-3">
+            <p className="text-xs text-white/50">Featured build</p>
+            <p className="font-display font-bold leading-tight text-cream">{HERO_PRODUCT.name}</p>
+            <p className="text-sm font-semibold text-brand-gold">
               ₹{(HERO_PRODUCT.salePrice ?? HERO_PRODUCT.price).toLocaleString("en-IN")}
             </p>
           </div>
@@ -148,7 +154,7 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, y: [0, 8, 0] }}
         transition={{ delay: 1, duration: 2, repeat: Infinity }}
-        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-black/40"
+        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-white/40"
       >
         <ChevronDown size={26} />
       </motion.div>

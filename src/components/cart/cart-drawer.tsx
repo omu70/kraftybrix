@@ -41,32 +41,32 @@ export function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 280 }}
-            className="fixed right-0 top-0 z-[61] flex h-full w-full max-w-md flex-col border-l border-black/10 bg-ink-800"
+            className="fixed right-0 top-0 z-[61] flex h-full w-full max-w-md flex-col border-l border-white/10 bg-ink-800"
           >
-            <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
+            <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
               <h2 className="font-display text-lg font-bold">
                 Your Garage Cart{" "}
                 <span className="text-muted">({lines.length})</span>
               </h2>
-              <button onClick={close} aria-label="Close cart" className="text-black/60 hover:text-zinc-900">
+              <button onClick={close} aria-label="Close cart" className="text-white/60 hover:text-cream">
                 <X size={22} />
               </button>
             </div>
 
             {/* Free shipping progress — CRO nudge */}
             {lines.length > 0 && (
-              <div className="border-b border-black/10 px-6 py-4">
-                <p className="text-xs text-black/70">
+              <div className="border-b border-white/10 px-6 py-4">
+                <p className="text-xs text-white/70">
                   {remaining > 0 ? (
                     <>
-                      Add <span className="font-semibold text-zinc-900">{formatPrice(remaining)}</span> for{" "}
+                      Add <span className="font-semibold text-cream">{formatPrice(remaining)}</span> for{" "}
                       <span className="text-brand-red">free express shipping</span>
                     </>
                   ) : (
                     <span className="text-brand-red font-semibold">🎉 You've unlocked free express shipping!</span>
                   )}
                 </p>
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/[0.06]">
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                   <div
                     className="h-full rounded-full bg-brand-red transition-all duration-500"
                     style={{ width: `${progress}%` }}
@@ -78,8 +78,8 @@ export function CartDrawer() {
             <div className="flex-1 overflow-y-auto px-6 py-4">
               {lines.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <ShoppingBag className="mb-4 text-black/20" size={48} />
-                  <p className="text-black/60">Your cart is empty.</p>
+                  <ShoppingBag className="mb-4 text-white/20" size={48} />
+                  <p className="text-white/60">Your cart is empty.</p>
                   <Button className="mt-6" onClick={close} variant="secondary">
                     Continue building
                   </Button>
@@ -91,7 +91,7 @@ export function CartDrawer() {
                       <Link
                         href={`/product/${l.slug}`}
                         onClick={close}
-                        className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-black/10"
+                        className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10"
                         style={{ background: `radial-gradient(circle at 30% 25%, ${l.bodyColor}33, #f3f5f8)` }}
                       >
                         <BrickCarArt color={l.bodyColor} shadow={false} className="w-[88%]" />
@@ -104,16 +104,16 @@ export function CartDrawer() {
                           <span className="font-semibold">{formatPrice(l.price * l.qty)}</span>
                         </div>
                         <div className="mt-auto flex items-center justify-between pt-3">
-                          <div className="flex items-center rounded-full border border-black/15">
-                            <button onClick={() => setQty(l.productId, l.qty - 1)} className="grid h-8 w-8 place-items-center text-black/70 hover:text-zinc-900" aria-label="Decrease">
+                          <div className="flex items-center rounded-full border border-white/15">
+                            <button onClick={() => setQty(l.productId, l.qty - 1)} className="grid h-8 w-8 place-items-center text-white/70 hover:text-cream" aria-label="Decrease">
                               <Minus size={14} />
                             </button>
                             <span className="w-7 text-center text-sm">{l.qty}</span>
-                            <button onClick={() => setQty(l.productId, l.qty + 1)} className="grid h-8 w-8 place-items-center text-black/70 hover:text-zinc-900" aria-label="Increase">
+                            <button onClick={() => setQty(l.productId, l.qty + 1)} className="grid h-8 w-8 place-items-center text-white/70 hover:text-cream" aria-label="Increase">
                               <Plus size={14} />
                             </button>
                           </div>
-                          <div className="flex items-center gap-3 text-black/50">
+                          <div className="flex items-center gap-3 text-white/50">
                             <button onClick={() => saveForLater(l.productId)} title="Save for later" className="hover:text-brand-blue">
                               <Bookmark size={16} />
                             </button>
@@ -136,7 +136,7 @@ export function CartDrawer() {
                   <ul className="space-y-3">
                     {savedForLater.map((l) => (
                       <li key={l.productId} className="flex items-center justify-between text-sm">
-                        <span className="text-black/70">{l.name}</span>
+                        <span className="text-white/70">{l.name}</span>
                         <button onClick={() => moveToCart(l.productId)} className="text-brand-blue hover:underline">
                           Move to cart
                         </button>
@@ -148,18 +148,18 @@ export function CartDrawer() {
             </div>
 
             {lines.length > 0 && (
-              <div className="border-t border-black/10 px-6 py-5">
-                <div className="mb-1 flex justify-between text-sm text-black/60">
+              <div className="border-t border-white/10 px-6 py-5">
+                <div className="mb-1 flex justify-between text-sm text-white/60">
                   <span>Subtotal</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
-                <p className="mb-4 text-xs text-black/40">Taxes & shipping calculated at checkout.</p>
+                <p className="mb-4 text-xs text-white/40">Taxes & shipping calculated at checkout.</p>
                 <Link href="/checkout" onClick={close}>
                   <Button size="lg" className="w-full">
                     Secure Checkout · {formatPrice(subtotal)}
                   </Button>
                 </Link>
-                <button onClick={close} className="mt-3 w-full text-center text-xs text-black/50 hover:text-zinc-900">
+                <button onClick={close} className="mt-3 w-full text-center text-xs text-white/50 hover:text-cream">
                   Continue building
                 </button>
               </div>

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function CollectionPage() {
   return (
-    <Suspense fallback={<div className="container-wide pt-40 text-black/50">Loading collection…</div>}>
+    <Suspense fallback={<div className="container-wide pt-40 text-white/50">Loading collection…</div>}>
       <CollectionView />
     </Suspense>
   );

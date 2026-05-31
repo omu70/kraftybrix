@@ -35,7 +35,7 @@ export function Community() {
           {posts.map((p, i) => (
             <Reveal key={i} i={i}>
               <div
-                className="group relative aspect-[4/5] overflow-hidden rounded-2xl border border-black/10"
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl border border-white/10"
                 style={{ background: `radial-gradient(120% 100% at 50% 0%, ${p.color}1f, #ffffff 72%)` }}
               >
                 <Image

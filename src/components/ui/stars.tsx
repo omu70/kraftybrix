@@ -22,12 +22,12 @@ export function Stars({
               key={i}
               width={size}
               height={size}
-              className={filled ? "fill-brand-red text-brand-red" : "text-black/25"}
+              className={filled ? "fill-brand-red text-brand-red" : "text-white/25"}
             />
           );
         })}
       </div>
-      <span className="text-xs font-medium text-zinc-900">{rating.toFixed(1)}</span>
+      <span className="text-xs font-medium text-cream">{rating.toFixed(1)}</span>
       {count != null && (
         <span className="text-xs text-muted">({count.toLocaleString("en-IN")})</span>
       )}
