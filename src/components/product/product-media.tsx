@@ -2,43 +2,39 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Box, ImageIcon } from "lucide-react";
-import { ProductViewer } from "@/components/product/product-viewer";
 import { BrickCarArt } from "@/components/brand/brick-car-art";
 import { cn } from "@/lib/utils";
 
-/** Product hero media: real photo + a toggle into the interactive 3D viewer. */
+/** Product hero media — clean photo gallery (thumbnails when multiple images). */
 export function ProductMedia({
   images,
   bodyColor,
-  accentColor,
 }: {
   images: { url: string; alt: string }[];
   bodyColor: string;
-  accentColor: string;
+  accentColor?: string;
 }) {
-  const [mode, setMode] = useState<"photo" | "3d">("photo");
+  const gallery = images.filter((i) => i.url?.startsWith("http"));
+  const [active, setActive] = useState(0);
   const [err, setErr] = useState(false);
-  const photo = images[0]?.url;
-  const hasPhoto = !!photo && photo.startsWith("http") && !err;
+  const current = gallery[active];
+  const hasPhoto = !!current && !err;
 
   return (
     <div>
       <div
-        className="relative aspect-square w-full overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm"
-        style={{ background: `radial-gradient(120% 100% at 30% 8%, ${bodyColor}14, #ffffff 70%)` }}
+        className="relative aspect-square w-full overflow-hidden rounded-3xl border border-black/10 shadow-sm"
+        style={{ background: `radial-gradient(120% 100% at 30% 8%, ${bodyColor}12, #ffffff 70%)` }}
       >
-        {mode === "3d" ? (
-          <ProductViewer bodyColor={bodyColor} accentColor={accentColor} />
-        ) : hasPhoto ? (
+        {hasPhoto ? (
           <Image
-            src={photo}
-            alt={images[0]?.alt ?? "Product"}
+            src={current.url}
+            alt={current.alt ?? "Product"}
             fill
             priority
             sizes="(max-width:1024px) 100vw, 640px"
             onError={() => setErr(true)}
-            className="mix-blend-multiply object-contain p-6"
+            className="mix-blend-multiply object-contain p-8"
           />
         ) : (
           <div className="grid h-full place-items-center">
@@ -47,27 +43,25 @@ export function ProductMedia({
         )}
       </div>
 
-      {/* mode switch */}
-      <div className="mt-4 flex justify-center gap-2">
-        <button
-          onClick={() => setMode("photo")}
-          className={cn(
-            "flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition",
-            mode === "photo" ? "border-brand-red bg-brand-red text-white" : "border-black/10 text-black/60 hover:border-black/30"
-          )}
-        >
-          <ImageIcon size={16} /> Photo
-        </button>
-        <button
-          onClick={() => setMode("3d")}
-          className={cn(
-            "flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition",
-            mode === "3d" ? "border-brand-red bg-brand-red text-white" : "border-black/10 text-black/60 hover:border-black/30"
-          )}
-        >
-          <Box size={16} /> 360° 3D View
-        </button>
-      </div>
+      {gallery.length > 1 && (
+        <div className="mt-4 flex gap-3">
+          {gallery.map((img, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setActive(i);
+                setErr(false);
+              }}
+              className={cn(
+                "relative h-20 w-20 overflow-hidden rounded-xl border bg-white transition",
+                i === active ? "border-brand-red" : "border-black/10 hover:border-black/30"
+              )}
+            >
+              <Image src={img.url} alt={img.alt} fill sizes="80px" className="mix-blend-multiply object-contain p-1.5" />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
