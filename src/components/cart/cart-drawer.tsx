@@ -103,6 +103,9 @@ export function CartDrawer() {
                           </Link>
                           <span className="font-semibold">{formatPrice(l.price * l.qty)}</span>
                         </div>
+                        {l.bundleItems && (
+                          <p className="mt-1 text-xs text-black/50">Includes: {l.bundleItems.join(" · ")}</p>
+                        )}
                         <div className="mt-auto flex items-center justify-between pt-3">
                           <div className="flex items-center rounded-full border border-black/15">
                             <button onClick={() => setQty(l.productId, l.qty - 1)} className="grid h-8 w-8 place-items-center text-black/70 hover:text-cream" aria-label="Decrease">

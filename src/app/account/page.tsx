@@ -20,9 +20,9 @@ const tabs = [
 ] as const;
 
 const demoOrders = [
-  { id: "KB7H2K9", date: "12 May 2026", total: 15999, status: "Delivered", items: "Velocità Rosso" },
-  { id: "KB6F1J3", date: "28 Apr 2026", total: 10999, status: "Shipped", items: "R-MAX Godzilla" },
-  { id: "KB5D8H1", date: "10 Apr 2026", total: 8499, status: "Processing", items: "Circuit GP-01" },
+  { id: "KB7H2K9", date: "12 Jun 2026", total: 1699, status: "Delivered", items: "Ferrari FXX K" },
+  { id: "KB6F1J3", date: "28 May 2026", total: 1999, status: "Shipped", items: "3-Car Garage Bundle" },
+  { id: "KB5D8H1", date: "10 May 2026", total: 499, status: "Processing", items: "Thar Red" },
 ];
 
 const statusTone: Record<string, "neutral" | "red" | "blue" | "gold"> = {

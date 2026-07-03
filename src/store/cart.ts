@@ -12,6 +12,7 @@ interface CartState {
   close: () => void;
   toggle: () => void;
   add: (product: Product, qty?: number) => void;
+  addBundle: (items: Product[], price: number, label?: string) => void;
   remove: (productId: string) => void;
   setQty: (productId: string, qty: number) => void;
   saveForLater: (productId: string) => void;
@@ -52,6 +53,20 @@ export const useCart = create<CartState>()(
             image: product.images[0]?.url ?? "",
             bodyColor: product.bodyColor,
             qty,
+          };
+          return { isOpen: true, lines: [...s.lines, line] };
+        }),
+      addBundle: (items, price, label = "Dream Garage Bundle") =>
+        set((s) => {
+          const line: CartLine = {
+            productId: `bundle-${Date.now()}`,
+            slug: "bundle",
+            name: label,
+            price,
+            image: items[0]?.images[0]?.url ?? "",
+            bodyColor: items[0]?.bodyColor ?? "#FF2D20",
+            qty: 1,
+            bundleItems: items.map((p) => p.name),
           };
           return { isOpen: true, lines: [...s.lines, line] };
         }),

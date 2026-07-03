@@ -46,6 +46,68 @@ function priceOrder(lines: { price: number; qty: number }[], code?: string) {
   return { subtotal, discount, shipping, total };
 }
 
+const dbEnabled = () => !!process.env.DATABASE_URL;
+
+type PersistArgs = {
+  orderNumber: string;
+  address: z.infer<typeof addressSchema>;
+  lines: z.infer<typeof lineSchema>[];
+  pricing: ReturnType<typeof priceOrder>;
+  paymentMethod: "RAZORPAY" | "COD";
+  couponCode?: string;
+  razorpayOrderId?: string;
+  status: "PENDING" | "CONFIRMED";
+};
+
+/** Write the order to Postgres (no-op when no DATABASE_URL). */
+async function persistOrder(a: PersistArgs) {
+  if (!dbEnabled()) return;
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    await prisma.order.create({
+      data: {
+        orderNumber: a.orderNumber,
+        guestEmail: a.address.email,
+        status: a.status,
+        paymentMethod: a.paymentMethod,
+        paymentStatus: a.paymentMethod === "COD" ? "PENDING" : a.status === "CONFIRMED" ? "PAID" : "PENDING",
+        razorpayOrderId: a.razorpayOrderId ?? null,
+        subtotal: a.pricing.subtotal,
+        discount: a.pricing.discount,
+        shipping: a.pricing.shipping,
+        total: a.pricing.total,
+        couponCode: a.couponCode ?? null,
+        shippingAddress: a.address as unknown as object,
+        items: {
+          create: a.lines.map((l) => ({
+            productId: l.productId, name: l.name, price: l.price, quantity: l.qty,
+          })),
+        },
+      },
+    });
+  } catch (e) {
+    console.error("[order] persist failed:", e);
+  }
+}
+
+/** Send an order-confirmation email via Resend (no-op when unset). */
+async function sendOrderEmail(to: string, name: string, orderNumber: string, total: number) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return;
+  try {
+    const { Resend } = await import("resend");
+    const resend = new Resend(key);
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL ?? "KraftyBrix <hello@kraftybrix.com>",
+      to,
+      subject: `Your KraftyBrix order ${orderNumber} is confirmed 🏁`,
+      html: `<div style="font-family:sans-serif"><h2>Thanks, ${name}!</h2><p>Order <b>${orderNumber}</b> is confirmed. Total: <b>₹${total.toLocaleString("en-IN")}</b>. It ships within 24 hours.</p><p>— KraftyBrix</p></div>`,
+    });
+  } catch (e) {
+    console.error("[email] send failed:", e);
+  }
+}
+
 /** Validate a coupon (called from the checkout UI). */
 export async function applyCoupon(code: string, subtotal: number) {
   const c = COUPONS[code.toUpperCase()];
@@ -86,7 +148,7 @@ export async function createOrder(input: z.infer<typeof checkoutSchema>) {
           receipt: orderNumber,
           notes: { coupon: couponCode ?? "", email: address.email },
         });
-        // await prisma.order.create({ data: { ...pricing, razorpayOrderId: rzpOrder.id, ... } });
+        await persistOrder({ orderNumber, address, lines, pricing, paymentMethod, couponCode, razorpayOrderId: rzpOrder.id, status: "PENDING" });
         return {
           ok: true as const,
           orderNumber,
@@ -113,6 +175,9 @@ export async function createOrder(input: z.infer<typeof checkoutSchema>) {
     };
   }
 
+  // COD — confirmed immediately, email the customer.
+  await persistOrder({ orderNumber, address, lines, pricing, paymentMethod, couponCode, status: "CONFIRMED" });
+  await sendOrderEmail(address.email, address.fullName, orderNumber, pricing.total);
   return { ok: true as const, orderNumber, method: "COD" as const, amount: pricing.total };
 }
 
@@ -129,6 +194,21 @@ export async function verifyPayment(input: {
     .update(`${input.razorpayOrderId}|${input.razorpayPaymentId}`)
     .digest("hex");
   const valid = expected === input.signature;
-  // if (valid) await prisma.order.update({ where: { razorpayOrderId }, data: { paymentStatus: "PAID", status: "CONFIRMED" } });
+
+  if (valid && dbEnabled()) {
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      const order = await prisma.order.update({
+        where: { razorpayOrderId: input.razorpayOrderId },
+        data: { paymentStatus: "PAID", status: "CONFIRMED", razorpayPaymentId: input.razorpayPaymentId },
+      });
+      if (order.guestEmail) {
+        const addr = order.shippingAddress as { fullName?: string } | null;
+        await sendOrderEmail(order.guestEmail, addr?.fullName ?? "there", order.orderNumber, order.total);
+      }
+    } catch (e) {
+      console.error("[verify] order update failed:", e);
+    }
+  }
   return { ok: valid };
 }

@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   listAdminProducts, saveAdminProduct, deleteAdminProduct, type AdminProduct,
 } from "@/app/actions/admin";
+import { adminLogout } from "@/app/actions/admin-auth";
+import { useRouter } from "next/navigation";
 
 const nav = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -45,6 +47,7 @@ const empty: AdminProduct = {
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 export default function AdminPage() {
+  const router = useRouter();
   const [section, setSection] = useState<(typeof nav)[number]["key"]>("dashboard");
   const [rows, setRows] = useState<AdminProduct[]>([]);
   const [mode, setMode] = useState<"db" | "demo">("demo");
@@ -84,7 +87,15 @@ export default function AdminPage() {
           <h1 className="h-display text-4xl">Admin</h1>
           <p className="mt-1 text-black/50">KraftyBrix control center</p>
         </div>
-        <Badge tone={mode === "db" ? "blue" : "neutral"}>{mode === "db" ? "Live database" : "Demo mode"}</Badge>
+        <div className="flex items-center gap-3">
+          <Badge tone={mode === "db" ? "blue" : "neutral"}>{mode === "db" ? "Live database" : "Demo mode"}</Badge>
+          <button
+            onClick={async () => { await adminLogout(); router.push("/admin/login"); }}
+            className="rounded-full border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/[0.04]"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       {mode === "demo" && (

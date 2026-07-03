@@ -10,7 +10,7 @@ const cols = [
       ["Hypercars", "/collection?category=Hypercars"],
       ["Smoking Cars", "/collection?category=Smoking+Cars"],
       ["Limited Editions", "/collection?category=Limited+Editions"],
-      ["Gift Cards", "/gift-cards"],
+      ["Gift Cards", "/collection"],
     ],
   },
   {
@@ -18,19 +18,19 @@ const cols = [
     links: [
       ["Shipping & Delivery", "/shipping"],
       ["Returns", "/returns"],
-      ["Build Help", "/support"],
-      ["Track Order", "/account/orders"],
+      ["Build Help", "/contact"],
+      ["Track Order", "/account"],
       ["Contact", "/contact"],
     ],
   },
   {
     title: "Brand",
     links: [
-      ["Our Story", "/about"],
+      ["Our Story", "/#build"],
       ["The Build Process", "/#build"],
       ["Community", "/#community"],
-      ["Careers", "/careers"],
-      ["Wholesale", "/wholesale"],
+      ["Careers", "/contact"],
+      ["Wholesale", "/contact"],
     ],
   },
 ];

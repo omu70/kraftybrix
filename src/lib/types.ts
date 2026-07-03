@@ -51,4 +51,6 @@ export interface CartLine {
   image: string;
   bodyColor: string;
   qty: number;
+  /** Present when this line is a fixed-price bundle of several cars. */
+  bundleItems?: string[];
 }

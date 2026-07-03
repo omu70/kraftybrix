@@ -8,10 +8,10 @@ import { galleryImages } from "@/lib/products";
 const gimgs = galleryImages(8);
 
 const reviews = [
-  { name: "Arjun M.", role: "Collector, Mumbai", text: "The Velocità Rosso is the best display piece I own — and I own die-cast worth 10x. The clutch on these bricks is unreal.", rating: 5 },
-  { name: "Priya K.", role: "Gifted to her husband", text: "Bought the R-MAX as an anniversary gift. He didn't speak for 6 hours, just built. Worth every rupee.", rating: 5 },
+  { name: "Arjun M.", role: "Collector, Mumbai", text: "The Ferrari FXX K is the best display piece I own — and I own die-cast worth 10x. The clutch on these bricks is unreal.", rating: 5 },
+  { name: "Priya K.", role: "Gifted to her husband", text: "Bought the Lamborghini Sián as an anniversary gift. He didn't speak for 6 hours, just built. Worth every rupee.", rating: 5 },
   { name: "Daniel R.", role: "Content creator", text: "Filmed the whole build. The instructions are cinematic. My most-viewed video this year.", rating: 5 },
-  { name: "Sana T.", role: "Architect", text: "Precision is everything to me. The panel gaps on the Apex are tighter than some real cars.", rating: 5 },
+  { name: "Sana T.", role: "Architect", text: "Precision is everything to me. The panel gaps on the Porsche are tighter than some real cars.", rating: 5 },
   { name: "Vikram S.", role: "Hobbyist", text: "Fourth KraftyBrix kit. The rotating plinth and numbered card make it feel like an actual collectible.", rating: 5 },
   { name: "Megha P.", role: "First build", text: "I'm not a 'car person' but the build was meditative and the result is gorgeous on my shelf.", rating: 5 },
 ];

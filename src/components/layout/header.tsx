@@ -12,9 +12,9 @@ import { Magnetic } from "@/components/ui/magnetic";
 
 const nav = [
   { label: "Collection", href: "/collection" },
+  { label: "3 for ₹1999", href: "/bundle" },
   { label: "Hypercars", href: "/collection?category=Hypercars" },
   { label: "Smoking Cars", href: "/collection?category=Smoking+Cars" },
-  { label: "Limited", href: "/collection?category=Limited+Editions" },
   { label: "The Build", href: "/#build" },
 ];
 
