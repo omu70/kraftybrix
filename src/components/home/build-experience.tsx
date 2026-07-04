@@ -6,9 +6,9 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const steps = [
-  { n: "01", icon: Package, title: "Unbox", body: "Lift the lid on a premium, magnetically-sealed box. Sorted bays, numbered bags, a hardbound manual. The ritual begins." },
-  { n: "02", icon: Wrench, title: "Build", body: "Hours of flow-state assembly. Working mechanisms click into place. Every stage is a small, satisfying victory." },
-  { n: "03", icon: Trophy, title: "Display", body: "Mount your finished machine on its rotating plinth. Hit the light kit. Step back. This is yours." },
+  { n: "01", icon: Package, title: "Unbox", body: "Sorted bags, clear manual." },
+  { n: "02", icon: Wrench, title: "Build", body: "A few relaxing hours." },
+  { n: "03", icon: Trophy, title: "Display", body: "Show it off. It's yours." },
 ];
 
 export function BuildExperience() {

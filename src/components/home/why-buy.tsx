@@ -9,21 +9,9 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 
 const reasons = [
-  {
-    icon: Wrench,
-    title: "Hours of screen-free flow",
-    body: "Hundreds of precision ABS bricks and a clear photo manual. The build is the experience — calm, addictive, deeply satisfying.",
-  },
-  {
-    icon: Gift,
-    title: "A gift they'll never forget",
-    body: "Not another gadget that gets shelved. They build their dream car by hand, then display it forever. Birthdays, anniversaries, car lovers — sorted.",
-  },
-  {
-    icon: Sparkles,
-    title: "Display-ready, collector-grade",
-    body: "Tight panel gaps, accurate stance, real detailing. It looks like a premium collectible on your desk — because it is one.",
-  },
+  { icon: Wrench, title: "Fun to build", body: "Hours of screen-free calm." },
+  { icon: Gift, title: "A perfect gift", body: "They'll never forget it." },
+  { icon: Sparkles, title: "Looks premium", body: "Collector-grade on any desk." },
 ];
 
 const promises = [
@@ -47,8 +35,7 @@ export function WhyBuy() {
               <span className="text-gradient-red">built by your own hands</span>
             </h2>
             <p className="mt-4 text-black/60">
-              Real supercars cost crores. A KraftyBrix lets you build, own and display the icon —
-              for the price of a night out.
+              Own the icon — for the price of a night out.
             </p>
           </div>
         </Reveal>

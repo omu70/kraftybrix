@@ -11,12 +11,12 @@ import {
 import { Reveal } from "@/components/ui/reveal";
 
 const features = [
-  { icon: Award, title: "Collector-Grade Designs", body: "Each model is sculpted by automotive designers obsessed with proportion and stance." },
-  { icon: Cog, title: "Precision Engineering", body: "Working steering, suspension and doors — engineered to tolerances you can feel." },
-  { icon: Gem, title: "High-Quality Bricks", body: "Aerospace-grade ABS with a flawless matte finish and a satisfying clutch." },
-  { icon: BookOpen, title: "Detailed Instructions", body: "Hardbound, photographic manuals that make every build a calm, premium ritual." },
-  { icon: LayoutGrid, title: "Display-Ready Models", body: "Every kit ships with a rotating plinth and numbered authenticity card." },
-  { icon: Truck, title: "Fast, Insured Shipping", body: "Dispatched within 24 hours, fully insured, with lifetime brick replacement." },
+  { icon: Award, title: "Collector-grade", body: "Display-worthy detail." },
+  { icon: Cog, title: "Precision built", body: "Working parts." },
+  { icon: Gem, title: "Premium bricks", body: "Aerospace-grade ABS." },
+  { icon: BookOpen, title: "Clear manual", body: "Easy step-by-step." },
+  { icon: LayoutGrid, title: "Ready to display", body: "Plinth included." },
+  { icon: Truck, title: "Ships in 24h", body: "Free & insured." },
 ];
 
 export function Why() {
@@ -26,8 +26,7 @@ export function Why() {
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow justify-center"><span className="h-px w-8 bg-brand-red" /> Why KraftyBrix <span className="h-px w-8 bg-brand-red" /></p>
-            <h2 className="h-display mt-3 text-4xl sm:text-5xl">Obsession, in every brick</h2>
-            <p className="mt-4 text-black/60">We don't make toys. We make the centrepiece of your shelf.</p>
+            <h2 className="h-display mt-3 text-4xl sm:text-5xl">Built to a higher standard</h2>
           </div>
         </Reveal>
 

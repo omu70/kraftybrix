@@ -69,8 +69,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.18 }}
             className="mt-6 max-w-lg text-lg text-white/65"
           >
-            Premium brick-built supercars, hypercars and icons — engineered down
-            to the last stud. Build it. Display it. Own the dream.
+            Premium brick-built supercars & icons. Build it. Display it.
           </motion.p>
 
           <motion.div
