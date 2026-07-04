@@ -13,6 +13,12 @@ const nextConfig = {
       { protocol: "https", hostname: "cdn.sanity.io" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "d1311wbk6unapo.cloudfront.net" },
+      // Common image hosts, so a pasted product-image URL just works:
+      { protocol: "https", hostname: "**.public.blob.vercel-storage.com" }, // Vercel Blob
+      { protocol: "https", hostname: "i.ibb.co" },                          // ImgBB
+      { protocol: "https", hostname: "i.imgur.com" },                       // Imgur
+      { protocol: "https", hostname: "ik.imagekit.io" },                    // ImageKit
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
   experimental: {
