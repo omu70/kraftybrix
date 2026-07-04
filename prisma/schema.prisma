@@ -89,6 +89,7 @@ model Product {
   rating       Float       @default(0)
   reviewCount  Int         @default(0)
   images       String[]
+  whatsIncluded String[]   @default([])
   categoryId   String
   category     Category    @relation(fields: [categoryId], references: [id])
   reviews      Review[]

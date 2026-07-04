@@ -8,6 +8,7 @@ import { PromoModal } from "@/components/cro/promo-modal";
 import { CookieConsent } from "@/components/cro/cookie-consent";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { Analytics } from "@/components/analytics";
+import { Providers } from "@/components/providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const display = Space_Grotesk({
@@ -66,14 +67,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
         />
-        <ScrollProgress />
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <CartDrawer />
-        <PromoModal />
-        <CookieConsent />
-        <Analytics />
+        <Providers>
+          <ScrollProgress />
+          <Header />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <CartDrawer />
+          <PromoModal />
+          <CookieConsent />
+          <Analytics />
+        </Providers>
       </body>
     </html>
   );

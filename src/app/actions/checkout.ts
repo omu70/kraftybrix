@@ -2,8 +2,20 @@
 
 import { z } from "zod";
 import crypto from "crypto";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { ADVANCE_FEE, COUPONS, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
 // import { prisma } from "@/lib/prisma";
+
+/** The signed-in customer's id, or null for guest checkout. */
+async function currentUserId(): Promise<string | null> {
+  try {
+    const session = await getServerSession(authOptions);
+    return (session?.user as { id?: string } | undefined)?.id ?? null;
+  } catch {
+    return null;
+  }
+}
 
 const addressSchema = z.object({
   fullName: z.string().min(2),
@@ -55,6 +67,7 @@ type PersistArgs = {
   codBalance: number;
   couponCode?: string;
   razorpayOrderId?: string;
+  userId?: string | null;
   status: "PENDING" | "CONFIRMED";
 };
 
@@ -67,6 +80,7 @@ async function persistOrder(a: PersistArgs) {
       data: {
         orderNumber: a.orderNumber,
         guestEmail: a.address.email,
+        userId: a.userId ?? null,
         status: a.status,
         paymentMethod: a.paymentMethod,
         paymentStatus: a.paymentStatus,
@@ -137,6 +151,7 @@ export async function createOrder(input: z.infer<typeof checkoutSchema>) {
   const { lines, couponCode, paymentMethod, address } = parsed.data;
   const pricing = priceOrder(lines, couponCode?.toUpperCase());
   const orderNumber = "KB" + Date.now().toString(36).toUpperCase();
+  const userId = await currentUserId();
 
   // How much is charged online now vs collected on delivery.
   const payNow = paymentMethod === "PARTIAL_COD" ? Math.min(ADVANCE_FEE, pricing.total) : pricing.total;
@@ -159,7 +174,7 @@ export async function createOrder(input: z.infer<typeof checkoutSchema>) {
         notes: { coupon: couponCode ?? "", email: address.email, method: paymentMethod },
       });
       await persistOrder({
-        orderNumber, address, lines, pricing, paymentMethod, couponCode,
+        orderNumber, address, lines, pricing, paymentMethod, couponCode, userId,
         razorpayOrderId: rzpOrder.id, status: "PENDING", paymentStatus: "PENDING",
         amountPaid: 0, codBalance,
       });
@@ -177,7 +192,7 @@ export async function createOrder(input: z.infer<typeof checkoutSchema>) {
   // No keys yet — simulate the payment so the whole flow is testable, and
   // record the order as confirmed so it shows up in the admin.
   await persistOrder({
-    orderNumber, address, lines, pricing, paymentMethod, couponCode,
+    orderNumber, address, lines, pricing, paymentMethod, couponCode, userId,
     status: "CONFIRMED", paymentStatus: paymentMethod === "PARTIAL_COD" ? "PARTIAL" : "PAID",
     amountPaid: payNow, codBalance,
   });

@@ -4,12 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search as SearchIcon, X } from "lucide-react";
-import { products } from "@/lib/products";
+import type { Product } from "@/lib/types";
 import { ProductCard } from "@/components/product/product-card";
 
 const POPULAR = ["Lamborghini", "Ferrari", "Bugatti", "Hypercars", "Smoking", "Bundle"];
 
-export function SearchView() {
+export function SearchView({ products }: { products: Product[] }) {
   const params = useSearchParams();
   const router = useRouter();
   const [q, setQ] = useState(params.get("q") ?? "");

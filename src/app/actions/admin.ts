@@ -28,13 +28,25 @@ const productSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2),
   slug: z.string().min(2),
+  brand: z.string().default("KraftyBrix"),
   category: z.string(),
+  tagline: z.string().default(""),
+  description: z.string().default(""),
   price: z.coerce.number().int().positive(),
   salePrice: z.coerce.number().int().positive().nullable().optional(),
   pieces: z.coerce.number().int().nonnegative(),
+  buildHours: z.coerce.number().int().nonnegative().default(0),
+  difficulty: z.string().default("Intermediate"),
+  ageRange: z.string().default("14+"),
+  scale: z.string().default("1:10"),
   stock: z.coerce.number().int().nonnegative(),
+  rating: z.coerce.number().min(0).max(5).default(0),
+  reviewCount: z.coerce.number().int().nonnegative().default(0),
   imageUrl: z.string().url().or(z.literal("")),
-  bodyColor: z.string(),
+  gallery: z.array(z.string()).default([]),
+  whatsIncluded: z.array(z.string()).default([]),
+  bodyColor: z.string().default("#FF2D20"),
+  accentColor: z.string().default("#111111"),
   bestSeller: z.boolean().optional(),
   isNew: z.boolean().optional(),
   limited: z.boolean().optional(),
@@ -48,13 +60,25 @@ function toAdminRow(p: Product): AdminProduct {
     id: p.id,
     name: p.name,
     slug: p.slug,
+    brand: p.brand,
     category: p.category,
+    tagline: p.tagline,
+    description: p.description,
     price: p.price,
     salePrice: p.salePrice ?? null,
     pieces: p.pieces,
+    buildHours: p.buildHours,
+    difficulty: p.difficulty,
+    ageRange: p.ageRange,
+    scale: p.scale,
     stock: p.inStock ? 25 : 0,
+    rating: p.rating,
+    reviewCount: p.reviewCount,
     imageUrl: p.images[0]?.url ?? "",
+    gallery: p.images.slice(1).map((i) => i.url),
+    whatsIncluded: p.whatsIncluded ?? [],
     bodyColor: p.bodyColor,
+    accentColor: p.accentColor,
     bestSeller: p.bestSeller,
     isNew: p.isNew,
     limited: p.limited,
@@ -75,13 +99,25 @@ export async function listAdminProducts(): Promise<{ mode: "db" | "demo"; rows: 
           id: r.id,
           name: r.name,
           slug: r.slug,
+          brand: r.brand,
           category: r.category?.name ?? "",
+          tagline: r.tagline,
+          description: r.description,
           price: r.price,
           salePrice: r.salePrice,
           pieces: r.pieces,
+          buildHours: r.buildHours,
+          difficulty: r.difficulty,
+          ageRange: r.ageRange,
+          scale: r.scale,
           stock: r.stock,
+          rating: r.rating,
+          reviewCount: r.reviewCount,
           imageUrl: r.images[0] ?? "",
+          gallery: r.images.slice(1),
+          whatsIncluded: r.whatsIncluded ?? [],
           bodyColor: r.bodyColor,
+          accentColor: r.accentColor,
           bestSeller: r.bestSeller,
           isNew: r.isNew,
           limited: r.limited,
@@ -96,9 +132,9 @@ export async function listAdminProducts(): Promise<{ mode: "db" | "demo"; rows: 
 
 export async function saveAdminProduct(input: AdminProduct) {
   const parsed = productSchema.safeParse(input);
-  if (!parsed.success) return { ok: false as const, error: "Please check the fields." };
+  if (!parsed.success) return { ok: false as const, error: "Please check the fields — name, price, pieces and a valid image URL are required." };
   if (!dbEnabled()) {
-    return { ok: true as const, mode: "demo" as const, message: "Saved locally (connect a database to persist)." };
+    return { ok: true as const, mode: "demo" as const, message: "Saved on screen (connect the database to save permanently)." };
   }
   try {
     const db = await prisma();
@@ -108,12 +144,18 @@ export async function saveAdminProduct(input: AdminProduct) {
       update: {},
       create: { name: d.category, slug: d.category.toLowerCase().replace(/[^a-z0-9]+/g, "-") },
     });
+    const images = [d.imageUrl, ...d.gallery].map((s) => s.trim()).filter(Boolean);
     const data = {
-      name: d.name, slug: d.slug, price: d.price, salePrice: d.salePrice ?? null,
-      pieces: d.pieces, stock: d.stock, bodyColor: d.bodyColor,
+      name: d.name, slug: d.slug, brand: d.brand || "KraftyBrix",
+      tagline: d.tagline, description: d.description,
+      price: d.price, salePrice: d.salePrice ?? null,
+      pieces: d.pieces, buildHours: d.buildHours, difficulty: d.difficulty as never,
+      ageRange: d.ageRange, scale: d.scale, stock: d.stock,
+      rating: d.rating, reviewCount: d.reviewCount,
+      bodyColor: d.bodyColor, accentColor: d.accentColor,
       bestSeller: !!d.bestSeller, isNew: !!d.isNew, limited: !!d.limited,
-      images: d.imageUrl ? [d.imageUrl] : [], categoryId: category.id,
-      brand: "KraftyBrix", tagline: "", description: "",
+      images, whatsIncluded: d.whatsIncluded.map((s) => s.trim()).filter(Boolean),
+      categoryId: category.id,
     };
     if (d.id) await db.product.update({ where: { id: d.id }, data });
     else await db.product.create({ data });
@@ -153,7 +195,8 @@ export async function seedCatalogue() {
           pieces: p.pieces, buildHours: Math.round(p.buildHours), difficulty: p.difficulty as never,
           ageRange: p.ageRange, scale: p.scale, bodyColor: p.bodyColor, accentColor: p.accentColor,
           stock: p.inStock ? 50 : 0, bestSeller: !!p.bestSeller, isNew: !!p.isNew, limited: !!p.limited,
-          rating: p.rating, reviewCount: p.reviewCount, images: p.images.map((i) => i.url), categoryId,
+          rating: p.rating, reviewCount: p.reviewCount, images: p.images.map((i) => i.url),
+          whatsIncluded: p.whatsIncluded ?? [], categoryId,
         },
       });
     }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Blocks, Clock, Trophy, Baby, type LucideIcon } from "lucide-react";
-import { getProduct, products, getByCategory } from "@/lib/products";
+import { getCatalogueProducts, findProductBySlug } from "@/lib/catalogue";
 import { ProductMedia } from "@/components/product/product-media";
 import { BuyBox } from "@/components/product/buy-box";
 import { ProductTabs } from "@/components/product/product-tabs";
@@ -11,9 +11,8 @@ import { Counter } from "@/components/ui/counter";
 import { TrackRecentlyViewed } from "@/components/product/track-recently-viewed";
 import { RecentlyViewed } from "@/components/product/recently-viewed";
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
-}
+// Reflect the live catalogue so admin-added products get their own pages.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -21,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await findProductBySlug(slug);
   if (!product) return {};
   const price = product.salePrice ?? product.price;
   return {
@@ -42,13 +41,14 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await findProductBySlug(slug);
   if (!product) notFound();
 
-  const related = getByCategory(product.category)
-    .filter((p) => p.id !== product.id)
+  const all = await getCatalogueProducts();
+  const related = all
+    .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 3);
-  const fallback = products.filter((p) => p.id !== product.id).slice(0, 3);
+  const fallback = all.filter((p) => p.id !== product.id).slice(0, 3);
   const recommendations = related.length ? related : fallback;
 
   const stats: {

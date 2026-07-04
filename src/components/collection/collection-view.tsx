@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
-import { products, categories } from "@/lib/products";
-import type { Difficulty } from "@/lib/types";
+import { categories } from "@/lib/products";
+import type { Difficulty, Product } from "@/lib/types";
 import { ProductCard } from "@/components/product/product-card";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +19,7 @@ const sorts = [
 const difficulties: Difficulty[] = ["Beginner", "Intermediate", "Advanced", "Master"];
 const PRICE_STEPS = [0, 5000, 10000, 15000, 20000];
 
-export function CollectionView() {
+export function CollectionView({ products }: { products: Product[] }) {
   const params = useSearchParams();
   const initialCat = params.get("category");
 

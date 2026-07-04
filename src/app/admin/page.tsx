@@ -45,9 +45,10 @@ const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
 
 const empty: AdminProduct = {
-  name: "", slug: "", category: "Supercars", price: 0, salePrice: null,
-  pieces: 0, stock: 0, imageUrl: "", bodyColor: "#FF2D20",
-  bestSeller: false, isNew: false, limited: false,
+  name: "", slug: "", brand: "KraftyBrix", category: "Supercars", tagline: "", description: "",
+  price: 0, salePrice: null, pieces: 0, buildHours: 0, difficulty: "Intermediate", ageRange: "14+", scale: "1:10",
+  stock: 0, rating: 0, reviewCount: 0, imageUrl: "", gallery: [], whatsIncluded: [],
+  bodyColor: "#FF2D20", accentColor: "#111111", bestSeller: false, isNew: false, limited: false,
 };
 
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -233,7 +234,12 @@ export default function AdminPage() {
                   <tr key={p.slug} className="border-t border-black/5">
                     <td className="py-3">
                       <div className="flex items-center gap-3">
-                        <span className="h-8 w-11 shrink-0 rounded" style={{ background: p.bodyColor }} />
+                        {p.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.imageUrl} alt="" className="h-8 w-11 shrink-0 rounded bg-white object-cover" />
+                        ) : (
+                          <span className="h-8 w-11 shrink-0 rounded" style={{ background: p.bodyColor }} />
+                        )}
                         <span className="font-medium">{p.name}</span>
                       </div>
                     </td>
@@ -481,53 +487,118 @@ function Empty({ children }: { children: React.ReactNode }) {
 function ProductForm({ initial, onClose, onSave }: { initial: AdminProduct; onClose: () => void; onSave: (p: AdminProduct) => void }) {
   const [f, setF] = useState<AdminProduct>(initial);
   const set = <K extends keyof AdminProduct>(k: K, v: AdminProduct[K]) => setF((c) => ({ ...c, [k]: v }));
+  const discount = f.salePrice && f.price ? Math.round((1 - f.salePrice / f.price) * 100) : 0;
 
   return (
     <div className="fixed inset-0 z-[70]">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-ink-900 shadow-card">
+      <div className="absolute inset-y-0 right-0 flex w-full max-w-xl flex-col bg-ink-900 shadow-card">
         <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
           <h3 className="font-display text-lg font-bold">{initial.id ? "Edit product" : "New product"}</h3>
-          <button onClick={onClose}><X /></button>
+          <button onClick={onClose} aria-label="Close"><X /></button>
         </div>
-        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
-          <Field label="Name">
-            <input value={f.name} onChange={(e) => { set("name", e.target.value); if (!initial.id) set("slug", slugify(e.target.value)); }} className={inputCls} />
-          </Field>
-          <Field label="Slug (URL)"><input value={f.slug} onChange={(e) => set("slug", e.target.value)} className={inputCls} /></Field>
-          <Field label="Category">
-            <select value={f.category} onChange={(e) => set("category", e.target.value)} className={inputCls}>
-              {catMeta.map((c) => <option key={c.slug}>{c.name}</option>)}
-            </select>
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="MRP (₹)"><input type="number" value={f.price} onChange={(e) => set("price", Number(e.target.value))} className={inputCls} /></Field>
-            <Field label="Sale price (₹)"><input type="number" value={f.salePrice ?? ""} onChange={(e) => set("salePrice", e.target.value ? Number(e.target.value) : null)} className={inputCls} /></Field>
-            <Field label="Pieces"><input type="number" value={f.pieces} onChange={(e) => set("pieces", Number(e.target.value))} className={inputCls} /></Field>
-            <Field label="Stock"><input type="number" value={f.stock} onChange={(e) => set("stock", Number(e.target.value))} className={inputCls} /></Field>
-          </div>
-          <Field label="Image URL"><input value={f.imageUrl} onChange={(e) => set("imageUrl", e.target.value)} placeholder="https://…" className={inputCls} /></Field>
-          <Field label="Body colour">
-            <div className="flex items-center gap-2">
-              <input type="color" value={f.bodyColor} onChange={(e) => set("bodyColor", e.target.value)} className="h-10 w-14 rounded-lg border border-black/15 bg-ink-800" />
-              <input value={f.bodyColor} onChange={(e) => set("bodyColor", e.target.value)} className={inputCls} />
+
+        <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
+          <FormSection title="Basics">
+            <Field label="Product name *">
+              <input value={f.name} onChange={(e) => { set("name", e.target.value); if (!initial.id) set("slug", slugify(e.target.value)); }} placeholder="e.g. Lamborghini Sián Roadster" className={inputCls} />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Brand"><input value={f.brand} onChange={(e) => set("brand", e.target.value)} placeholder="Lamborghini" className={inputCls} /></Field>
+              <Field label="Category">
+                <select value={f.category} onChange={(e) => set("category", e.target.value)} className={inputCls}>
+                  {catMeta.map((c) => <option key={c.slug}>{c.name}</option>)}
+                </select>
+              </Field>
             </div>
-          </Field>
-          <div className="flex flex-wrap gap-4 pt-1">
-            {(["bestSeller", "isNew", "limited"] as const).map((k) => (
-              <label key={k} className="flex items-center gap-2 text-sm capitalize">
-                <input type="checkbox" checked={!!f[k]} onChange={(e) => set(k, e.target.checked)} className="h-4 w-4 accent-brand-red" />
-                {k === "isNew" ? "New" : k}
-              </label>
-            ))}
-          </div>
+            <Field label="Slug (web address)"><input value={f.slug} onChange={(e) => set("slug", e.target.value)} className={inputCls} /></Field>
+            <Field label="Tagline (short one-liner)"><input value={f.tagline} onChange={(e) => set("tagline", e.target.value)} placeholder="784-piece hybrid hypercar with scissor doors" className={inputCls} /></Field>
+            <Field label="Description (what customers read)">
+              <textarea value={f.description} onChange={(e) => set("description", e.target.value)} rows={4} placeholder="Tell the story — the detail, the features, why they'll love it on their shelf." className={`${inputCls} resize-none`} />
+            </Field>
+          </FormSection>
+
+          <FormSection title="Pricing & stock">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="MRP ₹ (crossed out)"><input type="number" value={f.price || ""} onChange={(e) => set("price", Number(e.target.value))} placeholder="2999" className={inputCls} /></Field>
+              <Field label={`Selling price ₹${discount > 0 ? ` · saves ${discount}%` : ""}`}><input type="number" value={f.salePrice ?? ""} onChange={(e) => set("salePrice", e.target.value ? Number(e.target.value) : null)} placeholder="Blank = no discount" className={inputCls} /></Field>
+              <Field label="Stock quantity"><input type="number" value={f.stock || ""} onChange={(e) => set("stock", Number(e.target.value))} placeholder="50" className={inputCls} /></Field>
+              <Field label="Number of pieces"><input type="number" value={f.pieces || ""} onChange={(e) => set("pieces", Number(e.target.value))} placeholder="784" className={inputCls} /></Field>
+            </div>
+          </FormSection>
+
+          <FormSection title="Details customers care about">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Build time (hours)"><input type="number" value={f.buildHours || ""} onChange={(e) => set("buildHours", Number(e.target.value))} placeholder="6" className={inputCls} /></Field>
+              <Field label="Difficulty">
+                <select value={f.difficulty} onChange={(e) => set("difficulty", e.target.value)} className={inputCls}>
+                  {["Beginner", "Intermediate", "Advanced", "Master"].map((d) => <option key={d}>{d}</option>)}
+                </select>
+              </Field>
+              <Field label="Recommended age"><input value={f.ageRange} onChange={(e) => set("ageRange", e.target.value)} placeholder="14+" className={inputCls} /></Field>
+              <Field label="Scale"><input value={f.scale} onChange={(e) => set("scale", e.target.value)} placeholder="1:10" className={inputCls} /></Field>
+            </div>
+            <Field label="What's in the box (one item per line)">
+              <textarea value={f.whatsIncluded.join("\n")} onChange={(e) => set("whatsIncluded", e.target.value.split("\n"))} rows={3} placeholder={"Numbered building manual\nDisplay plinth with plaque\nSpare bricks"} className={`${inputCls} resize-none`} />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Star rating (0–5)"><input type="number" step="0.1" min="0" max="5" value={f.rating || ""} onChange={(e) => set("rating", Number(e.target.value))} placeholder="4.9" className={inputCls} /></Field>
+              <Field label="Review count"><input type="number" value={f.reviewCount || ""} onChange={(e) => set("reviewCount", Number(e.target.value))} placeholder="128" className={inputCls} /></Field>
+            </div>
+          </FormSection>
+
+          <FormSection title="Images">
+            <Field label="Main image URL *"><input value={f.imageUrl} onChange={(e) => set("imageUrl", e.target.value)} placeholder="https://…" className={inputCls} /></Field>
+            {f.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={f.imageUrl} alt="" className="h-36 w-full rounded-xl border border-black/10 bg-white object-contain" />
+            )}
+            <Field label="More image URLs (one per line)">
+              <textarea value={f.gallery.join("\n")} onChange={(e) => set("gallery", e.target.value.split("\n"))} rows={3} placeholder={"https://…/angle-2.jpg\nhttps://…/angle-3.jpg"} className={`${inputCls} resize-none`} />
+            </Field>
+          </FormSection>
+
+          <FormSection title="Appearance & badges">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Body colour">
+                <div className="flex items-center gap-2">
+                  <input type="color" value={f.bodyColor} onChange={(e) => set("bodyColor", e.target.value)} className="h-10 w-12 shrink-0 rounded-lg border border-black/15 bg-ink-800" />
+                  <input value={f.bodyColor} onChange={(e) => set("bodyColor", e.target.value)} className={inputCls} />
+                </div>
+              </Field>
+              <Field label="Accent colour">
+                <div className="flex items-center gap-2">
+                  <input type="color" value={f.accentColor} onChange={(e) => set("accentColor", e.target.value)} className="h-10 w-12 shrink-0 rounded-lg border border-black/15 bg-ink-800" />
+                  <input value={f.accentColor} onChange={(e) => set("accentColor", e.target.value)} className={inputCls} />
+                </div>
+              </Field>
+            </div>
+            <div className="flex flex-wrap gap-4 pt-1">
+              {(["bestSeller", "isNew", "limited"] as const).map((k) => (
+                <label key={k} className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={!!f[k]} onChange={(e) => set(k, e.target.checked)} className="h-4 w-4 accent-brand-red" />
+                  {k === "isNew" ? "New" : k === "bestSeller" ? "Best seller" : "Limited"}
+                </label>
+              ))}
+            </div>
+          </FormSection>
         </div>
+
         <div className="border-t border-black/10 px-6 py-4">
-          <button onClick={() => onSave(f)} disabled={!f.name || !f.slug} className="w-full rounded-full bg-brand-red text-white py-3 text-sm font-semibold disabled:opacity-50">
+          <button onClick={() => onSave(f)} disabled={!f.name || !f.slug || !f.price} className="w-full rounded-full bg-brand-red text-white py-3 text-sm font-semibold disabled:opacity-50">
             Save product
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold uppercase tracking-wider text-brand-red">{title}</p>
+      {children}
     </div>
   );
 }
