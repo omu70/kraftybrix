@@ -17,7 +17,7 @@ const reasons = [
 const promises = [
   { icon: ShieldCheck, label: "Lifetime brick guarantee" },
   { icon: Truck, label: "Free express shipping ₹9,999+" },
-  { icon: BadgeIndianRupee, label: "Cash on Delivery" },
+  { icon: BadgeIndianRupee, label: "Partial COD — ₹99 now" },
   { icon: RotateCcw, label: "30-day easy returns" },
 ];
 

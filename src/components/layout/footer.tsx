@@ -10,7 +10,7 @@ const cols = [
       ["Hypercars", "/collection?category=Hypercars"],
       ["Smoking Cars", "/collection?category=Smoking+Cars"],
       ["Limited Editions", "/collection?category=Limited+Editions"],
-      ["Gift Cards", "/collection"],
+      ["Bundle · 3 for ₹1999", "/bundle"],
     ],
   },
   {
@@ -18,7 +18,7 @@ const cols = [
     links: [
       ["Shipping & Delivery", "/shipping"],
       ["Returns", "/returns"],
-      ["Build Help", "/contact"],
+      ["FAQ", "/faq"],
       ["Track Order", "/account"],
       ["Contact", "/contact"],
     ],
@@ -26,10 +26,10 @@ const cols = [
   {
     title: "Brand",
     links: [
-      ["Our Story", "/#build"],
+      ["Our Story", "/about"],
       ["The Build Process", "/#build"],
-      ["Community", "/#community"],
-      ["Careers", "/contact"],
+      ["Wishlist", "/wishlist"],
+      ["Search", "/search"],
       ["Wholesale", "/contact"],
     ],
   },
@@ -82,6 +82,7 @@ export function Footer() {
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-cream">Privacy</Link>
             <Link href="/terms" className="hover:text-cream">Terms</Link>
+            <Link href="/cookies" className="hover:text-cream">Cookies</Link>
             <Link href="/sitemap.xml" className="hover:text-cream">Sitemap</Link>
           </div>
           <div className="flex items-center gap-2">

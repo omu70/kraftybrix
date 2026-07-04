@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Ticket, Boxes, Mail,
-  Settings, TrendingUp, TrendingDown, IndianRupee, Plus, Pencil, Trash2, X, Search,
+  Settings, TrendingUp, IndianRupee, Plus, Pencil, Trash2, X, Search,
+  Wallet, CreditCard, AlertTriangle, Database, CheckCircle2, Truck,
 } from "lucide-react";
 import { categories as catMeta } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
+import { ADVANCE_FEE, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, COUPONS } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import {
-  listAdminProducts, saveAdminProduct, deleteAdminProduct, type AdminProduct,
+  listAdminProducts, saveAdminProduct, deleteAdminProduct, seedCatalogue,
+  listAdminOrders, updateOrderStatus, adminStats, listSubscribers, getConfigStatus,
+  type AdminProduct, type AdminOrder, type OrderStatus, type AdminStats,
 } from "@/app/actions/admin";
 import { adminLogout } from "@/app/actions/admin-auth";
 import { useRouter } from "next/navigation";
@@ -25,18 +29,20 @@ const nav = [
   { key: "settings", label: "Settings", icon: Settings },
 ] as const;
 
-const kpis = [
-  { label: "Revenue (30d)", value: "₹2,48,640", delta: 12.4, up: true, icon: IndianRupee },
-  { label: "Orders (30d)", value: "284", delta: 8.1, up: true, icon: ShoppingCart },
-  { label: "Conversion", value: "3.9%", delta: 0.6, up: true, icon: TrendingUp },
-  { label: "Avg. order", value: "₹1,540", delta: 2.2, up: true, icon: TrendingUp },
+const ORDER_STATUSES: OrderStatus[] = [
+  "PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "RETURNED",
 ];
-const recentOrders = [
-  { id: "KB7H2K9", customer: "Arjun M.", total: 1699, status: "Confirmed" },
-  { id: "KB7H2K8", customer: "Priya K.", total: 999, status: "Shipped" },
-  { id: "KB7H2K7", customer: "Daniel R.", total: 699, status: "Processing" },
-  { id: "KB7H2K6", customer: "Sana T.", total: 2899, status: "Delivered" },
-];
+
+const statusTone = (s: string): "neutral" | "blue" | "green" | "amber" | "red" =>
+  s === "DELIVERED" ? "green"
+  : s === "SHIPPED" || s === "PROCESSING" ? "blue"
+  : s === "CONFIRMED" ? "neutral"
+  : s === "CANCELLED" || s === "RETURNED" ? "red"
+  : "amber"; // PENDING
+
+const payTone = (s: string) => (s === "PAID" ? "green" : s === "PARTIAL" ? "amber" : "neutral");
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
 
 const empty: AdminProduct = {
   name: "", slug: "", category: "Supercars", price: 0, salePrice: null,
@@ -46,17 +52,27 @@ const empty: AdminProduct = {
 
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+type Config = Awaited<ReturnType<typeof getConfigStatus>>;
+
 export default function AdminPage() {
   const router = useRouter();
   const [section, setSection] = useState<(typeof nav)[number]["key"]>("dashboard");
   const [rows, setRows] = useState<AdminProduct[]>([]);
   const [mode, setMode] = useState<"db" | "demo">("demo");
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [subs, setSubs] = useState<{ email: string; name: string | null; createdAt: string }[]>([]);
+  const [config, setConfig] = useState<Config | null>(null);
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
 
   useEffect(() => {
     listAdminProducts().then((r) => { setRows(r.rows); setMode(r.mode); });
+    listAdminOrders().then((r) => setOrders(r.rows));
+    adminStats().then((r) => setStats(r.stats));
+    listSubscribers().then((r) => setSubs(r.rows));
+    getConfigStatus().then(setConfig);
   }, []);
 
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2600); };
@@ -77,8 +93,29 @@ export default function AdminPage() {
     setRows((cur) => cur.filter((x) => x.slug !== p.slug));
     flash("Deleted");
   }
+  async function onStatusChange(o: AdminOrder, status: OrderStatus) {
+    setOrders((cur) => cur.map((x) => (x.id === o.id ? { ...x, status } : x)));
+    const res = await updateOrderStatus(o.id, status);
+    flash(res.ok ? `${o.orderNumber} → ${status.toLowerCase()}` : res.error ?? "Error");
+  }
 
   const filtered = rows.filter((r) => r.name.toLowerCase().includes(query.toLowerCase()));
+  const inventory = useMemo(() => [...rows].sort((a, b) => a.stock - b.stock), [rows]);
+  const lowStock = rows.filter((r) => r.stock <= 5).length;
+  const pendingOrders = orders.filter((o) => ["PENDING", "CONFIRMED", "PROCESSING"].includes(o.status)).length;
+
+  const customers = useMemo(() => {
+    const map = new Map<string, { name: string; email: string; phone: string; orders: number; spent: number; last: string }>();
+    for (const o of orders) {
+      const key = o.email || o.customer;
+      const cur = map.get(key) ?? { name: o.customer, email: o.email, phone: o.phone, orders: 0, spent: 0, last: o.createdAt };
+      cur.orders += 1;
+      cur.spent += o.total;
+      if (o.createdAt > cur.last) cur.last = o.createdAt;
+      map.set(key, cur);
+    }
+    return [...map.values()].sort((a, b) => b.spent - a.spent);
+  }, [orders]);
 
   return (
     <div className="container-wide pt-28 pb-24">
@@ -88,7 +125,7 @@ export default function AdminPage() {
           <p className="mt-1 text-black/50">KraftyBrix control center</p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge tone={mode === "db" ? "blue" : "neutral"}>{mode === "db" ? "Live database" : "Demo mode"}</Badge>
+          <Badge tone={mode === "db" ? "green" : "neutral"}>{mode === "db" ? "Live database" : "Demo mode"}</Badge>
           <button
             onClick={async () => { await adminLogout(); router.push("/admin/login"); }}
             className="rounded-full border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/[0.04]"
@@ -99,8 +136,12 @@ export default function AdminPage() {
       </div>
 
       {mode === "demo" && (
-        <div className="mt-5 rounded-xl border border-brand-blue/30 bg-brand-blue/[0.06] px-4 py-3 text-sm text-black/70">
-          Demo mode — changes update the screen but aren't persisted. Add a <code className="font-mono">DATABASE_URL</code> (free Neon tier) and run <code className="font-mono">npm run db:push &amp;&amp; npm run db:seed</code> to go live with real persistence.
+        <div className="mt-5 rounded-xl border border-amber-400/40 bg-amber-400/[0.08] px-4 py-3 text-sm text-black/70">
+          {config?.database ? (
+            <>Your database is connected, but the tables aren&apos;t created yet. <b>Redeploy on Vercel</b> — the build creates them automatically — then refresh this page. Anything you add right now won&apos;t be saved.</>
+          ) : (
+            <>Demo mode — you&apos;re seeing sample data. Add a <code className="font-mono">DATABASE_URL</code> (free Neon tier) in Vercel and redeploy to switch to your live store automatically.</>
+          )}
         </div>
       )}
 
@@ -120,38 +161,47 @@ export default function AdminPage() {
         </aside>
 
         <div className="space-y-8">
+          {/* ─────────── Dashboard ─────────── */}
           {section === "dashboard" && (
             <>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {kpis.map((k) => (
-                  <div key={k.label} className="rounded-2xl border border-black/10 bg-ink-800 p-5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs uppercase tracking-wider text-black/45">{k.label}</span>
-                      <k.icon size={16} className="text-black/40" />
-                    </div>
-                    <p className="mt-3 font-display text-2xl font-bold">{k.value}</p>
-                    <p className={`mt-1 flex items-center gap-1 text-xs ${k.up ? "text-green-600" : "text-brand-red"}`}>
-                      {k.up ? <TrendingUp size={13} /> : <TrendingDown size={13} />} {k.delta}% vs last month
-                    </p>
-                  </div>
-                ))}
+                <Kpi label="Revenue collected" value={stats ? formatPrice(stats.revenue) : "—"} icon={IndianRupee} hint="Paid online" />
+                <Kpi label="Orders" value={stats ? String(stats.orders) : "—"} icon={ShoppingCart} hint={`${pendingOrders} need action`} />
+                <Kpi label="Avg. order value" value={stats ? formatPrice(stats.aov) : "—"} icon={TrendingUp} hint="Across all orders" />
+                <Kpi label="COD to collect" value={stats ? formatPrice(stats.pendingCod) : "—"} icon={Wallet} hint="Cash due on delivery" />
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <MiniStat label="Gross sales" value={stats ? formatPrice(stats.grossValue) : "—"} />
+                <MiniStat label="Low / out of stock" value={String(lowStock)} warn={lowStock > 0} />
+                <MiniStat label="Subscribers" value={String(subs.length)} />
+              </div>
+
               <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
-                <h3 className="mb-4 font-display font-bold">Recent orders</h3>
-                <Table head={["Order", "Customer", "Total", "Status"]}>
-                  {recentOrders.map((o) => (
-                    <tr key={o.id} className="border-t border-black/5">
-                      <td className="py-3 font-medium">#{o.id}</td>
-                      <td className="py-3 text-black/70">{o.customer}</td>
-                      <td className="py-3">{formatPrice(o.total)}</td>
-                      <td className="py-3"><Badge tone="neutral">{o.status}</Badge></td>
-                    </tr>
-                  ))}
-                </Table>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="font-display font-bold">Recent orders</h3>
+                  <button onClick={() => setSection("orders")} className="text-sm text-brand-red hover:underline">View all</button>
+                </div>
+                {orders.length === 0 ? (
+                  <Empty>No orders yet. They&apos;ll appear here in real time.</Empty>
+                ) : (
+                  <Table head={["Order", "Customer", "Payment", "Total", "Status"]}>
+                    {orders.slice(0, 6).map((o) => (
+                      <tr key={o.id} className="border-t border-black/5">
+                        <td className="py-3 font-medium">#{o.orderNumber}</td>
+                        <td className="py-3 text-black/70">{o.customer}</td>
+                        <td className="py-3"><Badge tone={payTone(o.paymentStatus)}>{o.paymentMethod === "PARTIAL_COD" ? "Partial" : "Online"}</Badge></td>
+                        <td className="py-3">{formatPrice(o.total)}</td>
+                        <td className="py-3"><Badge tone={statusTone(o.status)}>{o.status}</Badge></td>
+                      </tr>
+                    ))}
+                  </Table>
+                )}
               </div>
             </>
           )}
 
+          {/* ─────────── Products ─────────── */}
           {section === "products" && (
             <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -161,6 +211,18 @@ export default function AdminPage() {
                     <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
                     <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search…" className="rounded-lg border border-black/15 bg-ink-900 py-2 pl-9 pr-3 text-sm outline-none focus:border-brand-red" />
                   </div>
+                  {mode === "db" && (
+                    <button
+                      onClick={async () => {
+                        const res = await seedCatalogue();
+                        if (res.ok) { const r = await listAdminProducts(); setRows(r.rows); flash(`Loaded ${res.count} products`); }
+                        else flash(res.error ?? "Error");
+                      }}
+                      className="rounded-full border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/[0.04]"
+                    >
+                      Load sample products
+                    </button>
+                  )}
                   <button onClick={() => setEditing({ ...empty })} className="flex items-center gap-1.5 rounded-full bg-brand-red text-white px-4 py-2 text-sm font-semibold">
                     <Plus size={16} /> Add product
                   </button>
@@ -200,32 +262,160 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* ─────────── Orders ─────────── */}
           {section === "orders" && (
             <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
-              <h3 className="mb-4 font-display font-bold">All orders</h3>
-              <Table head={["Order", "Customer", "Total", "Status"]}>
-                {recentOrders.map((o) => (
-                  <tr key={o.id} className="border-t border-black/5">
-                    <td className="py-3 font-medium">#{o.id}</td>
-                    <td className="py-3 text-black/70">{o.customer}</td>
-                    <td className="py-3">{formatPrice(o.total)}</td>
+              <h3 className="mb-4 font-display font-bold">All orders ({orders.length})</h3>
+              {orders.length === 0 ? (
+                <Empty>No orders yet.</Empty>
+              ) : (
+                <Table head={["Order", "Customer", "Payment", "Total", "Status"]}>
+                  {orders.map((o) => (
+                    <tr key={o.id} className="border-t border-black/5 align-top">
+                      <td className="py-3">
+                        <div className="font-medium">#{o.orderNumber}</div>
+                        <div className="text-xs text-black/45">{fmtDate(o.createdAt)}</div>
+                      </td>
+                      <td className="py-3">
+                        <div className="text-black/80">{o.customer}</div>
+                        <div className="text-xs text-black/45">{o.email || o.phone}</div>
+                      </td>
+                      <td className="py-3">
+                        <Badge tone={payTone(o.paymentStatus)}>{o.paymentMethod === "PARTIAL_COD" ? "Partial COD" : "Online"}</Badge>
+                        {o.codBalance > 0 && (
+                          <div className="mt-1 text-xs text-black/50">Paid {formatPrice(o.amountPaid)} · Due {formatPrice(o.codBalance)}</div>
+                        )}
+                      </td>
+                      <td className="py-3 font-medium">{formatPrice(o.total)}</td>
+                      <td className="py-3">
+                        <select
+                          value={o.status}
+                          onChange={(e) => onStatusChange(o, e.target.value as OrderStatus)}
+                          className="rounded-lg border border-black/15 bg-ink-900 px-2 py-1.5 text-xs outline-none focus:border-brand-red"
+                        >
+                          {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </Table>
+              )}
+              {mode === "demo" && <p className="mt-4 text-xs text-black/40">Sample orders shown. Real orders appear here automatically once your database is connected.</p>}
+            </div>
+          )}
+
+          {/* ─────────── Inventory ─────────── */}
+          {section === "inventory" && (
+            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-display font-bold">Inventory</h3>
+                {lowStock > 0 && (
+                  <span className="flex items-center gap-1.5 text-sm text-amber-600">
+                    <AlertTriangle size={15} /> {lowStock} low / out of stock
+                  </span>
+                )}
+              </div>
+              <Table head={["Product", "Category", "Stock", "Status", ""]}>
+                {inventory.map((p) => (
+                  <tr key={p.slug} className="border-t border-black/5">
+                    <td className="py-3 font-medium">{p.name}</td>
+                    <td className="py-3 text-black/60">{p.category}</td>
+                    <td className="py-3">{p.stock}</td>
                     <td className="py-3">
-                      <select defaultValue={o.status} className="rounded-lg border border-black/15 bg-ink-900 px-2 py-1 text-xs">
-                        {["Pending", "Confirmed", "Processing", "Shipped", "Delivered"].map((s) => <option key={s}>{s}</option>)}
-                      </select>
+                      {p.stock === 0 ? <Badge tone="red">Out of stock</Badge>
+                        : p.stock <= 5 ? <Badge tone="amber">Low</Badge>
+                        : <Badge tone="green">In stock</Badge>}
+                    </td>
+                    <td className="py-3 text-right">
+                      <button onClick={() => setEditing(p)} className="text-sm text-brand-red hover:underline">Adjust</button>
                     </td>
                   </tr>
                 ))}
               </Table>
-              <p className="mt-4 text-xs text-black/40">Live orders appear here once a database + Razorpay are connected.</p>
             </div>
           )}
 
-          {!["dashboard", "products", "orders"].includes(section) && (
-            <div className="grid place-items-center rounded-2xl border border-dashed border-black/15 py-24 text-center text-black/50">
-              <div>
-                <p className="font-display text-lg capitalize text-cream">{section}</p>
-                <p className="mt-2 text-sm">Wired to Prisma + server actions. Connect a database to populate.</p>
+          {/* ─────────── Customers ─────────── */}
+          {section === "customers" && (
+            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+              <h3 className="mb-4 font-display font-bold">Customers ({customers.length})</h3>
+              {customers.length === 0 ? (
+                <Empty>No customers yet.</Empty>
+              ) : (
+                <Table head={["Customer", "Contact", "Orders", "Lifetime value", "Last order"]}>
+                  {customers.map((c) => (
+                    <tr key={c.email} className="border-t border-black/5">
+                      <td className="py-3 font-medium">{c.name}</td>
+                      <td className="py-3 text-black/60">{c.email || c.phone}</td>
+                      <td className="py-3">{c.orders}</td>
+                      <td className="py-3 font-medium">{formatPrice(c.spent)}</td>
+                      <td className="py-3 text-black/60">{fmtDate(c.last)}</td>
+                    </tr>
+                  ))}
+                </Table>
+              )}
+            </div>
+          )}
+
+          {/* ─────────── Coupons ─────────── */}
+          {section === "coupons" && (
+            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+              <h3 className="mb-1 font-display font-bold">Active coupons</h3>
+              <p className="mb-4 text-sm text-black/50">These codes work at checkout right now.</p>
+              <Table head={["Code", "Type", "Discount"]}>
+                {Object.entries(COUPONS).map(([code, c]) => (
+                  <tr key={code} className="border-t border-black/5">
+                    <td className="py-3 font-mono font-medium">{code}</td>
+                    <td className="py-3 text-black/60">{c.type === "PERCENT" ? "Percentage" : "Flat"}</td>
+                    <td className="py-3">{c.type === "PERCENT" ? `${c.value}% off` : `${formatPrice(c.value)} off`}</td>
+                  </tr>
+                ))}
+              </Table>
+            </div>
+          )}
+
+          {/* ─────────── Subscribers ─────────── */}
+          {section === "subscribers" && (
+            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+              <h3 className="mb-4 font-display font-bold">Newsletter subscribers ({subs.length})</h3>
+              {subs.length === 0 ? (
+                <Empty>No subscribers yet.</Empty>
+              ) : (
+                <Table head={["Name", "Email", "Joined"]}>
+                  {subs.map((s) => (
+                    <tr key={s.email} className="border-t border-black/5">
+                      <td className="py-3 font-medium">{s.name ?? "—"}</td>
+                      <td className="py-3 text-black/60">{s.email}</td>
+                      <td className="py-3 text-black/60">{fmtDate(s.createdAt)}</td>
+                    </tr>
+                  ))}
+                </Table>
+              )}
+            </div>
+          )}
+
+          {/* ─────────── Settings ─────────── */}
+          {section === "settings" && config && (
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+                <h3 className="mb-4 font-display font-bold">Go-live status</h3>
+                <div className="space-y-3">
+                  <StatusRow icon={Database} label="Database (orders + products)" ok={config.database} okText="Connected" offText="Not connected — add DATABASE_URL" />
+                  <StatusRow icon={CreditCard} label="Razorpay payments" ok={config.razorpay} okText="Configured" offText="Test mode — add Razorpay keys" />
+                  <StatusRow icon={Mail} label="Order emails (Resend)" ok={config.email} okText="Configured" offText="Optional — add RESEND_API_KEY" />
+                  <StatusRow icon={CheckCircle2} label="Admin login protection" ok={config.adminProtected} okText="Protected" offText="Set ADMIN_SESSION to lock /admin" />
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+                <h3 className="mb-4 font-display font-bold">Store configuration</h3>
+                <dl className="grid gap-3 sm:grid-cols-2 text-sm">
+                  <ConfigRow icon={Wallet} label="Partial COD advance" value={formatPrice(ADVANCE_FEE)} />
+                  <ConfigRow icon={Truck} label="Free shipping over" value={formatPrice(FREE_SHIPPING_THRESHOLD)} />
+                  <ConfigRow icon={Truck} label="Flat shipping fee" value={formatPrice(SHIPPING_FEE)} />
+                  <ConfigRow icon={Settings} label="Store URL" value={config.siteUrl || "—"} />
+                </dl>
+                <p className="mt-4 text-xs text-black/40">These values are set in <code className="font-mono">src/lib/constants.ts</code> and Vercel environment variables.</p>
               </div>
             </div>
           )}
@@ -240,6 +430,52 @@ export default function AdminPage() {
       )}
     </div>
   );
+}
+
+/* ───────────────────────── small UI helpers ───────────────────────── */
+
+function Kpi({ label, value, icon: Icon, hint }: { label: string; value: string; icon: typeof IndianRupee; hint?: string }) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-ink-800 p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs uppercase tracking-wider text-black/45">{label}</span>
+        <Icon size={16} className="text-black/40" />
+      </div>
+      <p className="mt-3 font-display text-2xl font-bold">{value}</p>
+      {hint && <p className="mt-1 text-xs text-black/45">{hint}</p>}
+    </div>
+  );
+}
+
+function MiniStat({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-ink-800 p-5">
+      <span className="text-xs uppercase tracking-wider text-black/45">{label}</span>
+      <p className={`mt-2 font-display text-xl font-bold ${warn ? "text-amber-600" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
+function StatusRow({ icon: Icon, label, ok, okText, offText }: { icon: typeof Database; label: string; ok: boolean; okText: string; offText: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="flex items-center gap-2.5 text-sm text-black/70"><Icon size={16} className="text-black/45" /> {label}</span>
+      <Badge tone={ok ? "green" : "amber"}>{ok ? okText : offText}</Badge>
+    </div>
+  );
+}
+
+function ConfigRow({ icon: Icon, label, value }: { icon: typeof Wallet; label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-black/10 bg-ink-900 px-4 py-3">
+      <span className="flex items-center gap-2 text-black/60"><Icon size={15} className="text-black/40" /> {label}</span>
+      <span className="font-medium text-cream">{value}</span>
+    </div>
+  );
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return <div className="grid place-items-center rounded-xl border border-dashed border-black/15 py-16 text-center text-sm text-black/50">{children}</div>;
 }
 
 function ProductForm({ initial, onClose, onSave }: { initial: AdminProduct; onClose: () => void; onSave: (p: AdminProduct) => void }) {

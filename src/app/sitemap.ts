@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kraftybrix.com";
   const now = new Date();
 
-  const staticRoutes = ["", "/collection", "/about", "/contact", "/login"].map((path) => ({
+  const staticRoutes = ["", "/collection", "/bundle", "/about", "/faq", "/contact", "/shipping", "/returns", "/login"].map((path) => ({
     url: `${base}${path}`,
     lastModified: now,
     changeFrequency: "weekly" as const,

@@ -4,14 +4,15 @@ import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { Lock, Tag, Check, CreditCard, Banknote } from "lucide-react";
+import { Lock, Tag, Check, CreditCard, Wallet } from "lucide-react";
 import { useCart, cartSubtotal } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
+import { ADVANCE_FEE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { applyCoupon, createOrder, verifyPayment } from "@/app/actions/checkout";
 import { track } from "@/components/analytics";
 
-type Method = "RAZORPAY" | "COD";
+type Method = "ONLINE" | "PARTIAL_COD";
 
 type FormState = {
   fullName: string;
@@ -32,7 +33,7 @@ export default function CheckoutPage() {
   const [coupon, setCoupon] = useState("");
   const [applied, setApplied] = useState<{ code: string; discount: number } | null>(null);
   const [couponErr, setCouponErr] = useState("");
-  const [method, setMethod] = useState<Method>("RAZORPAY");
+  const [method, setMethod] = useState<Method>("PARTIAL_COD");
   const [placing, setPlacing] = useState(false);
   const [form, setForm] = useState<FormState>({
     fullName: "", phone: "", email: "", line1: "", line2: "", city: "", state: "", pincode: "",
@@ -41,6 +42,10 @@ export default function CheckoutPage() {
   const discount = applied?.discount ?? 0;
   const shipping = subtotal - discount >= 9999 ? 0 : 199;
   const total = Math.max(0, subtotal - discount + shipping);
+
+  // What the customer pays online now vs on delivery.
+  const payNow = method === "PARTIAL_COD" ? Math.min(ADVANCE_FEE, total) : total;
+  const codBalance = method === "PARTIAL_COD" ? Math.max(0, total - payNow) : 0;
 
   async function onApplyCoupon() {
     setCouponErr("");
@@ -60,29 +65,24 @@ export default function CheckoutPage() {
       });
       if (!res.ok) { alert(res.error); return; }
 
-      if (res.method === "COD") {
-        track("purchase", { value: res.amount, method: "COD" });
-        clear();
-        router.push(`/order-confirmed?order=${res.orderNumber}`);
-        return;
-      }
+      const confirmUrl = `/order-confirmed?order=${res.orderNumber}&paid=${res.payNow}&due=${res.codBalance}`;
 
-      // Demo mode (no Razorpay keys configured): simulate a successful test payment.
+      // Demo mode (no Razorpay keys yet): simulate the online payment.
       if ("demo" in res && res.demo) {
-        track("purchase", { value: res.amount, method: "RAZORPAY_DEMO" });
+        track("purchase", { value: res.total, method: `${method}_DEMO` });
         clear();
-        router.push(`/order-confirmed?order=${res.orderNumber}&demo=1`);
+        router.push(`${confirmUrl}&demo=1`);
         return;
       }
 
-      // Razorpay flow (TEST or LIVE) — opens the hosted checkout widget.
+      // Razorpay flow (TEST or LIVE) — charges payNow (full total, or ₹99 advance).
       // @ts-expect-error injected by script
       const rzp = new window.Razorpay({
         key: res.keyId,
-        amount: res.amount * 100,
+        amount: res.payNow * 100,
         currency: "INR",
         name: "KraftyBrix",
-        description: `Order ${res.orderNumber}`,
+        description: method === "PARTIAL_COD" ? `Order ${res.orderNumber} — ₹${ADVANCE_FEE} advance` : `Order ${res.orderNumber}`,
         order_id: res.razorpayOrderId,
         prefill: { name: form.fullName, email: form.email, contact: form.phone },
         theme: { color: "#FF2D20" },
@@ -92,9 +92,9 @@ export default function CheckoutPage() {
             razorpayPaymentId: resp.razorpay_payment_id,
             signature: resp.razorpay_signature,
           });
-          track("purchase", { value: res.amount, method: "RAZORPAY" });
+          track("purchase", { value: res.total, method });
           clear();
-          router.push(`/order-confirmed?order=${res.orderNumber}`);
+          router.push(confirmUrl);
         },
       });
       rzp.open();
@@ -147,9 +147,27 @@ export default function CheckoutPage() {
           <section>
             <h2 className="mb-4 font-display text-xl font-bold">Payment method</h2>
             <div className="grid gap-3 sm:grid-cols-2">
-              <MethodCard active={method === "RAZORPAY"} onClick={() => setMethod("RAZORPAY")} icon={CreditCard} title="Pay online" sub="UPI · Cards · Netbanking via Razorpay" />
-              <MethodCard active={method === "COD"} onClick={() => setMethod("COD")} icon={Banknote} title="Cash on delivery" sub="Pay when it arrives" />
+              <MethodCard
+                active={method === "PARTIAL_COD"}
+                onClick={() => setMethod("PARTIAL_COD")}
+                icon={Wallet}
+                title={`Partial COD — pay ${formatPrice(ADVANCE_FEE)} now`}
+                sub="Confirm with a small advance, pay the rest on delivery"
+                badge="Recommended"
+              />
+              <MethodCard
+                active={method === "ONLINE"}
+                onClick={() => setMethod("ONLINE")}
+                icon={CreditCard}
+                title="Pay online"
+                sub="UPI · Cards · Netbanking"
+              />
             </div>
+            {method === "PARTIAL_COD" && (
+              <p className="mt-3 text-xs text-black/50">
+                Pay just {formatPrice(payNow)} now to lock your order — the balance of {formatPrice(codBalance)} is collected in cash when it arrives.
+              </p>
+            )}
           </section>
         </div>
 
@@ -190,10 +208,20 @@ export default function CheckoutPage() {
               <div className="flex justify-between border-t border-black/10 pt-3 text-base font-bold">
                 <span>Total</span><span>{formatPrice(total)}</span>
               </div>
+              {method === "PARTIAL_COD" && (
+                <div className="mt-2 space-y-2 rounded-xl bg-brand-red/[0.06] p-3">
+                  <div className="flex justify-between font-semibold text-cream">
+                    <span>Pay now</span><span>{formatPrice(payNow)}</span>
+                  </div>
+                  <div className="flex justify-between text-black/60">
+                    <span>Due on delivery</span><span>{formatPrice(codBalance)}</span>
+                  </div>
+                </div>
+              )}
             </dl>
 
             <Button size="lg" className="mt-6 w-full" disabled={!formValid || placing} onClick={placeOrder}>
-              {placing ? "Processing…" : method === "COD" ? `Place order · ${formatPrice(total)}` : `Pay ${formatPrice(total)}`}
+              {placing ? "Processing…" : method === "PARTIAL_COD" ? `Pay ${formatPrice(payNow)} to confirm` : `Pay ${formatPrice(total)}`}
             </Button>
             {!formValid && <p className="mt-2 text-center text-xs text-black/40">Fill in your shipping details to continue</p>}
           </div>
@@ -214,10 +242,13 @@ function Field({ name, placeholder, form, setForm, className }: { name: keyof Fo
   );
 }
 
-function MethodCard({ active, onClick, icon: Icon, title, sub }: { active: boolean; onClick: () => void; icon: typeof CreditCard; title: string; sub: string }) {
+function MethodCard({ active, onClick, icon: Icon, title, sub, badge }: { active: boolean; onClick: () => void; icon: typeof CreditCard; title: string; sub: string; badge?: string }) {
   return (
-    <button onClick={onClick} className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${active ? "border-brand-red bg-brand-red/10" : "border-black/15 hover:border-black/30"}`}>
-      <Icon size={20} className={active ? "text-brand-red" : "text-black/60"} />
+    <button onClick={onClick} className={`relative flex items-start gap-3 rounded-xl border p-4 text-left transition ${badge ? "pr-24" : ""} ${active ? "border-brand-red bg-brand-red/10" : "border-black/15 hover:border-black/30"}`}>
+      {badge && (
+        <span className="absolute right-3 top-3 rounded-full bg-brand-red px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">{badge}</span>
+      )}
+      <Icon size={20} className={`mt-0.5 shrink-0 ${active ? "text-brand-red" : "text-black/60"}`} />
       <div>
         <p className="font-medium">{title}</p>
         <p className="text-xs text-black/50">{sub}</p>

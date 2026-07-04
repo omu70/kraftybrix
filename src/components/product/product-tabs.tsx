@@ -75,7 +75,7 @@ export function ProductTabs({ product }: { product: Product }) {
               <div className="max-w-2xl space-y-4 text-black/70">
                 <p>Orders are dispatched within 24 hours via insured express courier. Free shipping on orders over ₹9,999.</p>
                 <p>Standard delivery: 2–5 business days across India. International delivery: 7–14 business days to 40+ countries.</p>
-                <p>Cash on Delivery available nationwide. 30-day hassle-free returns on unopened kits.</p>
+                <p>Partial COD available nationwide — pay just ₹99 online to confirm, the rest on delivery. 30-day hassle-free returns on unopened kits.</p>
               </div>
             )}
 

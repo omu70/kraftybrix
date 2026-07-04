@@ -1,8 +1,6 @@
 "use server";
 
 import { z } from "zod";
-// import { prisma } from "@/lib/prisma";
-// import { Resend } from "resend";
 
 const schema = z.object({
   name: z.string().min(1).max(80),
@@ -11,8 +9,8 @@ const schema = z.object({
 
 /**
  * Newsletter subscription server action.
- * Persists to Postgres and sends a welcome email via Resend.
- * (DB/email calls are stubbed until env is configured.)
+ * Persists to Postgres (when DATABASE_URL is set) and sends a welcome
+ * email via Resend (when RESEND_API_KEY is set). Both are no-ops otherwise.
  */
 export async function subscribeNewsletter(formData: FormData) {
   const parsed = schema.safeParse({
@@ -25,20 +23,33 @@ export async function subscribeNewsletter(formData: FormData) {
 
   const { name, email } = parsed.data;
 
-  // await prisma.subscriber.upsert({
-  //   where: { email },
-  //   update: { name },
-  //   create: { name, email },
-  // });
+  if (process.env.DATABASE_URL) {
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      await prisma.subscriber.upsert({
+        where: { email },
+        update: { name },
+        create: { name, email },
+      });
+    } catch (e) {
+      console.error("[newsletter] persist failed:", e);
+    }
+  }
 
-  // const resend = new Resend(process.env.RESEND_API_KEY);
-  // await resend.emails.send({
-  //   from: process.env.RESEND_FROM_EMAIL!,
-  //   to: email,
-  //   subject: "Welcome to the KraftyBrix drop list",
-  //   html: `<p>Hi ${name}, your 10% welcome code: <b>BRICK10</b></p>`,
-  // });
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const { Resend } = await import("resend");
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL ?? "KraftyBrix <hello@kraftybrix.com>",
+        to: email,
+        subject: "Welcome to the KraftyBrix drop list 🏁",
+        html: `<p>Hi ${name}, welcome aboard! Here's your 10% welcome code: <b>BRICK10</b></p>`,
+      });
+    } catch (e) {
+      console.error("[newsletter] email failed:", e);
+    }
+  }
 
-  console.log("[newsletter] subscribed:", name, email);
   return { ok: true };
 }

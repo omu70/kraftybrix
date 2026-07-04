@@ -62,12 +62,13 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1.5">
-          <button
+          <Link
+            href="/search"
             aria-label="Search"
             className="grid h-10 w-10 place-items-center rounded-full text-black/75 transition hover:bg-black/[0.04] hover:text-cream"
           >
             <Search size={19} />
-          </button>
+          </Link>
           <Link
             href="/account"
             aria-label="Account"
@@ -76,7 +77,7 @@ export function Header() {
             <User size={19} />
           </Link>
           <Link
-            href="/account/wishlist"
+            href="/wishlist"
             aria-label="Wishlist"
             className="relative grid h-10 w-10 place-items-center rounded-full text-black/75 transition hover:bg-black/[0.04] hover:text-cream"
           >

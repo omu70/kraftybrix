@@ -8,6 +8,8 @@ import { BuyBox } from "@/components/product/buy-box";
 import { ProductTabs } from "@/components/product/product-tabs";
 import { ProductCard } from "@/components/product/product-card";
 import { Counter } from "@/components/ui/counter";
+import { TrackRecentlyViewed } from "@/components/product/track-recently-viewed";
+import { RecentlyViewed } from "@/components/product/recently-viewed";
 
 export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
@@ -88,6 +90,7 @@ export default async function ProductPage({
   return (
     <div className="pt-28">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <TrackRecentlyViewed id={product.id} />
 
       <div className="container-wide">
         {/* breadcrumb */}
@@ -121,7 +124,7 @@ export default async function ProductPage({
         <ProductTabs product={product} />
 
         {/* related */}
-        <section className="mt-24 pb-24">
+        <section className="mt-24 pb-16">
           <h2 className="h-display text-3xl">You might also like</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {recommendations.map((p) => (
@@ -129,6 +132,8 @@ export default async function ProductPage({
             ))}
           </div>
         </section>
+
+        <RecentlyViewed excludeId={product.id} />
       </div>
     </div>
   );

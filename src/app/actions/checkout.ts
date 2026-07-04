@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import crypto from "crypto";
+import { ADVANCE_FEE, COUPONS, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
 // import { prisma } from "@/lib/prisma";
 
 const addressSchema = z.object({
@@ -26,13 +27,8 @@ const checkoutSchema = z.object({
   address: addressSchema,
   lines: z.array(lineSchema).min(1),
   couponCode: z.string().optional(),
-  paymentMethod: z.enum(["RAZORPAY", "COD"]),
+  paymentMethod: z.enum(["ONLINE", "PARTIAL_COD"]),
 });
-
-const COUPONS: Record<string, { type: "PERCENT" | "FIXED"; value: number }> = {
-  BRICK10: { type: "PERCENT", value: 10 },
-  WELCOME500: { type: "FIXED", value: 500 },
-};
 
 function priceOrder(lines: { price: number; qty: number }[], code?: string) {
   const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0);
@@ -41,7 +37,7 @@ function priceOrder(lines: { price: number; qty: number }[], code?: string) {
     const c = COUPONS[code];
     discount = c.type === "PERCENT" ? Math.round((subtotal * c.value) / 100) : c.value;
   }
-  const shipping = subtotal - discount >= 9999 ? 0 : 199;
+  const shipping = subtotal - discount >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
   const total = Math.max(0, subtotal - discount + shipping);
   return { subtotal, discount, shipping, total };
 }
@@ -53,7 +49,10 @@ type PersistArgs = {
   address: z.infer<typeof addressSchema>;
   lines: z.infer<typeof lineSchema>[];
   pricing: ReturnType<typeof priceOrder>;
-  paymentMethod: "RAZORPAY" | "COD";
+  paymentMethod: "ONLINE" | "PARTIAL_COD";
+  paymentStatus: "PENDING" | "PARTIAL" | "PAID";
+  amountPaid: number;
+  codBalance: number;
   couponCode?: string;
   razorpayOrderId?: string;
   status: "PENDING" | "CONFIRMED";
@@ -70,12 +69,14 @@ async function persistOrder(a: PersistArgs) {
         guestEmail: a.address.email,
         status: a.status,
         paymentMethod: a.paymentMethod,
-        paymentStatus: a.paymentMethod === "COD" ? "PENDING" : a.status === "CONFIRMED" ? "PAID" : "PENDING",
+        paymentStatus: a.paymentStatus,
         razorpayOrderId: a.razorpayOrderId ?? null,
         subtotal: a.pricing.subtotal,
         discount: a.pricing.discount,
         shipping: a.pricing.shipping,
         total: a.pricing.total,
+        amountPaid: a.amountPaid,
+        codBalance: a.codBalance,
         couponCode: a.couponCode ?? null,
         shippingAddress: a.address as unknown as object,
         items: {
@@ -91,9 +92,15 @@ async function persistOrder(a: PersistArgs) {
 }
 
 /** Send an order-confirmation email via Resend (no-op when unset). */
-async function sendOrderEmail(to: string, name: string, orderNumber: string, total: number) {
+async function sendOrderEmail(
+  to: string, name: string, orderNumber: string, total: number, amountPaid = total, codBalance = 0
+) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return;
+  const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const payLine = codBalance > 0
+    ? `<p>Paid now: <b>${inr(amountPaid)}</b> · Pay on delivery: <b>${inr(codBalance)}</b></p>`
+    : `<p>Paid: <b>${inr(total)}</b></p>`;
   try {
     const { Resend } = await import("resend");
     const resend = new Resend(key);
@@ -101,7 +108,7 @@ async function sendOrderEmail(to: string, name: string, orderNumber: string, tot
       from: process.env.RESEND_FROM_EMAIL ?? "KraftyBrix <hello@kraftybrix.com>",
       to,
       subject: `Your KraftyBrix order ${orderNumber} is confirmed 🏁`,
-      html: `<div style="font-family:sans-serif"><h2>Thanks, ${name}!</h2><p>Order <b>${orderNumber}</b> is confirmed. Total: <b>₹${total.toLocaleString("en-IN")}</b>. It ships within 24 hours.</p><p>— KraftyBrix</p></div>`,
+      html: `<div style="font-family:sans-serif"><h2>Thanks, ${name}!</h2><p>Order <b>${orderNumber}</b> is confirmed and ships within 24 hours.</p><p>Order total: <b>${inr(total)}</b></p>${payLine}<p>— KraftyBrix</p></div>`,
     });
   } catch (e) {
     console.error("[email] send failed:", e);
@@ -117,8 +124,11 @@ export async function applyCoupon(code: string, subtotal: number) {
 }
 
 /**
- * Create an order. For Razorpay, creates a Razorpay order and returns its id
- * so the client can open the checkout widget. For COD, persists immediately.
+ * Create an order. Both methods collect money online via Razorpay:
+ *  • ONLINE       → the full order total is charged now.
+ *  • PARTIAL_COD  → only the ₹99 advance is charged now; the rest is
+ *                   collected as cash on delivery (codBalance).
+ * Returns the Razorpay order id so the client can open the checkout widget.
  */
 export async function createOrder(input: z.infer<typeof checkoutSchema>) {
   const parsed = checkoutSchema.safeParse(input);
@@ -128,57 +138,55 @@ export async function createOrder(input: z.infer<typeof checkoutSchema>) {
   const pricing = priceOrder(lines, couponCode?.toUpperCase());
   const orderNumber = "KB" + Date.now().toString(36).toUpperCase();
 
-  // Persist a PENDING order (stubbed until DB configured):
-  // const order = await prisma.order.create({ data: { ... } });
+  // How much is charged online now vs collected on delivery.
+  const payNow = paymentMethod === "PARTIAL_COD" ? Math.min(ADVANCE_FEE, pricing.total) : pricing.total;
+  const codBalance = paymentMethod === "PARTIAL_COD" ? Math.max(0, pricing.total - payNow) : 0;
 
-  if (paymentMethod === "RAZORPAY") {
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? keyId ?? "";
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? keyId ?? "";
 
-    // Live/test: create a real Razorpay order so the checkout widget works.
-    // Works in TEST mode with rzp_test_* keys — use the test cards below.
-    if (keyId && keySecret) {
-      try {
-        const Razorpay = (await import("razorpay")).default;
-        const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
-        const rzpOrder = await rzp.orders.create({
-          amount: pricing.total * 100, // amount in paise
-          currency: "INR",
-          receipt: orderNumber,
-          notes: { coupon: couponCode ?? "", email: address.email },
-        });
-        await persistOrder({ orderNumber, address, lines, pricing, paymentMethod, couponCode, razorpayOrderId: rzpOrder.id, status: "PENDING" });
-        return {
-          ok: true as const,
-          orderNumber,
-          method: "RAZORPAY" as const,
-          amount: pricing.total,
-          razorpayOrderId: rzpOrder.id,
-          keyId: publicKey,
-        };
-      } catch (e) {
-        console.error("[razorpay] order create failed:", e);
-        return { ok: false as const, error: "Could not start payment. Please try again." };
-      }
+  // Live/test: create a real Razorpay order for the online portion.
+  // Works in TEST mode with rzp_test_* keys — use the test cards below.
+  if (keyId && keySecret) {
+    try {
+      const Razorpay = (await import("razorpay")).default;
+      const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
+      const rzpOrder = await rzp.orders.create({
+        amount: payNow * 100, // amount in paise
+        currency: "INR",
+        receipt: orderNumber,
+        notes: { coupon: couponCode ?? "", email: address.email, method: paymentMethod },
+      });
+      await persistOrder({
+        orderNumber, address, lines, pricing, paymentMethod, couponCode,
+        razorpayOrderId: rzpOrder.id, status: "PENDING", paymentStatus: "PENDING",
+        amountPaid: 0, codBalance,
+      });
+      return {
+        ok: true as const, orderNumber, method: paymentMethod,
+        total: pricing.total, payNow, codBalance,
+        razorpayOrderId: rzpOrder.id, keyId: publicKey,
+      };
+    } catch (e) {
+      console.error("[razorpay] order create failed:", e);
+      return { ok: false as const, error: "Could not start payment. Please try again." };
     }
-
-    // No keys configured yet — return a demo id so the UI flow is testable.
-    return {
-      ok: true as const,
-      orderNumber,
-      method: "RAZORPAY" as const,
-      amount: pricing.total,
-      razorpayOrderId: `order_demo_${orderNumber}`,
-      keyId: publicKey,
-      demo: true as const,
-    };
   }
 
-  // COD — confirmed immediately, email the customer.
-  await persistOrder({ orderNumber, address, lines, pricing, paymentMethod, couponCode, status: "CONFIRMED" });
-  await sendOrderEmail(address.email, address.fullName, orderNumber, pricing.total);
-  return { ok: true as const, orderNumber, method: "COD" as const, amount: pricing.total };
+  // No keys yet — simulate the payment so the whole flow is testable, and
+  // record the order as confirmed so it shows up in the admin.
+  await persistOrder({
+    orderNumber, address, lines, pricing, paymentMethod, couponCode,
+    status: "CONFIRMED", paymentStatus: paymentMethod === "PARTIAL_COD" ? "PARTIAL" : "PAID",
+    amountPaid: payNow, codBalance,
+  });
+  await sendOrderEmail(address.email, address.fullName, orderNumber, pricing.total, payNow, codBalance);
+  return {
+    ok: true as const, orderNumber, method: paymentMethod,
+    total: pricing.total, payNow, codBalance,
+    razorpayOrderId: `order_demo_${orderNumber}`, keyId: publicKey, demo: true as const,
+  };
 }
 
 /** Verify Razorpay signature server-side after payment. */
@@ -198,13 +206,22 @@ export async function verifyPayment(input: {
   if (valid && dbEnabled()) {
     try {
       const { prisma } = await import("@/lib/prisma");
-      const order = await prisma.order.update({
-        where: { razorpayOrderId: input.razorpayOrderId },
-        data: { paymentStatus: "PAID", status: "CONFIRMED", razorpayPaymentId: input.razorpayPaymentId },
-      });
-      if (order.guestEmail) {
-        const addr = order.shippingAddress as { fullName?: string } | null;
-        await sendOrderEmail(order.guestEmail, addr?.fullName ?? "there", order.orderNumber, order.total);
+      const existing = await prisma.order.findUnique({ where: { razorpayOrderId: input.razorpayOrderId } });
+      if (existing) {
+        const isPartial = existing.paymentMethod === "PARTIAL_COD";
+        const order = await prisma.order.update({
+          where: { razorpayOrderId: input.razorpayOrderId },
+          data: {
+            status: "CONFIRMED",
+            paymentStatus: isPartial ? "PARTIAL" : "PAID",
+            amountPaid: existing.total - existing.codBalance,
+            razorpayPaymentId: input.razorpayPaymentId,
+          },
+        });
+        if (order.guestEmail) {
+          const addr = order.shippingAddress as { fullName?: string } | null;
+          await sendOrderEmail(order.guestEmail, addr?.fullName ?? "there", order.orderNumber, order.total, order.amountPaid, order.codBalance);
+        }
       }
     } catch (e) {
       console.error("[verify] order update failed:", e);

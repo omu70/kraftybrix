@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { PromoModal } from "@/components/cro/promo-modal";
+import { CookieConsent } from "@/components/cro/cookie-consent";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { Analytics } from "@/components/analytics";
 
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <CartDrawer />
         <PromoModal />
+        <CookieConsent />
         <Analytics />
       </body>
     </html>

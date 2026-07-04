@@ -124,6 +124,8 @@ model Order {
   discount        Int          @default(0)
   shipping        Int          @default(0)
   total           Int
+  amountPaid      Int          @default(0) // collected online (₹99 advance or full)
+  codBalance      Int          @default(0) // cash to collect on delivery
   couponCode      String?
   items           OrderItem[]
   shippingAddress Json
@@ -145,12 +147,13 @@ enum OrderStatus {
 }
 
 enum PaymentMethod {
-  RAZORPAY
-  COD
+  ONLINE
+  PARTIAL_COD
 }
 
 enum PaymentStatus {
   PENDING
+  PARTIAL
   PAID
   FAILED
   REFUNDED

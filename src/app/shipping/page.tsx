@@ -9,8 +9,8 @@ export default function Page() {
       <p>Standard delivery across India takes 2–5 business days. Metro cities are usually quicker. You’ll receive a tracking link by email and SMS once your order ships.</p>
       <h2>Shipping charges</h2>
       <p>Flat ₹199 shipping on orders below ₹9,999. Orders of ₹9,999 and above ship free via express courier.</p>
-      <h2>Cash on Delivery</h2>
-      <p>COD is available nationwide. Please keep the exact amount ready for the delivery partner.</p>
+      <h2>Partial COD</h2>
+      <p>Pay a small ₹99 advance online to confirm your order, then pay the remaining balance in cash when it’s delivered. Available nationwide — please keep the exact balance ready for the delivery partner.</p>
       <h2>Delays</h2>
       <p>Occasionally couriers are delayed by weather or regional disruptions. If your order hasn’t moved in 5 business days, email <a href="mailto:hello@kraftybrix.com">hello@kraftybrix.com</a> and we’ll chase it for you.</p>
     </PolicyPage>
