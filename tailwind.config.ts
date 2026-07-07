@@ -42,6 +42,7 @@ const config: Config = {
       },
       fontFamily: {
         display: ["var(--font-display)", "Space Grotesk", "sans-serif"],
+        archivo: ["var(--font-archivo)", "Archivo", "sans-serif"],
         sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
       },
       boxShadow: {

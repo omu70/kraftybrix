@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Space_Grotesk, Archivo } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -16,6 +16,12 @@ const display = Space_Grotesk({
   variable: "--font-display",
   display: "swap",
   weight: ["500", "600", "700"],
+});
+const archivo = Archivo({
+  subsets: ["latin"],
+  variable: "--font-archivo",
+  display: "swap",
+  weight: ["600", "800", "900"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kraftybrix.com";
@@ -61,7 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <html lang="en" className={`${inter.variable} ${display.variable} dark`}>
+    <html lang="en" className={`${inter.variable} ${display.variable} ${archivo.variable} dark`}>
       <body>
         <script
           type="application/ld+json"
