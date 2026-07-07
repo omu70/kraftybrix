@@ -32,7 +32,7 @@ export function BestSellers() {
   }, []);
 
   return (
-    <section ref={root} className="relative py-24">
+    <section ref={root} className="relative py-16 sm:py-24">
       <div className="container-wide">
         <Reveal>
           <div className="flex items-end justify-between gap-6">

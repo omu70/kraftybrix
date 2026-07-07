@@ -9,7 +9,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function Categories() {
   return (
-    <section id="categories" className="relative py-24">
+    <section id="categories" className="relative py-16 sm:py-24">
       <div className="container-wide">
         <Reveal>
           <p className="eyebrow"><span className="h-px w-8 bg-brand-red" /> Explore the lineup</p>
@@ -74,10 +74,7 @@ export function Categories() {
                     </span>
                   </div>
                   <div className="flex flex-1 items-center justify-between gap-2 p-4">
-                    <div className="min-w-0">
-                      <h3 className="truncate font-display text-base font-bold text-cream">{cat.name}</h3>
-                      <p className="mt-0.5 line-clamp-1 text-xs text-black/50">{cat.blurb}</p>
-                    </div>
+                    <h3 className="truncate font-display text-base font-bold text-cream">{cat.name}</h3>
                     <ArrowUpRight size={18} className="shrink-0 text-brand-gold transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </div>
                 </Link>

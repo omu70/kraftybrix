@@ -43,8 +43,7 @@ export function Footer() {
           <div>
             <Logo className="h-12" />
             <p className="mt-4 max-w-xs text-sm text-black/55">
-              Premium brick-built automotive collectibles for enthusiasts who
-              never stop dreaming. Build the garage you've always dreamed of.
+              Premium brick-built automotive collectibles.
             </p>
             <div className="mt-6 flex gap-3">
               {[Instagram, Youtube, Twitter, Facebook].map((Icon, i) => (

@@ -106,7 +106,7 @@ export function BuyBox({ product }: { product: Product }) {
       {/* trust row — CRO */}
       <div className="mt-7 grid grid-cols-3 gap-3 border-t border-black/10 pt-6 text-center">
         {[
-          { icon: ShieldCheck, label: "Lifetime brick guarantee" },
+          { icon: ShieldCheck, label: "100% secure checkout" },
           { icon: Truck, label: "Free insured shipping" },
           { icon: RotateCcw, label: "30-day returns" },
         ].map((t) => (

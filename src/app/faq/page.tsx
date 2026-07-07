@@ -28,7 +28,7 @@ export default function Page() {
       <p>Every model is graded Beginner, Intermediate, Advanced or Master, with an estimated build time on the product page, so you always know what to expect.</p>
 
       <h2>What if a piece is missing or faulty?</h2>
-      <p>Every kit is covered by our lifetime brick guarantee. Email <a href="mailto:hello@kraftybrix.com">hello@kraftybrix.com</a> and we&apos;ll send a free replacement.</p>
+      <p>If a piece is missing or damaged on arrival, email <a href="mailto:hello@kraftybrix.com">hello@kraftybrix.com</a> with a photo and we&apos;ll send a free replacement.</p>
     </PolicyPage>
   );
 }

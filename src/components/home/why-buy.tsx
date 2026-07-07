@@ -15,7 +15,7 @@ const reasons = [
 ];
 
 const promises = [
-  { icon: ShieldCheck, label: "Lifetime brick guarantee" },
+  { icon: ShieldCheck, label: "100% secure checkout" },
   { icon: Truck, label: "Free express shipping ₹999+" },
   { icon: BadgeIndianRupee, label: "Partial COD — ₹99 now" },
   { icon: RotateCcw, label: "30-day easy returns" },
@@ -23,7 +23,7 @@ const promises = [
 
 export function WhyBuy() {
   return (
-    <section className="relative py-24">
+    <section className="relative py-16 sm:py-24">
       <div className="container-wide">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
@@ -34,13 +34,10 @@ export function WhyBuy() {
               The car you can't afford —{" "}
               <span className="text-gradient-red">built by your own hands</span>
             </h2>
-            <p className="mt-4 text-black/60">
-              Own the icon — for the price of a night out.
-            </p>
           </div>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:mt-14 sm:gap-5 lg:grid-cols-3">
           {reasons.map((r, i) => (
             <Reveal key={r.title} i={i}>
               <motion.div
@@ -59,9 +56,9 @@ export function WhyBuy() {
 
         {/* Risk reversal — kills the "what if" objection */}
         <Reveal>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-black/10 bg-black/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-black/10 bg-black/[0.06] lg:grid-cols-4">
             {promises.map((p) => (
-              <div key={p.label} className="flex items-center gap-3 bg-ink-800 px-6 py-5">
+              <div key={p.label} className="flex items-center gap-3 bg-ink-800 px-4 py-4 sm:px-6 sm:py-5">
                 <p.icon size={22} className="shrink-0 text-brand-red" />
                 <span className="text-sm font-medium text-cream">{p.label}</span>
               </div>

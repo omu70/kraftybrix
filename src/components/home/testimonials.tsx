@@ -46,7 +46,7 @@ function Row({ reverse }: { reverse?: boolean }) {
 
 export function Testimonials() {
   return (
-    <section className="relative overflow-hidden border-y border-black/10 bg-ink-800/40 py-24">
+    <section className="relative overflow-hidden border-y border-black/10 bg-ink-800/40 py-16 sm:py-24">
       <div className="container-wide">
         <div className="mx-auto max-w-2xl text-center">
           <p className="eyebrow justify-center"><span className="h-px w-8 bg-brand-red" /> 12,000+ verified buyers</p>

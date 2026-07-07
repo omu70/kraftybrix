@@ -13,7 +13,7 @@ export default function Page() {
       <h2>Why we started</h2>
       <p>We were tired of choosing between toys that felt cheap and display models that cost a fortune. So we built a third option: precise, premium brick kits with working details, clear instructions and a price that respects you.</p>
       <h2>What makes a KraftyBrix</h2>
-      <p>Aerospace-grade ABS bricks with tight, satisfying clutch. Reference-accurate silhouettes. A display plinth in every box. And a lifetime brick guarantee — if a piece ever fails, we replace it free.</p>
+      <p>Aerospace-grade ABS bricks with tight, satisfying clutch. Reference-accurate silhouettes. A display plinth in every box.</p>
       <h2>Built for builders</h2>
       <p>From first-time builders to seasoned collectors, every kit is graded for difficulty and build time so you always know what you&apos;re getting into. The journey is half the joy.</p>
       <p>Questions or ideas? We&apos;d love to hear from you at <a href="mailto:hello@kraftybrix.com">hello@kraftybrix.com</a>.</p>

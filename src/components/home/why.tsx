@@ -21,7 +21,7 @@ const features = [
 
 export function Why() {
   return (
-    <section className="relative border-y border-black/10 bg-ink-800/40 py-24">
+    <section className="relative border-y border-black/10 bg-ink-800/40 py-16 sm:py-24">
       <div className="container-wide">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
@@ -30,15 +30,15 @@ export function Why() {
           </div>
         </Reveal>
 
-        <div className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-black/10 bg-black/[0.04] sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-black/10 bg-black/[0.04] lg:grid-cols-3">
           {features.map((f, i) => (
             <Reveal key={f.title} i={i}>
-              <div className="group h-full bg-ink-900 p-8 transition-colors hover:bg-ink-800">
-                <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-red/10 text-brand-red transition group-hover:bg-brand-red group-hover:text-cream">
+              <div className="group h-full bg-ink-900 p-5 transition-colors hover:bg-ink-800 sm:p-8">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-red/10 text-brand-red transition group-hover:bg-brand-red group-hover:text-cream sm:h-12 sm:w-12">
                   <f.icon size={22} />
                 </div>
-                <h3 className="mt-5 font-display text-lg font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-black/55">{f.body}</p>
+                <h3 className="mt-4 font-display text-base font-semibold sm:mt-5 sm:text-lg">{f.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-black/55">{f.body}</p>
               </div>
             </Reveal>
           ))}

@@ -73,7 +73,7 @@ export function PromoModal() {
                 Unlock <span className="text-gradient-red">10% off</span><br />your first model
               </h2>
               <p className="mt-3 text-black/60">
-                Join 12,000+ collectors. Free express shipping over ₹999 and a lifetime brick guarantee on every kit.
+                Join 12,000+ collectors. Free express shipping over ₹999 on every kit.
               </p>
 
               <button

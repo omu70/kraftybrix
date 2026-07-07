@@ -56,7 +56,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.18 }}
             className="mt-6 max-w-lg text-lg text-white/75"
           >
-            Premium brick-built supercars &amp; icons. Build it. Display it. Own it.
+Build it. Display it. Own it.
           </motion.p>
 
           <motion.div
@@ -87,7 +87,7 @@ export function Hero() {
               <span className="font-semibold text-white">4.9</span> · 3,000+ builders
             </span>
             <span className="h-4 w-px bg-white/20" />
-            <span className="flex items-center gap-1.5"><ShieldCheck size={15} className="text-brand-gold" /> Lifetime guarantee</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck size={15} className="text-brand-gold" /> 30-day returns</span>
             <span className="h-4 w-px bg-white/20" />
             <span className="flex items-center gap-1.5"><Truck size={15} className="text-brand-gold" /> Free shipping ₹999+</span>
           </motion.div>

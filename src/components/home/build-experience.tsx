@@ -42,7 +42,7 @@ export function BuildExperience() {
   }, []);
 
   return (
-    <section id="build" ref={root} className="relative overflow-hidden py-28">
+    <section id="build" ref={root} className="relative overflow-hidden py-16 sm:py-28">
       <div className="absolute inset-0 bg-radial-spot opacity-40" />
       <div className="container-wide relative">
         <div className="mx-auto max-w-2xl text-center">
@@ -52,7 +52,7 @@ export function BuildExperience() {
 
         <div className="relative mt-20">
           <div className="be-line absolute left-0 top-12 hidden h-px w-full bg-gradient-to-r from-brand-red via-brand-blue to-transparent lg:block" />
-          <div className="grid gap-10 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
             {steps.map((s) => (
               <div key={s.n} className="be-step relative">
                 <div className="relative z-10 grid h-24 w-24 place-items-center rounded-2xl border border-black/10 bg-ink-800">

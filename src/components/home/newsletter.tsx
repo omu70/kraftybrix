@@ -20,7 +20,7 @@ export function Newsletter() {
   }
 
   return (
-    <section className="relative py-28">
+    <section className="relative py-16 sm:py-28">
       <div className="container-wide">
         <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-ink-800 p-10 sm:p-16">
           <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand-red/20 blur-3xl" />
@@ -33,7 +33,7 @@ export function Newsletter() {
                 Get early access to every new drop
               </h2>
               <p className="mt-4 max-w-md text-black/60">
-                Limited editions sell out in hours. Subscribers get a 24-hour head start, plus an exclusive welcome offer.
+                24-hour early access to every drop, plus a welcome offer.
               </p>
             </div>
 

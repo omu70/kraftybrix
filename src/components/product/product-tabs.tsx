@@ -8,7 +8,7 @@ import type { Product } from "@/lib/types";
 const faqs = [
   { q: "Are the bricks compatible with other brands?", a: "Yes — our ABS bricks are fully compatible with all major brick systems, so you can customise and combine freely." },
   { q: "How long does the build take?", a: "It varies by model. Each product page lists an estimated build time, ranging from 4 to 9+ focused hours." },
-  { q: "What if I'm missing or break a piece?", a: "Every kit is covered by our lifetime brick guarantee. We'll ship replacements free, forever." },
+  { q: "What if a piece is missing or damaged?", a: "If a piece is missing or damaged on arrival, email us a photo and we'll ship a free replacement." },
   { q: "Do you ship internationally?", a: "We ship across India with free insured express delivery over ₹999, and to 40+ countries worldwide." },
 ];
 

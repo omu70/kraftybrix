@@ -42,7 +42,7 @@ export function StatsBand() {
   }, []);
 
   return (
-    <section ref={root} className="relative overflow-hidden border-y border-black/10 py-20">
+    <section ref={root} className="relative overflow-hidden border-y border-black/10 py-14 sm:py-20">
       <div className="absolute inset-0 bg-radial-spot opacity-40" />
       <div className="container-wide relative">
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">

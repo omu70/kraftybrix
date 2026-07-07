@@ -59,9 +59,8 @@ export function BrickBuild() {
       <div className="container-wide flex min-h-[100svh] flex-col items-center justify-center py-16 sm:py-20">
         <p className="eyebrow justify-center"><span className="h-px w-8 bg-brand-red" /> Brick by brick</p>
         <h2 className="h-display mt-3 text-center text-4xl sm:text-5xl">Watch it come together</h2>
-        <p className="mt-3 max-w-md text-center text-black/55">Every kit clicks into a display-ready icon. Keep scrolling to build it.</p>
 
-        <div className="relative mt-10 aspect-[4/3] w-full max-w-3xl">
+        <div className="relative mt-6 aspect-square w-full max-w-3xl sm:mt-10 sm:aspect-[4/3]">
           {img && TILES.map(({ c, r }, i) => (
             <div
               key={i}

@@ -47,7 +47,7 @@ export function CarDrive() {
         <div className="cd-heading max-w-xl">
           <p className="eyebrow"><span className="h-px w-8 bg-brand-red" /> Built to move</p>
           <h2 className="h-display mt-3 text-4xl sm:text-6xl">Engineered down to the last brick</h2>
-          <p className="mt-4 max-w-md text-black/55">Working steering, opening doors, rolling wheels. Scroll to take it for a drive.</p>
+          <p className="mt-4 text-black/55">Scroll to take it for a drive.</p>
         </div>
       </div>
 

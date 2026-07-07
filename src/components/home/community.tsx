@@ -19,7 +19,7 @@ export function Community() {
   const [liked, setLiked] = useState<Record<number, boolean>>({});
 
   return (
-    <section id="community" className="relative py-24">
+    <section id="community" className="relative py-16 sm:py-24">
       <div className="container-wide">
         <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-4">
