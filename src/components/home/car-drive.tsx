@@ -19,6 +19,7 @@ export function CarDrive() {
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
     gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true }); // avoid mobile address-bar resize jumps
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const ctx = gsap.context(() => {
       if (reduce) return;
@@ -37,12 +38,12 @@ export function CarDrive() {
   return (
     <section
       ref={section}
-      className="relative min-h-screen overflow-hidden"
+      className="relative min-h-[100svh] overflow-hidden"
       style={{ background: "linear-gradient(180deg,#F4EEE4 0%,#ffffff 62%,#eef1f6 100%)" }}
     >
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 55% at 50% 28%, rgba(245,166,35,0.12), transparent 70%)" }} />
 
-      <div className="container-wide relative flex min-h-screen flex-col justify-center">
+      <div className="container-wide relative flex min-h-[100svh] flex-col justify-center">
         <div className="cd-heading max-w-xl">
           <p className="eyebrow"><span className="h-px w-8 bg-brand-red" /> Built to move</p>
           <h2 className="h-display mt-3 text-4xl sm:text-6xl">Engineered down to the last brick</h2>

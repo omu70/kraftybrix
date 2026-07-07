@@ -26,6 +26,7 @@ export function BrickBuild() {
     if (typeof window === "undefined") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true }); // prevents jumps when the mobile address bar shows/hides
     const ctx = gsap.context(() => {
       const bricks = gsap.utils.toArray<HTMLElement>(".brick");
       gsap.timeline({
@@ -55,7 +56,7 @@ export function BrickBuild() {
 
   return (
     <section ref={section} className="relative overflow-hidden bg-ink-900">
-      <div className="container-wide flex min-h-screen flex-col items-center justify-center py-20">
+      <div className="container-wide flex min-h-[100svh] flex-col items-center justify-center py-16 sm:py-20">
         <p className="eyebrow justify-center"><span className="h-px w-8 bg-brand-red" /> Brick by brick</p>
         <h2 className="h-display mt-3 text-center text-4xl sm:text-5xl">Watch it come together</h2>
         <p className="mt-3 max-w-md text-center text-black/55">Every kit clicks into a display-ready icon. Keep scrolling to build it.</p>

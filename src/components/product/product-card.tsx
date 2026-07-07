@@ -9,6 +9,7 @@ import type { Product } from "@/lib/types";
 import { cn, formatPrice, discountPct } from "@/lib/utils";
 import { Stars } from "@/components/ui/stars";
 import { Badge } from "@/components/ui/badge";
+import { DeliveryEstimate } from "@/components/product/delivery-estimate";
 import { BrickCarArt } from "@/components/brand/brick-car-art";
 import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
@@ -42,7 +43,7 @@ export function ProductCard({ product }: { product: Product }) {
       onMouseMove={onMove}
       onMouseLeave={() => setTilt({ rx: 0, ry: 0 })}
       style={{ transform: `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)` }}
-      className="group relative rounded-2xl border border-black/10 bg-ink-800 p-3 transition-shadow duration-300 hover:border-black/20 hover:shadow-card"
+      className="group relative flex h-full flex-col rounded-2xl border border-black/10 bg-ink-800 p-3 transition-shadow duration-300 hover:border-black/20 hover:shadow-card"
     >
       {/* badges */}
       <div className="absolute left-5 top-5 z-10 flex flex-col gap-1.5">
@@ -101,19 +102,22 @@ export function ProductCard({ product }: { product: Product }) {
       </Link>
 
       {/* meta */}
-      <div className="px-2 pb-1 pt-4">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] uppercase tracking-wider text-muted">{product.category}</span>
+      <div className="flex flex-1 flex-col px-2 pb-1 pt-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-[11px] uppercase tracking-wider text-muted">{product.category}</span>
           <Stars rating={product.rating} count={product.reviewCount} size={12} />
         </div>
         <Link href={`/product/${product.slug}`}>
-          <h3 className="mt-1 font-display text-lg font-semibold leading-tight hover:text-brand-red">
+          <h3 className="mt-1 line-clamp-1 font-display text-lg font-semibold leading-tight hover:text-brand-red">
             {product.name}
           </h3>
         </Link>
-        <p className="mt-0.5 text-sm text-black/50">{product.pieces.toLocaleString("en-IN")} pieces</p>
+        <div className="mt-0.5 flex items-center justify-between gap-2">
+          <p className="text-sm text-black/50">{product.pieces.toLocaleString("en-IN")} pieces</p>
+          <DeliveryEstimate compact />
+        </div>
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-auto flex items-center justify-between pt-3">
           <div className="flex items-baseline gap-2">
             <span className="font-display text-xl font-bold">{formatPrice(effPrice)}</span>
             {off > 0 && <span className="text-sm text-black/40 line-through">{formatPrice(product.price)}</span>}
@@ -125,7 +129,7 @@ export function ProductCard({ product }: { product: Product }) {
             }}
             disabled={!product.inStock}
             aria-label="Add to cart"
-            className="grid h-10 w-10 place-items-center rounded-full bg-brand-gold text-ink-900 transition hover:brightness-110 disabled:bg-black/[0.06] disabled:text-black/40"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-gold text-ink-900 transition hover:brightness-110 disabled:bg-black/[0.06] disabled:text-black/40"
           >
             <ShoppingBag size={17} />
           </button>

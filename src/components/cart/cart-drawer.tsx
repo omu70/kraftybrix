@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, Trash2, Bookmark, ShoppingBag } from "lucide-react";
 import { useCart, cartSubtotal } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { BrickCarArt } from "@/components/brand/brick-car-art";
 
-const FREE_SHIP_THRESHOLD = 9999;
+const FREE_SHIP_THRESHOLD = FREE_SHIPPING_THRESHOLD;
 
 export function CartDrawer() {
   const {
@@ -94,7 +95,12 @@ export function CartDrawer() {
                         className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-black/10"
                         style={{ background: `radial-gradient(circle at 30% 25%, ${l.bodyColor}33, #f3f5f8)` }}
                       >
-                        <BrickCarArt color={l.bodyColor} shadow={false} className="w-[88%]" />
+                        {l.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={l.image} alt={l.name} className="h-full w-full object-contain p-1.5 mix-blend-multiply" />
+                        ) : (
+                          <BrickCarArt color={l.bodyColor} shadow={false} className="w-[88%]" />
+                        )}
                       </Link>
                       <div className="flex flex-1 flex-col">
                         <div className="flex justify-between gap-2">

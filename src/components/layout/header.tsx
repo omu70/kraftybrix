@@ -42,7 +42,7 @@ export function Header() {
     >
       {/* Announcement bar */}
       <div className="bg-brand-red text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-white py-1.5">
-        Free express shipping over ₹9,999 · Lifetime brick guarantee
+        Free express shipping over ₹999 · Lifetime brick guarantee
       </div>
 
       <div className="container-wide flex h-16 items-center justify-between gap-6">

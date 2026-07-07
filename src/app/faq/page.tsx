@@ -16,7 +16,7 @@ export default function Page() {
       <p>Orders are dispatched within 24 hours. Standard delivery across India takes 2–5 business days, with metro cities usually quicker. You&apos;ll get a tracking link by email once your order ships.</p>
 
       <h2>How much is shipping?</h2>
-      <p>Flat ₹199 on orders below ₹9,999. Orders of ₹9,999 and above ship free via express courier.</p>
+      <p>Free shipping on orders of ₹999 and above. A flat ₹49 applies below that.</p>
 
       <h2>Can I return a kit?</h2>
       <p>Yes — we offer 30-day hassle-free returns on unopened kits. See our <a href="/returns">Returns policy</a> for details.</p>

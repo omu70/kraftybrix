@@ -9,7 +9,7 @@ const faqs = [
   { q: "Are the bricks compatible with other brands?", a: "Yes — our ABS bricks are fully compatible with all major brick systems, so you can customise and combine freely." },
   { q: "How long does the build take?", a: "It varies by model. Each product page lists an estimated build time, ranging from 4 to 9+ focused hours." },
   { q: "What if I'm missing or break a piece?", a: "Every kit is covered by our lifetime brick guarantee. We'll ship replacements free, forever." },
-  { q: "Do you ship internationally?", a: "We ship across India with free insured express delivery over ₹9,999, and to 40+ countries worldwide." },
+  { q: "Do you ship internationally?", a: "We ship across India with free insured express delivery over ₹999, and to 40+ countries worldwide." },
 ];
 
 export function ProductTabs({ product }: { product: Product }) {
@@ -73,7 +73,7 @@ export function ProductTabs({ product }: { product: Product }) {
 
             {tab === "Shipping" && (
               <div className="max-w-2xl space-y-4 text-black/70">
-                <p>Orders are dispatched within 24 hours via insured express courier. Free shipping on orders over ₹9,999.</p>
+                <p>Orders are dispatched within 24 hours via insured express courier. Free shipping on orders over ₹999.</p>
                 <p>Standard delivery: 2–5 business days across India. International delivery: 7–14 business days to 40+ countries.</p>
                 <p>Partial COD available nationwide — pay just ₹99 online to confirm, the rest on delivery. 30-day hassle-free returns on unopened kits.</p>
               </div>

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Lock, Tag, Check, CreditCard, Wallet } from "lucide-react";
 import { useCart, cartSubtotal } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
-import { ADVANCE_FEE } from "@/lib/constants";
+import { ADVANCE_FEE, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { applyCoupon, createOrder, verifyPayment } from "@/app/actions/checkout";
 import { track } from "@/components/analytics";
@@ -40,7 +40,7 @@ export default function CheckoutPage() {
   });
 
   const discount = applied?.discount ?? 0;
-  const shipping = subtotal - discount >= 9999 ? 0 : 199;
+  const shipping = subtotal - discount >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
   const total = Math.max(0, subtotal - discount + shipping);
 
   // What the customer pays online now vs on delivery.

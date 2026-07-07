@@ -9,7 +9,7 @@ const ITEMS = [
   "Lifetime brick guarantee",
   "Ships in 24 hours",
   "Partial COD — pay ₹99 now",
-  "Free shipping over ₹9,999",
+  "Free shipping over ₹999",
   "3,000+ happy builders",
   "Display plinth in every box",
 ];
