@@ -9,7 +9,6 @@ import { getBestSellers } from "@/lib/products";
 import { ProductCard } from "@/components/product/product-card";
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
-import { SectionIndex } from "@/components/ui/section-index";
 
 export function BestSellers() {
   const root = useRef<HTMLDivElement>(null);
@@ -37,7 +36,10 @@ export function BestSellers() {
       <div className="container-wide">
         <Reveal>
           <div className="flex items-end justify-between gap-6">
-            <SectionIndex index="03" label="Most wanted" title="Best sellers" />
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider text-brand-red">Most wanted</p>
+              <h2 className="mt-2 font-archivo text-3xl font-extrabold tracking-tight text-cream sm:text-4xl">Best sellers</h2>
+            </div>
             <div className="hidden items-center gap-2 sm:flex">
               <button onClick={() => scrollBy(-1)} aria-label="Previous" className="grid h-11 w-11 place-items-center rounded-full border border-black/15 hover:border-black/40">
                 <ChevronLeft size={18} />

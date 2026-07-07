@@ -1,62 +1,54 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { categories, categoryCount, categoryImage } from "@/lib/products";
-import { SectionIndex } from "@/components/ui/section-index";
 
 export function Categories() {
-  const [active, setActive] = useState<string | null>(null);
-  const activeImg = active ? categoryImage(active) : null;
-
   return (
-    <section id="categories" className="relative overflow-hidden bg-ink-900 py-16 sm:py-24">
-      {/* hover image reveal (desktop only) */}
-      <div className="pointer-events-none absolute right-[5%] top-1/2 z-0 hidden w-72 -translate-y-1/2 lg:block xl:w-80">
-        <AnimatePresence mode="wait">
-          {activeImg && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <motion.img
-              key={activeImg}
-              src={activeImg}
-              alt=""
-              initial={{ opacity: 0, y: 16, rotate: -3 }}
-              animate={{ opacity: 1, y: 0, rotate: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full object-contain mix-blend-multiply"
-            />
-          )}
-        </AnimatePresence>
-      </div>
+    <section id="categories" className="relative bg-ink-900 py-14 sm:py-20">
+      <div className="container-wide">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wider text-brand-red">Shop by category</p>
+            <h2 className="mt-2 font-archivo text-3xl font-extrabold tracking-tight text-cream sm:text-4xl">Find your obsession</h2>
+          </div>
+          <Link href="/collection" className="hidden shrink-0 text-sm font-semibold text-brand-red hover:underline sm:block">
+            View all →
+          </Link>
+        </div>
 
-      <div className="container-wide relative z-10">
-        <SectionIndex index="02" label="The lineup" title="Find your obsession" />
-
-        <ul className="mt-12 border-t border-black/15">
-          {categories.map((c, i) => (
-            <li
-              key={c.slug}
-              onMouseEnter={() => setActive(c.name)}
-              onMouseLeave={() => setActive(null)}
-            >
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          {categories.map((cat) => {
+            const img = categoryImage(cat.name);
+            return (
               <Link
-                href={`/collection?category=${encodeURIComponent(c.name)}`}
-                className="group flex items-center gap-5 border-b border-black/15 py-5 transition-colors hover:bg-black/[0.02] sm:py-7"
+                key={cat.slug}
+                href={`/collection?category=${encodeURIComponent(cat.name)}`}
+                className="group overflow-hidden rounded-2xl border border-black/10 bg-white transition hover:-translate-y-0.5 hover:shadow-card"
               >
-                <span className="w-6 shrink-0 font-display text-xs text-black/35">0{i + 1}</span>
-                <span className="min-w-0 flex-1 truncate font-archivo text-3xl font-black uppercase tracking-tight transition-all duration-300 group-hover:translate-x-3 group-hover:text-brand-red sm:text-5xl lg:text-6xl">
-                  {c.name}
-                </span>
-                <span className="shrink-0 font-display text-[11px] uppercase tracking-[0.2em] text-black/40">
-                  {categoryCount(c.name)} models
-                </span>
-                <span className="shrink-0 text-black/30 transition group-hover:translate-x-1 group-hover:text-brand-red">→</span>
+                <div
+                  className="relative aspect-[5/4] overflow-hidden"
+                  style={{ background: `radial-gradient(80% 80% at 50% 40%, #ffffff 0%, ${cat.from ?? "#f0f0f0"}1f 100%)` }}
+                >
+                  {img && (
+                    <Image
+                      src={img}
+                      alt={cat.name}
+                      fill
+                      sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 300px"
+                      className="object-contain p-4 mix-blend-multiply transition-transform duration-500 group-hover:scale-110"
+                    />
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2 px-4 py-3">
+                  <span className="truncate font-semibold text-cream">{cat.name}</span>
+                  <span className="shrink-0 text-xs text-black/45">{categoryCount(cat.name)}</span>
+                </div>
               </Link>
-            </li>
-          ))}
-        </ul>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
