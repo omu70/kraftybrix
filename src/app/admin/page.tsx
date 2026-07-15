@@ -12,7 +12,7 @@ import { ADVANCE_FEE, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, COUPONS } from "@/l
 import { Badge } from "@/components/ui/badge";
 import {
   listAdminProducts, saveAdminProduct, deleteAdminProduct, seedCatalogue,
-  listAdminOrders, updateOrderStatus, adminStats, listSubscribers, getConfigStatus,
+  listAdminOrders, updateOrderStatus, adminStats, listSubscribers, getConfigStatus, testDatabase,
   type AdminProduct, type AdminOrder, type OrderStatus, type AdminStats,
 } from "@/app/actions/admin";
 import { adminLogout } from "@/app/actions/admin-auth";
@@ -64,6 +64,7 @@ export default function AdminPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [subs, setSubs] = useState<{ email: string; name: string | null; createdAt: string }[]>([]);
   const [config, setConfig] = useState<Config | null>(null);
+  const [dbTest, setDbTest] = useState<{ ok: boolean; message: string } | null>(null);
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
@@ -410,6 +411,19 @@ export default function AdminPage() {
                   <StatusRow icon={CreditCard} label="Razorpay payments" ok={config.razorpay} okText="Configured" offText="Test mode — add Razorpay keys" />
                   <StatusRow icon={Mail} label="Order emails (Resend)" ok={config.email} okText="Configured" offText="Optional — add RESEND_API_KEY" />
                   <StatusRow icon={CheckCircle2} label="Admin login protection" ok={config.adminProtected} okText="Protected" offText="Set ADMIN_SESSION to lock /admin" />
+                </div>
+                <div className="mt-5 border-t border-black/10 pt-4">
+                  <button
+                    onClick={async () => { setDbTest({ ok: false, message: "Testing…" }); setDbTest(await testDatabase()); }}
+                    className="rounded-full bg-brand-red px-4 py-2 text-sm font-semibold text-white hover:brightness-110"
+                  >
+                    Test database connection
+                  </button>
+                  {dbTest && (
+                    <p className={`mt-3 rounded-xl border px-4 py-3 text-sm ${dbTest.ok ? "border-green-500/40 bg-green-500/10 text-green-700" : "border-amber-400/50 bg-amber-400/10 text-black/75"}`}>
+                      {dbTest.message}
+                    </p>
+                  )}
                 </div>
               </div>
 

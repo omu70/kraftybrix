@@ -24,6 +24,12 @@ async function prisma() {
   return prisma;
 }
 
+/** Strip any connection string / password from an error before showing it. */
+function safeErr(e: unknown): string {
+  const m = e instanceof Error ? e.message : String(e);
+  return m.replace(/postgres(ql)?:\/\/[^\s"']+/gi, "[hidden]").replace(/\s+/g, " ").trim().slice(0, 220);
+}
+
 const productSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2),
@@ -164,7 +170,7 @@ export async function saveAdminProduct(input: AdminProduct) {
     return { ok: true as const, mode: "db" as const, message: "Product saved." };
   } catch (e) {
     console.error("[admin] save failed:", e);
-    return { ok: false as const, error: "Could not save. Check DB connection." };
+    return { ok: false as const, error: "Save failed — " + safeErr(e) };
   }
 }
 
@@ -205,7 +211,29 @@ export async function seedCatalogue() {
     return { ok: true as const, count: products.length };
   } catch (e) {
     console.error("[admin] seed failed:", e);
-    return { ok: false as const, error: "Could not load products." };
+    return { ok: false as const, error: "Load failed — " + safeErr(e) };
+  }
+}
+
+/** One-click database diagnostic. Reports the exact reason in plain English. */
+export async function testDatabase(): Promise<{ ok: boolean; message: string }> {
+  if (!dbEnabled()) return { ok: false, message: "No DATABASE_URL is set in Vercel yet. Add it, then Redeploy." };
+  try {
+    const db = await prisma();
+    const count = await db.product.count();
+    return { ok: true, message: `Connected. ${count} product${count === 1 ? "" : "s"} in your database.` };
+  } catch (e) {
+    const raw = safeErr(e);
+    let hint = `Error: ${raw}`;
+    if (/does not exist|relation|P2021|no such table/i.test(raw))
+      hint = "Your tables aren't created yet. In Vercel, hit Redeploy (the build creates them). If it still fails, your DATABASE_URL is the ‘pooled’ string — switch to the direct one (host without ‘-pooler’).";
+    else if (/auth|password|P1000|not valid|credentials/i.test(raw))
+      hint = "Wrong database password. Copy a fresh connection string from Neon and update DATABASE_URL in Vercel, then Redeploy.";
+    else if (/reach|P1001|timed out|ENOTFOUND|connect/i.test(raw))
+      hint = "Can’t reach the database. Check the DATABASE_URL host and that your Neon project isn’t paused.";
+    else if (/channel_binding/i.test(raw))
+      hint = "Remove ‘&channel_binding=require’ from your DATABASE_URL in Vercel, then Redeploy.";
+    return { ok: false, message: hint };
   }
 }
 
