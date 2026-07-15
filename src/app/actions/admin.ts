@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { products as seedProducts } from "@/lib/products";
+import { COUPONS } from "@/lib/constants";
 import type { Product } from "@/lib/types";
 
 /**
@@ -212,6 +213,118 @@ export async function seedCatalogue() {
   } catch (e) {
     console.error("[admin] seed failed:", e);
     return { ok: false as const, error: "Load failed — " + safeErr(e) };
+  }
+}
+
+/* ─────────────────────────  Inventory  ───────────────────────── */
+
+export async function updateStock(id: string, stock: number) {
+  if (!dbEnabled()) return { ok: true as const, mode: "demo" as const };
+  try {
+    const db = await prisma();
+    await db.product.update({ where: { id }, data: { stock: Math.max(0, Math.round(stock)) } });
+    revalidatePath("/admin");
+    revalidatePath("/collection");
+    return { ok: true as const, mode: "db" as const };
+  } catch (e) {
+    return { ok: false as const, error: "Stock update failed — " + safeErr(e) };
+  }
+}
+
+/* ─────────────────────────  Coupons  ───────────────────────── */
+
+export type AdminCoupon = {
+  id?: string;
+  code: string;
+  type: "PERCENT" | "FIXED";
+  value: number;
+  minSpend: number;
+  active: boolean;
+};
+
+const couponSchema = z.object({
+  id: z.string().optional(),
+  code: z.string().min(2).transform((s) => s.toUpperCase().replace(/\s+/g, "")),
+  type: z.enum(["PERCENT", "FIXED"]),
+  value: z.coerce.number().positive(),
+  minSpend: z.coerce.number().nonnegative().default(0),
+  active: z.boolean().default(true),
+});
+
+export async function listCoupons(): Promise<{ mode: "db" | "demo"; rows: AdminCoupon[] }> {
+  if (dbEnabled()) {
+    try {
+      const db = await prisma();
+      const rows = await db.coupon.findMany({ orderBy: { createdAt: "desc" } });
+      return {
+        mode: "db",
+        rows: rows.map((c) => ({ id: c.id, code: c.code, type: c.type as "PERCENT" | "FIXED", value: c.value, minSpend: c.minSpend, active: c.active })),
+      };
+    } catch (e) {
+      console.error("[admin] coupons read failed:", e);
+    }
+  }
+  return {
+    mode: "demo",
+    rows: Object.entries(COUPONS).map(([code, c]) => ({ code, type: c.type, value: c.value, minSpend: 0, active: true })),
+  };
+}
+
+export async function saveCoupon(input: AdminCoupon) {
+  const parsed = couponSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: "Enter a code, type and value." };
+  if (!dbEnabled()) return { ok: true as const, mode: "demo" as const, message: "Connect the database to save coupons." };
+  try {
+    const db = await prisma();
+    const d = parsed.data;
+    await db.coupon.upsert({
+      where: { code: d.code },
+      update: { type: d.type as never, value: d.value, minSpend: d.minSpend, active: d.active },
+      create: { code: d.code, type: d.type as never, value: d.value, minSpend: d.minSpend, active: d.active },
+    });
+    revalidatePath("/admin");
+    return { ok: true as const, mode: "db" as const, message: "Coupon saved." };
+  } catch (e) {
+    return { ok: false as const, error: "Save failed — " + safeErr(e) };
+  }
+}
+
+export async function deleteCoupon(code: string) {
+  if (!dbEnabled()) return { ok: true as const };
+  try {
+    const db = await prisma();
+    await db.coupon.deleteMany({ where: { code: code.toUpperCase() } });
+    revalidatePath("/admin");
+    return { ok: true as const };
+  } catch (e) {
+    return { ok: false as const, error: safeErr(e) };
+  }
+}
+
+/* ─────────────────────────  Subscribers (manage)  ───────────────────────── */
+
+export async function addSubscriber(email: string, name?: string) {
+  if (!z.string().email().safeParse(email).success) return { ok: false as const, error: "Enter a valid email." };
+  if (!dbEnabled()) return { ok: true as const, mode: "demo" as const };
+  try {
+    const db = await prisma();
+    await db.subscriber.upsert({ where: { email: email.toLowerCase() }, update: { name: name || undefined }, create: { email: email.toLowerCase(), name: name || undefined } });
+    revalidatePath("/admin");
+    return { ok: true as const, mode: "db" as const };
+  } catch (e) {
+    return { ok: false as const, error: safeErr(e) };
+  }
+}
+
+export async function deleteSubscriber(email: string) {
+  if (!dbEnabled()) return { ok: true as const };
+  try {
+    const db = await prisma();
+    await db.subscriber.deleteMany({ where: { email } });
+    revalidatePath("/admin");
+    return { ok: true as const };
+  } catch (e) {
+    return { ok: false as const, error: safeErr(e) };
   }
 }
 

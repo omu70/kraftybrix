@@ -8,12 +8,13 @@ import {
 } from "lucide-react";
 import { categories as catMeta } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
-import { ADVANCE_FEE, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, COUPONS } from "@/lib/constants";
+import { ADVANCE_FEE, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import {
   listAdminProducts, saveAdminProduct, deleteAdminProduct, seedCatalogue,
   listAdminOrders, updateOrderStatus, adminStats, listSubscribers, getConfigStatus, testDatabase,
-  type AdminProduct, type AdminOrder, type OrderStatus, type AdminStats,
+  updateStock, listCoupons, saveCoupon, deleteCoupon, addSubscriber, deleteSubscriber,
+  type AdminProduct, type AdminOrder, type OrderStatus, type AdminStats, type AdminCoupon,
 } from "@/app/actions/admin";
 import { adminLogout } from "@/app/actions/admin-auth";
 import { useRouter } from "next/navigation";
@@ -65,6 +66,8 @@ export default function AdminPage() {
   const [subs, setSubs] = useState<{ email: string; name: string | null; createdAt: string }[]>([]);
   const [config, setConfig] = useState<Config | null>(null);
   const [dbTest, setDbTest] = useState<{ ok: boolean; message: string } | null>(null);
+  const [coupons, setCoupons] = useState<AdminCoupon[]>([]);
+  const [editingCoupon, setEditingCoupon] = useState<AdminCoupon | null>(null);
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
@@ -74,6 +77,7 @@ export default function AdminPage() {
     listAdminOrders().then((r) => setOrders(r.rows));
     adminStats().then((r) => setStats(r.stats));
     listSubscribers().then((r) => setSubs(r.rows));
+    listCoupons().then((r) => setCoupons(r.rows));
     getConfigStatus().then(setConfig);
   }, []);
 
@@ -99,6 +103,36 @@ export default function AdminPage() {
     setOrders((cur) => cur.map((x) => (x.id === o.id ? { ...x, status } : x)));
     const res = await updateOrderStatus(o.id, status);
     flash(res.ok ? `${o.orderNumber} → ${status.toLowerCase()}` : res.error ?? "Error");
+  }
+  async function onStockSave(id: string, stock: number) {
+    const res = await updateStock(id, stock);
+    if (!res.ok) { flash(res.error ?? "Error"); return; }
+    setRows((cur) => cur.map((x) => (x.id === id ? { ...x, stock } : x)));
+    flash("Stock updated");
+  }
+  async function onSaveCoupon(c: AdminCoupon) {
+    const res = await saveCoupon(c);
+    if (!res.ok) { flash(res.error ?? "Error"); return; }
+    const r = await listCoupons(); setCoupons(r.rows);
+    setEditingCoupon(null);
+    flash(res.message ?? "Saved");
+  }
+  async function onDeleteCoupon(c: AdminCoupon) {
+    if (!confirm(`Delete coupon ${c.code}?`)) return;
+    await deleteCoupon(c.code);
+    setCoupons((cur) => cur.filter((x) => x.code !== c.code));
+    flash("Deleted");
+  }
+  async function onAddSub(email: string, name: string) {
+    const res = await addSubscriber(email, name);
+    if (!res.ok) { flash(res.error ?? "Error"); return; }
+    const r = await listSubscribers(); setSubs(r.rows);
+    flash("Subscriber added");
+  }
+  async function onDeleteSub(email: string) {
+    await deleteSubscriber(email);
+    setSubs((cur) => cur.filter((s) => s.email !== email));
+    flash("Removed");
   }
 
   const filtered = rows.filter((r) => r.name.toLowerCase().includes(query.toLowerCase()));
@@ -322,19 +356,19 @@ export default function AdminPage() {
                   </span>
                 )}
               </div>
-              <Table head={["Product", "Category", "Stock", "Status", ""]}>
+              <Table head={["Product", "Category", "Stock (editable)", "Status", ""]}>
                 {inventory.map((p) => (
                   <tr key={p.slug} className="border-t border-black/5">
                     <td className="py-3 font-medium">{p.name}</td>
                     <td className="py-3 text-black/60">{p.category}</td>
-                    <td className="py-3">{p.stock}</td>
+                    <td className="py-3"><StockCell id={p.id ?? ""} stock={p.stock} onSave={onStockSave} /></td>
                     <td className="py-3">
                       {p.stock === 0 ? <Badge tone="red">Out of stock</Badge>
                         : p.stock <= 5 ? <Badge tone="amber">Low</Badge>
                         : <Badge tone="green">In stock</Badge>}
                     </td>
                     <td className="py-3 text-right">
-                      <button onClick={() => setEditing(p)} className="text-sm text-brand-red hover:underline">Adjust</button>
+                      <button onClick={() => setEditing(p)} className="text-sm text-brand-red hover:underline">Edit</button>
                     </td>
                   </tr>
                 ))}
@@ -367,17 +401,30 @@ export default function AdminPage() {
           {/* ─────────── Coupons ─────────── */}
           {section === "coupons" && (
             <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
-              <h3 className="mb-1 font-display font-bold">Active coupons</h3>
-              <p className="mb-4 text-sm text-black/50">These codes work at checkout right now.</p>
-              <Table head={["Code", "Type", "Discount"]}>
-                {Object.entries(COUPONS).map(([code, c]) => (
-                  <tr key={code} className="border-t border-black/5">
-                    <td className="py-3 font-mono font-medium">{code}</td>
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-display font-bold">Coupons ({coupons.length})</h3>
+                <button onClick={() => setEditingCoupon({ code: "", type: "PERCENT", value: 10, minSpend: 0, active: true })} className="flex items-center gap-1.5 rounded-full bg-brand-red text-white px-4 py-2 text-sm font-semibold">
+                  <Plus size={16} /> Add coupon
+                </button>
+              </div>
+              <Table head={["Code", "Type", "Discount", "Min spend", "Active", ""]}>
+                {coupons.map((c) => (
+                  <tr key={c.code} className="border-t border-black/5">
+                    <td className="py-3 font-mono font-medium">{c.code}</td>
                     <td className="py-3 text-black/60">{c.type === "PERCENT" ? "Percentage" : "Flat"}</td>
                     <td className="py-3">{c.type === "PERCENT" ? `${c.value}% off` : `${formatPrice(c.value)} off`}</td>
+                    <td className="py-3 text-black/60">{c.minSpend ? formatPrice(c.minSpend) : "—"}</td>
+                    <td className="py-3">{c.active ? <Badge tone="green">Active</Badge> : <Badge tone="neutral">Off</Badge>}</td>
+                    <td className="py-3">
+                      <div className="flex justify-end gap-1">
+                        <button onClick={() => setEditingCoupon(c)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-black/[0.06]" title="Edit"><Pencil size={15} /></button>
+                        <button onClick={() => onDeleteCoupon(c)} className="grid h-8 w-8 place-items-center rounded-lg text-brand-red hover:bg-brand-red/10" title="Delete"><Trash2 size={15} /></button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </Table>
+              {mode === "demo" && <p className="mt-4 text-xs text-black/40">Sample coupons shown. Connect the database to add and save your own.</p>}
             </div>
           )}
 
@@ -385,15 +432,19 @@ export default function AdminPage() {
           {section === "subscribers" && (
             <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
               <h3 className="mb-4 font-display font-bold">Newsletter subscribers ({subs.length})</h3>
+              <SubAdd onAdd={onAddSub} />
               {subs.length === 0 ? (
                 <Empty>No subscribers yet.</Empty>
               ) : (
-                <Table head={["Name", "Email", "Joined"]}>
+                <Table head={["Name", "Email", "Joined", ""]}>
                   {subs.map((s) => (
                     <tr key={s.email} className="border-t border-black/5">
                       <td className="py-3 font-medium">{s.name ?? "—"}</td>
                       <td className="py-3 text-black/60">{s.email}</td>
                       <td className="py-3 text-black/60">{fmtDate(s.createdAt)}</td>
+                      <td className="py-3 text-right">
+                        <button onClick={() => onDeleteSub(s.email)} className="grid h-8 w-8 place-items-center rounded-lg text-brand-red hover:bg-brand-red/10" title="Remove"><Trash2 size={15} /></button>
+                      </td>
                     </tr>
                   ))}
                 </Table>
@@ -443,6 +494,7 @@ export default function AdminPage() {
       </div>
 
       {editing && <ProductForm initial={editing} onClose={() => setEditing(null)} onSave={onSave} />}
+      {editingCoupon && <CouponForm initial={editingCoupon} onClose={() => setEditingCoupon(null)} onSave={onSaveCoupon} />}
       {toast && (
         <div className="fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-full bg-cream px-5 py-2.5 text-sm font-medium text-white shadow-card">
           {toast}
@@ -613,6 +665,63 @@ function FormSection({ title, children }: { title: string; children: React.React
     <div className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-wider text-brand-red">{title}</p>
       {children}
+    </div>
+  );
+}
+
+function StockCell({ id, stock, onSave }: { id: string; stock: number; onSave: (id: string, stock: number) => void }) {
+  const [v, setV] = useState(stock);
+  return (
+    <div className="flex items-center gap-2">
+      <input type="number" value={v} onChange={(e) => setV(Number(e.target.value))} className="w-20 rounded-lg border border-black/15 bg-ink-900 px-2 py-1.5 text-sm outline-none focus:border-brand-red" />
+      {v !== stock && (
+        <button onClick={() => onSave(id, v)} className="rounded-md bg-brand-red px-2.5 py-1 text-xs font-semibold text-white">Save</button>
+      )}
+    </div>
+  );
+}
+
+function SubAdd({ onAdd }: { onAdd: (email: string, name: string) => void }) {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  return (
+    <div className="mb-4 flex flex-wrap gap-2">
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name (optional)" className="rounded-lg border border-black/15 bg-ink-900 px-3 py-2 text-sm outline-none focus:border-brand-red" />
+      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="min-w-[180px] flex-1 rounded-lg border border-black/15 bg-ink-900 px-3 py-2 text-sm outline-none focus:border-brand-red" />
+      <button onClick={() => { if (email) { onAdd(email, name); setEmail(""); setName(""); } }} className="rounded-full bg-brand-red px-4 py-2 text-sm font-semibold text-white">Add</button>
+    </div>
+  );
+}
+
+function CouponForm({ initial, onClose, onSave }: { initial: AdminCoupon; onClose: () => void; onSave: (c: AdminCoupon) => void }) {
+  const [f, setF] = useState<AdminCoupon>(initial);
+  const set = <K extends keyof AdminCoupon>(k: K, v: AdminCoupon[K]) => setF((c) => ({ ...c, [k]: v }));
+  return (
+    <div className="fixed inset-0 z-[70]">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-ink-900 shadow-card">
+        <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
+          <h3 className="font-display text-lg font-bold">{initial.code ? "Edit coupon" : "New coupon"}</h3>
+          <button onClick={onClose} aria-label="Close"><X /></button>
+        </div>
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+          <Field label="Code"><input value={f.code} onChange={(e) => set("code", e.target.value.toUpperCase())} placeholder="SAVE20" className={inputCls} /></Field>
+          <Field label="Type">
+            <select value={f.type} onChange={(e) => set("type", e.target.value as "PERCENT" | "FIXED")} className={inputCls}>
+              <option value="PERCENT">Percentage (%)</option>
+              <option value="FIXED">Flat amount (₹)</option>
+            </select>
+          </Field>
+          <Field label={f.type === "PERCENT" ? "Discount %" : "Discount ₹"}><input type="number" value={f.value || ""} onChange={(e) => set("value", Number(e.target.value))} className={inputCls} /></Field>
+          <Field label="Minimum spend ₹ (optional)"><input type="number" value={f.minSpend || ""} onChange={(e) => set("minSpend", Number(e.target.value))} className={inputCls} /></Field>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={f.active} onChange={(e) => set("active", e.target.checked)} className="h-4 w-4 accent-brand-red" /> Active (works at checkout)
+          </label>
+        </div>
+        <div className="border-t border-black/10 px-6 py-4">
+          <button onClick={() => onSave(f)} disabled={!f.code || !f.value} className="w-full rounded-full bg-brand-red text-white py-3 text-sm font-semibold disabled:opacity-50">Save coupon</button>
+        </div>
+      </div>
     </div>
   );
 }

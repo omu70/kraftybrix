@@ -42,11 +42,27 @@ const checkoutSchema = z.object({
   paymentMethod: z.enum(["ONLINE", "PARTIAL_COD"]),
 });
 
-function priceOrder(lines: { price: number; qty: number }[], code?: string) {
+type CouponMap = Record<string, { type: "PERCENT" | "FIXED"; value: number }>;
+
+/** Active coupons = built-in codes + any the owner added in the admin (DB). */
+async function getCoupons(): Promise<CouponMap> {
+  const base: CouponMap = { ...COUPONS };
+  if (!process.env.DATABASE_URL) return base;
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const rows = await prisma.coupon.findMany({ where: { active: true } });
+    for (const r of rows) base[r.code.toUpperCase()] = { type: r.type as "PERCENT" | "FIXED", value: r.value };
+    return base;
+  } catch {
+    return base;
+  }
+}
+
+function priceOrder(lines: { price: number; qty: number }[], code?: string, coupons: CouponMap = COUPONS) {
   const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0);
   let discount = 0;
-  if (code && COUPONS[code]) {
-    const c = COUPONS[code];
+  if (code && coupons[code]) {
+    const c = coupons[code];
     discount = c.type === "PERCENT" ? Math.round((subtotal * c.value) / 100) : c.value;
   }
   const shipping = subtotal - discount >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
@@ -131,7 +147,8 @@ async function sendOrderEmail(
 
 /** Validate a coupon (called from the checkout UI). */
 export async function applyCoupon(code: string, subtotal: number) {
-  const c = COUPONS[code.toUpperCase()];
+  const coupons = await getCoupons();
+  const c = coupons[code.toUpperCase()];
   if (!c) return { ok: false as const, error: "Invalid coupon code." };
   const discount = c.type === "PERCENT" ? Math.round((subtotal * c.value) / 100) : c.value;
   return { ok: true as const, code: code.toUpperCase(), discount };
@@ -149,7 +166,8 @@ export async function createOrder(input: z.infer<typeof checkoutSchema>) {
   if (!parsed.success) return { ok: false as const, error: "Invalid checkout data." };
 
   const { lines, couponCode, paymentMethod, address } = parsed.data;
-  const pricing = priceOrder(lines, couponCode?.toUpperCase());
+  const coupons = await getCoupons();
+  const pricing = priceOrder(lines, couponCode?.toUpperCase(), coupons);
   const orderNumber = "KB" + Date.now().toString(36).toUpperCase();
   const userId = await currentUserId();
 
