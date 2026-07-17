@@ -59,7 +59,9 @@ export default async function ProductPage({
     text?: string;
   }[] = [
     { icon: Blocks, value: product.pieces, label: "Pieces", suffix: "" },
-    { icon: Clock, value: product.buildHours, label: "Hours build time", suffix: "h" },
+    product.buildHours === 0
+      ? { icon: Clock, value: 0, label: "Assembly", text: "Pre-built" }
+      : { icon: Clock, value: product.buildHours, label: "Hours build time", suffix: "h" },
     { icon: Trophy, value: 0, label: "Difficulty", text: product.difficulty },
     { icon: Baby, value: 0, label: "Recommended age", text: product.ageRange },
   ];

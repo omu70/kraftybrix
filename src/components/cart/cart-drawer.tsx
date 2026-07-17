@@ -88,7 +88,7 @@ export function CartDrawer() {
               ) : (
                 <ul className="space-y-5">
                   {lines.map((l) => (
-                    <li key={l.productId} className="flex gap-4">
+                    <li key={l.lineId} className="flex gap-4">
                       <Link
                         href={`/product/${l.slug}`}
                         onClick={close}
@@ -112,21 +112,24 @@ export function CartDrawer() {
                         {l.bundleItems && (
                           <p className="mt-1 text-xs text-black/50">Includes: {l.bundleItems.join(" · ")}</p>
                         )}
+                        {(l.color || l.material) && (
+                          <p className="mt-1 text-xs text-black/50">{[l.color, l.material].filter(Boolean).join(" · ")}</p>
+                        )}
                         <div className="mt-auto flex items-center justify-between pt-3">
                           <div className="flex items-center rounded-full border border-black/15">
-                            <button onClick={() => setQty(l.productId, l.qty - 1)} className="grid h-8 w-8 place-items-center text-black/70 hover:text-cream" aria-label="Decrease">
+                            <button onClick={() => setQty(l.lineId, l.qty - 1)} className="grid h-8 w-8 place-items-center text-black/70 hover:text-cream" aria-label="Decrease">
                               <Minus size={14} />
                             </button>
                             <span className="w-7 text-center text-sm">{l.qty}</span>
-                            <button onClick={() => setQty(l.productId, l.qty + 1)} className="grid h-8 w-8 place-items-center text-black/70 hover:text-cream" aria-label="Increase">
+                            <button onClick={() => setQty(l.lineId, l.qty + 1)} className="grid h-8 w-8 place-items-center text-black/70 hover:text-cream" aria-label="Increase">
                               <Plus size={14} />
                             </button>
                           </div>
                           <div className="flex items-center gap-3 text-black/50">
-                            <button onClick={() => saveForLater(l.productId)} title="Save for later" className="hover:text-brand-blue">
+                            <button onClick={() => saveForLater(l.lineId)} title="Save for later" className="hover:text-brand-blue">
                               <Bookmark size={16} />
                             </button>
-                            <button onClick={() => remove(l.productId)} title="Remove" className="hover:text-brand-red">
+                            <button onClick={() => remove(l.lineId)} title="Remove" className="hover:text-brand-red">
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -144,9 +147,9 @@ export function CartDrawer() {
                   </h3>
                   <ul className="space-y-3">
                     {savedForLater.map((l) => (
-                      <li key={l.productId} className="flex items-center justify-between text-sm">
+                      <li key={l.lineId} className="flex items-center justify-between text-sm">
                         <span className="text-black/70">{l.name}</span>
-                        <button onClick={() => moveToCart(l.productId)} className="text-brand-blue hover:underline">
+                        <button onClick={() => moveToCart(l.lineId)} className="text-brand-blue hover:underline">
                           Move to cart
                         </button>
                       </li>

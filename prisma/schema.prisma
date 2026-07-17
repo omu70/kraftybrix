@@ -90,6 +90,8 @@ model Product {
   reviewCount  Int         @default(0)
   images       String[]
   whatsIncluded String[]   @default([])
+  colorOptions    Json?              // [{ name, hex, image? }]
+  materialOptions String[]  @default([])   // e.g. ["Metal","Plastic"]
   categoryId   String
   category     Category    @relation(fields: [categoryId], references: [id])
   reviews      Review[]

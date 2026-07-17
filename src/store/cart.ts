@@ -11,12 +11,12 @@ interface CartState {
   open: () => void;
   close: () => void;
   toggle: () => void;
-  add: (product: Product, qty?: number) => void;
+  add: (product: Product, qty?: number, opts?: { color?: string; material?: string }) => void;
   addBundle: (items: Product[], price: number, label?: string) => void;
-  remove: (productId: string) => void;
-  setQty: (productId: string, qty: number) => void;
-  saveForLater: (productId: string) => void;
-  moveToCart: (productId: string) => void;
+  remove: (lineId: string) => void;
+  setQty: (lineId: string, qty: number) => void;
+  saveForLater: (lineId: string) => void;
+  moveToCart: (lineId: string) => void;
   clear: () => void;
   // selectors are computed in components to keep store lean
 }
@@ -34,18 +34,20 @@ export const useCart = create<CartState>()(
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false }),
       toggle: () => set((s) => ({ isOpen: !s.isOpen })),
-      add: (product, qty = 1) =>
+      add: (product, qty = 1, opts) =>
         set((s) => {
-          const existing = s.lines.find((l) => l.productId === product.id);
+          const color = opts?.color;
+          const material = opts?.material;
+          const lineId = `${product.id}|${color ?? ""}|${material ?? ""}`;
+          const existing = s.lines.find((l) => l.lineId === lineId);
           if (existing) {
             return {
               isOpen: true,
-              lines: s.lines.map((l) =>
-                l.productId === product.id ? { ...l, qty: l.qty + qty } : l
-              ),
+              lines: s.lines.map((l) => (l.lineId === lineId ? { ...l, qty: l.qty + qty } : l)),
             };
           }
           const line: CartLine = {
+            lineId,
             productId: product.id,
             slug: product.slug,
             name: product.name,
@@ -53,13 +55,17 @@ export const useCart = create<CartState>()(
             image: product.images[0]?.url ?? "",
             bodyColor: product.bodyColor,
             qty,
+            color,
+            material,
           };
           return { isOpen: true, lines: [...s.lines, line] };
         }),
       addBundle: (items, price, label = "Dream Garage Bundle") =>
         set((s) => {
+          const id = `bundle-${Date.now()}`;
           const line: CartLine = {
-            productId: `bundle-${Date.now()}`,
+            lineId: id,
+            productId: id,
             slug: "bundle",
             name: label,
             price,
@@ -70,29 +76,29 @@ export const useCart = create<CartState>()(
           };
           return { isOpen: true, lines: [...s.lines, line] };
         }),
-      remove: (productId) =>
-        set((s) => ({ lines: s.lines.filter((l) => l.productId !== productId) })),
-      setQty: (productId, qty) =>
+      remove: (lineId) =>
+        set((s) => ({ lines: s.lines.filter((l) => l.lineId !== lineId) })),
+      setQty: (lineId, qty) =>
         set((s) => ({
           lines: s.lines
-            .map((l) => (l.productId === productId ? { ...l, qty: Math.max(1, qty) } : l))
+            .map((l) => (l.lineId === lineId ? { ...l, qty: Math.max(1, qty) } : l))
             .filter((l) => l.qty > 0),
         })),
-      saveForLater: (productId) =>
+      saveForLater: (lineId) =>
         set((s) => {
-          const line = s.lines.find((l) => l.productId === productId);
+          const line = s.lines.find((l) => l.lineId === lineId);
           if (!line) return s;
           return {
-            lines: s.lines.filter((l) => l.productId !== productId),
+            lines: s.lines.filter((l) => l.lineId !== lineId),
             savedForLater: [...s.savedForLater, line],
           };
         }),
-      moveToCart: (productId) =>
+      moveToCart: (lineId) =>
         set((s) => {
-          const line = s.savedForLater.find((l) => l.productId === productId);
+          const line = s.savedForLater.find((l) => l.lineId === lineId);
           if (!line) return s;
           return {
-            savedForLater: s.savedForLater.filter((l) => l.productId !== productId),
+            savedForLater: s.savedForLater.filter((l) => l.lineId !== lineId),
             lines: [...s.lines, line],
           };
         }),

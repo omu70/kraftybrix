@@ -52,6 +52,8 @@ const productSchema = z.object({
   imageUrl: z.string().url().or(z.literal("")),
   gallery: z.array(z.string()).default([]),
   whatsIncluded: z.array(z.string()).default([]),
+  colorOptions: z.array(z.object({ name: z.string(), hex: z.string(), image: z.string().optional() })).default([]),
+  materialOptions: z.array(z.string()).default([]),
   bodyColor: z.string().default("#FF2D20"),
   accentColor: z.string().default("#111111"),
   bestSeller: z.boolean().optional(),
@@ -84,6 +86,8 @@ function toAdminRow(p: Product): AdminProduct {
     imageUrl: p.images[0]?.url ?? "",
     gallery: p.images.slice(1).map((i) => i.url),
     whatsIncluded: p.whatsIncluded ?? [],
+    colorOptions: p.colorOptions ?? [],
+    materialOptions: p.materialOptions ?? [],
     bodyColor: p.bodyColor,
     accentColor: p.accentColor,
     bestSeller: p.bestSeller,
@@ -123,6 +127,8 @@ export async function listAdminProducts(): Promise<{ mode: "db" | "demo"; rows: 
           imageUrl: r.images[0] ?? "",
           gallery: r.images.slice(1),
           whatsIncluded: r.whatsIncluded ?? [],
+          colorOptions: Array.isArray(r.colorOptions) ? (r.colorOptions as AdminProduct["colorOptions"]) : [],
+          materialOptions: r.materialOptions ?? [],
           bodyColor: r.bodyColor,
           accentColor: r.accentColor,
           bestSeller: r.bestSeller,
@@ -162,6 +168,8 @@ export async function saveAdminProduct(input: AdminProduct) {
       bodyColor: d.bodyColor, accentColor: d.accentColor,
       bestSeller: !!d.bestSeller, isNew: !!d.isNew, limited: !!d.limited,
       images, whatsIncluded: d.whatsIncluded.map((s) => s.trim()).filter(Boolean),
+      colorOptions: d.colorOptions.filter((c) => c.name || c.hex),
+      materialOptions: d.materialOptions,
       categoryId: category.id,
     };
     if (d.id) await db.product.update({ where: { id: d.id }, data });
@@ -203,7 +211,8 @@ export async function seedCatalogue() {
           ageRange: p.ageRange, scale: p.scale, bodyColor: p.bodyColor, accentColor: p.accentColor,
           stock: p.inStock ? 50 : 0, bestSeller: !!p.bestSeller, isNew: !!p.isNew, limited: !!p.limited,
           rating: p.rating, reviewCount: p.reviewCount, images: p.images.map((i) => i.url),
-          whatsIncluded: p.whatsIncluded ?? [], categoryId,
+          whatsIncluded: p.whatsIncluded ?? [], colorOptions: p.colorOptions ?? [], materialOptions: p.materialOptions ?? [],
+          categoryId,
         },
       });
     }

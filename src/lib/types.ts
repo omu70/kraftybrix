@@ -41,9 +41,18 @@ export interface Product {
   images: ProductImage[];
   whatsIncluded: string[];
   specs: { label: string; value: string }[];
+  colorOptions?: ColorOption[];
+  materialOptions?: string[];
+}
+
+export interface ColorOption {
+  name: string;
+  hex: string;
+  image?: string;
 }
 
 export interface CartLine {
+  lineId: string; // unique per product + chosen options
   productId: string;
   slug: string;
   name: string;
@@ -51,6 +60,8 @@ export interface CartLine {
   image: string;
   bodyColor: string;
   qty: number;
+  color?: string;
+  material?: string;
   /** Present when this line is a fixed-price bundle of several cars. */
   bundleItems?: string[];
 }

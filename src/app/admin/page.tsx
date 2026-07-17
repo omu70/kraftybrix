@@ -49,6 +49,7 @@ const empty: AdminProduct = {
   name: "", slug: "", brand: "KraftyBrix", category: "Supercars", tagline: "", description: "",
   price: 0, salePrice: null, pieces: 0, buildHours: 0, difficulty: "Intermediate", ageRange: "14+", scale: "1:10",
   stock: 0, rating: 0, reviewCount: 0, imageUrl: "", gallery: [], whatsIncluded: [],
+  colorOptions: [], materialOptions: [],
   bodyColor: "#FF2D20", accentColor: "#111111", bestSeller: false, isNew: false, limited: false,
 };
 
@@ -595,7 +596,7 @@ function ProductForm({ initial, onClose, onSave }: { initial: AdminProduct; onCl
 
           <FormSection title="Details customers care about">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Build time (hours)"><input type="number" value={f.buildHours || ""} onChange={(e) => set("buildHours", Number(e.target.value))} placeholder="6" className={inputCls} /></Field>
+              <Field label="Build time (hours · 0 = pre-built)"><input type="number" min="0" value={f.buildHours} onChange={(e) => set("buildHours", Number(e.target.value))} placeholder="6" className={inputCls} /></Field>
               <Field label="Difficulty">
                 <select value={f.difficulty} onChange={(e) => set("difficulty", e.target.value)} className={inputCls}>
                   {["Beginner", "Intermediate", "Advanced", "Master"].map((d) => <option key={d}>{d}</option>)}
@@ -622,6 +623,33 @@ function ProductForm({ initial, onClose, onSave }: { initial: AdminProduct; onCl
             <Field label="More image URLs (one per line)">
               <textarea value={f.gallery.join("\n")} onChange={(e) => set("gallery", e.target.value.split("\n"))} rows={3} placeholder={"https://…/angle-2.jpg\nhttps://…/angle-3.jpg"} className={`${inputCls} resize-none`} />
             </Field>
+          </FormSection>
+
+          <FormSection title="Colour options (one product, many colours)">
+            {f.colorOptions.map((c, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input type="color" value={c.hex || "#FF2D20"} onChange={(e) => set("colorOptions", f.colorOptions.map((x, i) => (i === idx ? { ...x, hex: e.target.value } : x)))} className="h-9 w-10 shrink-0 rounded-lg border border-black/15 bg-ink-800" />
+                <input value={c.name} onChange={(e) => set("colorOptions", f.colorOptions.map((x, i) => (i === idx ? { ...x, name: e.target.value } : x)))} placeholder="Red" className={inputCls} />
+                <input value={c.image ?? ""} onChange={(e) => set("colorOptions", f.colorOptions.map((x, i) => (i === idx ? { ...x, image: e.target.value } : x)))} placeholder="Image URL (optional)" className={inputCls} />
+                <button onClick={() => set("colorOptions", f.colorOptions.filter((_, i) => i !== idx))} className="shrink-0 text-brand-red" title="Remove" aria-label="Remove colour"><X size={16} /></button>
+              </div>
+            ))}
+            <button onClick={() => set("colorOptions", [...f.colorOptions, { name: "", hex: "#FF2D20", image: "" }])} className="flex items-center gap-1 text-sm font-semibold text-brand-red">
+              <Plus size={15} /> Add colour
+            </button>
+            <p className="text-xs text-black/40">Customers pick a colour on the product page — no need to make a separate product per colour.</p>
+          </FormSection>
+
+          <FormSection title="Material options">
+            <div className="flex flex-wrap gap-5">
+              {["Metal", "Plastic"].map((m) => (
+                <label key={m} className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={f.materialOptions.includes(m)} onChange={(e) => set("materialOptions", e.target.checked ? [...f.materialOptions, m] : f.materialOptions.filter((x) => x !== m))} className="h-4 w-4 accent-brand-red" />
+                  {m} body
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-black/40">Tick both to let customers choose. Metal bodies come pre-built — set Build time to 0.</p>
           </FormSection>
 
           <FormSection title="Appearance & badges">

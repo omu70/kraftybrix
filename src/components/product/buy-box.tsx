@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingBag, Heart, Zap, ShieldCheck, Truck, RotateCcw } from "lucide-react";
-import type { Product } from "@/lib/types";
+import type { Product, ColorOption } from "@/lib/types";
 import { formatPrice, discountPct } from "@/lib/utils";
 import { Stars } from "@/components/ui/stars";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,8 @@ import { DeliveryEstimate } from "@/components/product/delivery-estimate";
 
 export function BuyBox({ product }: { product: Product }) {
   const [qty, setQty] = useState(1);
+  const [color, setColor] = useState<ColorOption | null>(product.colorOptions?.[0] ?? null);
+  const [material, setMaterial] = useState<string | null>(product.materialOptions?.[0] ?? null);
   const add = useCart((s) => s.add);
   const router = useRouter();
   const toggleWish = useWishlist((s) => s.toggle);
@@ -23,13 +25,14 @@ export function BuyBox({ product }: { product: Product }) {
 
   const off = discountPct(product.price, product.salePrice);
   const price = product.salePrice ?? product.price;
+  const opts = { color: color?.name, material: material ?? undefined };
 
   function addToCart() {
-    add(product, qty);
+    add(product, qty, opts);
     track("add_to_cart", { id: product.id, qty, value: price * qty });
   }
   function buyNow() {
-    add(product, qty);
+    add(product, qty, opts);
     track("begin_checkout", { id: product.id, value: price * qty });
     router.push("/checkout");
   }
@@ -60,6 +63,41 @@ export function BuyBox({ product }: { product: Product }) {
         )}
       </div>
       <p className="mt-1 text-xs text-black/45">Inclusive of all taxes · EMI from {formatPrice(Math.round(price / 6))}/mo</p>
+
+      {product.colorOptions && product.colorOptions.length > 0 && (
+        <div className="mt-6">
+          <p className="text-sm font-medium">Colour{color ? `: ${color.name}` : ""}</p>
+          <div className="mt-2 flex flex-wrap gap-2.5">
+            {product.colorOptions.map((c) => (
+              <button
+                key={c.name + c.hex}
+                onClick={() => setColor(c)}
+                title={c.name}
+                aria-label={c.name}
+                className={`h-9 w-9 rounded-full border-2 transition ${color?.name === c.name ? "border-brand-red ring-2 ring-brand-red/30" : "border-black/15 hover:border-black/40"}`}
+                style={{ background: c.hex || "#ccc" }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {product.materialOptions && product.materialOptions.length > 0 && (
+        <div className="mt-5">
+          <p className="text-sm font-medium">Body material</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {product.materialOptions.map((m) => (
+              <button
+                key={m}
+                onClick={() => setMaterial(m)}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${material === m ? "border-brand-red bg-brand-red/10 text-brand-red" : "border-black/15 hover:border-black/30"}`}
+              >
+                {m} body
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* availability */}
       <div className="mt-5 flex items-center gap-2 text-sm">

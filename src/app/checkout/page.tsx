@@ -59,7 +59,7 @@ export default function CheckoutPage() {
     try {
       const res = await createOrder({
         address: form,
-        lines: lines.map((l) => ({ productId: l.productId, name: l.name, price: l.price, qty: l.qty })),
+        lines: lines.map((l) => ({ productId: l.productId, name: [l.name, l.color, l.material].filter(Boolean).join(" · "), price: l.price, qty: l.qty })),
         couponCode: applied?.code,
         paymentMethod: method,
       });
@@ -177,8 +177,11 @@ export default function CheckoutPage() {
             <h2 className="font-display text-lg font-bold">Order summary</h2>
             <ul className="mt-4 space-y-3">
               {lines.map((l) => (
-                <li key={l.productId} className="flex justify-between text-sm">
-                  <span className="text-black/70">{l.name} × {l.qty}</span>
+                <li key={l.lineId} className="flex justify-between gap-2 text-sm">
+                  <span className="text-black/70">
+                    {l.name} × {l.qty}
+                    {(l.color || l.material) && <span className="text-black/45"> ({[l.color, l.material].filter(Boolean).join(", ")})</span>}
+                  </span>
                   <span>{formatPrice(l.price * l.qty)}</span>
                 </li>
               ))}

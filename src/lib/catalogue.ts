@@ -1,5 +1,5 @@
 import { products as staticProducts } from "@/lib/products";
-import type { Product, Category, Difficulty } from "@/lib/types";
+import type { Product, Category, Difficulty, ColorOption } from "@/lib/types";
 
 /**
  * Server-only catalogue source.
@@ -18,6 +18,7 @@ type DbProduct = {
   difficulty: string; ageRange: string; scale: string; stock: number;
   bestSeller: boolean; isNew: boolean; limited: boolean;
   bodyColor: string; accentColor: string; images: string[]; whatsIncluded: string[];
+  colorOptions: unknown; materialOptions: string[];
   category: { name: string } | null;
 };
 
@@ -47,6 +48,8 @@ function mapRow(r: DbProduct): Product {
     accentColor: r.accentColor,
     images: (r.images.length ? r.images : [""]).map((url) => ({ url, alt: r.name })),
     whatsIncluded: r.whatsIncluded ?? [],
+    colorOptions: Array.isArray(r.colorOptions) ? (r.colorOptions as ColorOption[]) : [],
+    materialOptions: r.materialOptions ?? [],
     specs: [
       { label: "Pieces", value: r.pieces.toLocaleString("en-IN") },
       { label: "Scale", value: r.scale },
