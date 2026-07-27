@@ -82,7 +82,7 @@ export function BuyBox({ product }: { product: Product }) {
         </div>
       )}
 
-      {product.materialOptions && product.materialOptions.length > 0 && (
+      {product.materialOptions && product.materialOptions.length > 1 && (
         <div className="mt-5">
           <p className="text-sm font-medium">Body material</p>
           <div className="mt-2 flex flex-wrap gap-2">

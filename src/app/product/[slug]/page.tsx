@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Blocks, Clock, Trophy, Baby, type LucideIcon } from "lucide-react";
+import { Blocks, Clock, Trophy, Baby, Sparkles, ShieldCheck, Gem, type LucideIcon } from "lucide-react";
 import { getCatalogueProducts, findProductBySlug } from "@/lib/catalogue";
 import { ProductMedia } from "@/components/product/product-media";
 import { BuyBox } from "@/components/product/buy-box";
@@ -51,20 +51,28 @@ export default async function ProductPage({
   const fallback = all.filter((p) => p.id !== product.id).slice(0, 3);
   const recommendations = related.length ? related : fallback;
 
+  // Ready-built (metal, pre-assembled) cars have no piece count / build time.
+  const readyBuilt = product.pieces === 0;
+
   const stats: {
     icon: LucideIcon;
     value: number;
     label: string;
     suffix?: string;
     text?: string;
-  }[] = [
-    { icon: Blocks, value: product.pieces, label: "Pieces", suffix: "" },
-    product.buildHours === 0
-      ? { icon: Clock, value: 0, label: "Assembly", text: "Pre-built" }
-      : { icon: Clock, value: product.buildHours, label: "Hours build time", suffix: "h" },
-    { icon: Trophy, value: 0, label: "Difficulty", text: product.difficulty },
-    { icon: Baby, value: 0, label: "Recommended age", text: product.ageRange },
-  ];
+  }[] = readyBuilt
+    ? [
+        { icon: Sparkles, value: 0, label: "Assembly", text: "None" },
+        { icon: ShieldCheck, value: 0, label: "Condition", text: "Pre-built" },
+        { icon: Gem, value: 0, label: "Material", text: "Die-cast metal" },
+        { icon: Baby, value: 0, label: "Recommended age", text: product.ageRange },
+      ]
+    : [
+        { icon: Blocks, value: product.pieces, label: "Pieces", suffix: "" },
+        { icon: Clock, value: product.buildHours, label: "Hours build time", suffix: "h" },
+        { icon: Trophy, value: 0, label: "Difficulty", text: product.difficulty },
+        { icon: Baby, value: 0, label: "Recommended age", text: product.ageRange },
+      ];
 
   const price = product.salePrice ?? product.price;
   const jsonLd = {
@@ -101,6 +109,28 @@ export default async function ProductPage({
           <Link href="/collection" className="hover:text-cream">Collection</Link> /
           <span className="text-black/70">{product.name}</span>
         </nav>
+
+        {/* build-type banner — distinguishes ready-built from kits */}
+        <div
+          className={`mb-6 flex items-center gap-3 rounded-2xl border p-4 ${
+            readyBuilt ? "border-brand-gold/30 bg-brand-gold/[0.07]" : "border-brand-red/25 bg-brand-red/[0.05]"
+          }`}
+        >
+          <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white ${readyBuilt ? "bg-brand-gold" : "bg-brand-red"}`}>
+            {readyBuilt ? <Sparkles size={18} /> : <Blocks size={18} />}
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-cream">{readyBuilt ? "Ready-built · arrives fully assembled" : `Build kit · ${product.pieces.toLocaleString()} pieces to assemble`}</p>
+            <p className="text-xs text-black/55">
+              {readyBuilt
+                ? "Die-cast metal display model — no building required, straight onto your shelf."
+                : "Snap-together ABS bricks with an illustrated step-by-step manual."}
+            </p>
+          </div>
+          <Link href={readyBuilt ? "/bundle-ready" : "/bundle"} className={`ml-auto hidden shrink-0 text-sm font-semibold sm:block ${readyBuilt ? "text-brand-gold" : "text-brand-red"}`}>
+            {readyBuilt ? "4 for ₹1999 →" : "3 for ₹2199 →"}
+          </Link>
+        </div>
 
         {/* hero: viewer + buy box */}
         <div className="grid gap-12 lg:grid-cols-2">

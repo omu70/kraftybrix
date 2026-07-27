@@ -6,11 +6,11 @@ const cols = [
   {
     title: "Shop",
     links: [
-      ["All Models", "/collection"],
-      ["Hypercars", "/collection?category=Hypercars"],
-      ["Smoking Cars", "/collection?category=Smoking+Cars"],
-      ["Limited Editions", "/collection?category=Limited+Editions"],
-      ["Bundle · 3 for ₹1999", "/bundle"],
+      ["All Cars", "/collection"],
+      ["Build Kits", "/collection?type=kit"],
+      ["Ready-Built", "/collection?type=ready"],
+      ["Kit bundle · 3 for ₹2199", "/bundle"],
+      ["Ready-built bundle · 4 for ₹1999", "/bundle-ready"],
     ],
   },
   {

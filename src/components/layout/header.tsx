@@ -11,11 +11,11 @@ import { useWishlist } from "@/store/wishlist";
 import { Magnetic } from "@/components/ui/magnetic";
 
 const nav = [
-  { label: "Collection", href: "/collection" },
-  { label: "3 for ₹1999", href: "/bundle" },
-  { label: "Hypercars", href: "/collection?category=Hypercars" },
+  { label: "All Cars", href: "/collection" },
+  { label: "Build Kits", href: "/collection?type=kit" },
+  { label: "Ready-Built", href: "/collection?type=ready" },
+  { label: "Bundles", href: "/bundle" },
   { label: "Smoking Cars", href: "/collection?category=Smoking+Cars" },
-  { label: "The Build", href: "/#build" },
 ];
 
 export function Header() {

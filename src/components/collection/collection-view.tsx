@@ -19,11 +19,17 @@ const sorts = [
 const difficulties: Difficulty[] = ["Beginner", "Intermediate", "Advanced", "Master"];
 const PRICE_STEPS = [0, 5000, 10000, 15000, 20000];
 
+type BuildType = "all" | "kit" | "ready";
+
 export function CollectionView({ products }: { products: Product[] }) {
   const params = useSearchParams();
   const initialCat = params.get("category");
+  const initialType = (params.get("type") as BuildType) ?? "all";
 
   const [cats, setCats] = useState<string[]>(initialCat ? [initialCat] : []);
+  const [buildType, setBuildType] = useState<BuildType>(
+    initialType === "kit" || initialType === "ready" ? initialType : "all"
+  );
   const [maxPrice, setMaxPrice] = useState(20000);
   const [diffs, setDiffs] = useState<Difficulty[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -36,6 +42,8 @@ export function CollectionView({ products }: { products: Product[] }) {
 
   const filtered = useMemo(() => {
     let r = products.filter((p) => {
+      if (buildType === "kit" && p.pieces === 0) return false;
+      if (buildType === "ready" && p.pieces > 0) return false;
       if (cats.length && !cats.includes(p.category)) return false;
       if ((p.salePrice ?? p.price) > maxPrice) return false;
       if (diffs.length && !diffs.includes(p.difficulty)) return false;
@@ -51,7 +59,16 @@ export function CollectionView({ products }: { products: Product[] }) {
       default: r = [...r].sort((a, b) => Number(b.bestSeller) - Number(a.bestSeller));
     }
     return r;
-  }, [cats, maxPrice, diffs, inStockOnly, minRating, sort]);
+  }, [products, buildType, cats, maxPrice, diffs, inStockOnly, minRating, sort]);
+
+  const heading =
+    buildType === "kit" ? "Build kits" : buildType === "ready" ? "Ready-built cars" : "Every dream, in brick";
+  const subheading =
+    buildType === "kit"
+      ? "Snap-together brick cars — build them yourself."
+      : buildType === "ready"
+      ? "Pre-assembled metal cars — no building, just display."
+      : "The full collection.";
 
   const clearAll = () => {
     setCats([]); setMaxPrice(20000); setDiffs([]); setInStockOnly(false); setMinRating(0);
@@ -100,8 +117,28 @@ export function CollectionView({ products }: { products: Product[] }) {
     <div className="container-wide pt-28">
       <header className="border-b border-black/10 pb-8">
         <p className="eyebrow"><span className="h-px w-8 bg-brand-red" /> The collection</p>
-        <h1 className="h-display mt-3 text-4xl sm:text-5xl">Every dream, in brick</h1>
-        <p className="mt-3 text-black/55">{filtered.length} models</p>
+        <h1 className="h-display mt-3 text-4xl sm:text-5xl">{heading}</h1>
+        <p className="mt-2 text-black/55">{subheading} · {filtered.length} models</p>
+
+        {/* Build-type switch — separate the two ranges */}
+        <div className="mt-5 inline-flex rounded-full border border-black/15 bg-ink-800 p-1 text-sm">
+          {([
+            { key: "all", label: "All cars" },
+            { key: "kit", label: "Build kits" },
+            { key: "ready", label: "Ready-built" },
+          ] as const).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setBuildType(t.key)}
+              className={cn(
+                "rounded-full px-4 py-1.5 font-medium transition",
+                buildType === t.key ? "bg-brand-red text-white" : "text-black/60 hover:text-cream"
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <div className="flex items-center justify-between gap-4 py-5">

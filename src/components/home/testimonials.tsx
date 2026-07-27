@@ -8,12 +8,16 @@ import { galleryImages } from "@/lib/products";
 const gimgs = galleryImages(8);
 
 const reviews = [
-  { name: "Arjun M.", role: "Mumbai", text: "Best display piece I own. Unreal quality.", rating: 5 },
-  { name: "Priya K.", role: "Gift buyer", text: "Perfect anniversary gift. Worth every rupee.", rating: 5 },
-  { name: "Daniel R.", role: "Creator", text: "So fun to build. My most-viewed video this year.", rating: 5 },
-  { name: "Sana T.", role: "Architect", text: "Tighter panel gaps than some real cars.", rating: 5 },
-  { name: "Vikram S.", role: "Collector", text: "My 4th kit. Feels like a real collectible.", rating: 5 },
-  { name: "Megha P.", role: "First build", text: "Relaxing to build, gorgeous on my shelf.", rating: 5 },
+  { name: "Shreya Nair", role: "Verified buyer", text: "My son absolutely loved the car! The quality is amazing and the design is very attractive. Keeps him engaged for hours.", rating: 5 },
+  { name: "Vikram Joshi", role: "Verified buyer", text: "Yeh car bahut mast hai! Build quality bhi achi hai aur bachchon ko bahut pasand aati hai. Totally worth it.", rating: 5 },
+  { name: "Neha Gupta", role: "Verified buyer", text: "I was surprised by how durable it is. Even after rough use it still looks perfect. Great product!", rating: 5 },
+  { name: "Karan Malhotra", role: "Verified buyer", text: "Finishing bahut achi hai, aur colors bhi bahut attractive hain. Mere bachche ko bahut pasand aayi.", rating: 5 },
+  { name: "Priya Mehta", role: "Verified buyer", text: "Exceeded my expectations. Sturdy body and very satisfying to build. Highly recommend.", rating: 5 },
+  { name: "Amit Singh", role: "Verified buyer", text: "Bahut hi zabardast hai. Bachche iske saath bahut enjoy karte hain aur quality bhi premium lagti hai.", rating: 5 },
+  { name: "Sneha Patil", role: "Verified buyer", text: "The detailing is impressive. Looks great and made with strong material. Definitely recommended.", rating: 5 },
+  { name: "Rahul Verma", role: "Verified buyer", text: "Mere nephew ko gift ki thi, aur usse bahut pasand aayi. Quality aur design dono excellent hain.", rating: 5 },
+  { name: "Ananya Iyer", role: "Verified buyer", text: "A very fun and reliable build. Safe, durable, and gives great value for money.", rating: 5 },
+  { name: "Rohit Sharma", role: "Verified buyer", text: "Bahut badhiya! Price ke hisaab se quality excellent hai aur bachche khush ho jaate hain.", rating: 5 },
 ];
 
 function Row({ reverse }: { reverse?: boolean }) {

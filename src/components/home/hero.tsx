@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, Star, Truck, BadgeIndianRupee, RotateCcw, Gift } from "lucide-react";
+import { ArrowRight, Star, Truck, BadgeIndianRupee, RotateCcw, Gift, Blocks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { products } from "@/lib/products";
 import { HERO_BANNER } from "@/lib/constants";
@@ -27,7 +27,7 @@ export function Hero() {
           <h1 className="max-w-xl font-archivo text-4xl font-extrabold leading-tight sm:text-6xl">Build the supercars you love.</h1>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/collection"><Button size="lg">Shop the collection</Button></Link>
-            <Link href="/bundle"><Button size="lg" variant="secondary">3 cars for ₹1999</Button></Link>
+            <Link href="/bundle"><Button size="lg" variant="secondary">Bundle deals</Button></Link>
           </div>
         </div>
       </section>
@@ -49,18 +49,29 @@ export function Hero() {
             Premium building-block collectible cars — from ₹499.
           </p>
 
-          {/* Bundle offer — front and centre */}
-          <Link
-            href="/bundle"
-            className="group mt-6 flex items-center gap-3 rounded-2xl border border-brand-red/30 bg-brand-red/[0.06] p-3 transition hover:border-brand-red/60"
-          >
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-red text-white"><Gift size={20} /></span>
-            <div className="min-w-0 flex-1">
-              <p className="font-bold text-cream">Buy any 3 cars for ₹1999</p>
-              <p className="text-xs text-black/55">Mix &amp; match — save up to 60%</p>
-            </div>
-            <span className="shrink-0 pr-1 text-sm font-semibold text-brand-red">Grab it →</span>
-          </Link>
+          {/* Bundle offers — two deals, front and centre */}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <Link
+              href="/bundle"
+              className="group flex items-center gap-3 rounded-2xl border border-brand-red/30 bg-brand-red/[0.06] p-3 transition hover:border-brand-red/60"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-red text-white"><Blocks size={18} /></span>
+              <div className="min-w-0">
+                <p className="text-sm font-bold leading-tight text-cream">3 build kits · ₹2199</p>
+                <p className="text-xs text-black/55">Snap-together cars</p>
+              </div>
+            </Link>
+            <Link
+              href="/bundle-ready"
+              className="group flex items-center gap-3 rounded-2xl border border-brand-gold/40 bg-brand-gold/[0.08] p-3 transition hover:border-brand-gold/70"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-gold text-white"><Gift size={18} /></span>
+              <div className="min-w-0">
+                <p className="text-sm font-bold leading-tight text-cream">4 ready-built · ₹1999</p>
+                <p className="text-xs text-black/55">No building needed</p>
+              </div>
+            </Link>
+          </div>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Link href="/collection">
