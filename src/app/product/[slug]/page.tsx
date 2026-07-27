@@ -90,7 +90,7 @@ export default async function ProductPage({
   };
 
   return (
-    <div className="pt-28">
+    <div className="pt-28 pb-20 lg:pb-0">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <TrackRecentlyViewed id={product.id} />
 

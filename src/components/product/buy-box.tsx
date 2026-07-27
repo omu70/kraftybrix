@@ -154,6 +154,20 @@ export function BuyBox({ product }: { product: Product }) {
           </div>
         ))}
       </div>
+
+      {/* mobile sticky add-to-cart bar (premium mobile pattern) */}
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-black/10 bg-ink-900/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="min-w-0">
+          <p className="truncate text-[11px] text-black/50">{product.name}</p>
+          <p className="font-display font-bold leading-tight">
+            {formatPrice(price)}
+            {off > 0 && <span className="ml-1 text-xs font-normal text-black/40 line-through">{formatPrice(product.price)}</span>}
+          </p>
+        </div>
+        <Button size="lg" onClick={addToCart} disabled={!product.inStock} className="ml-auto flex-1">
+          <ShoppingBag size={18} /> Add to cart
+        </Button>
+      </div>
     </div>
   );
 }
