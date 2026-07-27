@@ -2,7 +2,6 @@ import { Hero } from "@/components/home/hero";
 import { TrustBar } from "@/components/home/trust-bar";
 import { Marquee } from "@/components/home/marquee";
 import { Categories } from "@/components/home/categories";
-import { BrickBuild } from "@/components/home/brick-build";
 import { Why } from "@/components/home/why";
 import { WhyBuy } from "@/components/home/why-buy";
 import { BestSellers } from "@/components/home/best-sellers";
@@ -21,7 +20,6 @@ export default function HomePage() {
       <TrustBar />
       <Marquee />
       <Categories />
-      <BrickBuild />
       <BestSellers />
       <StatsBand />
       <CarDrive />
