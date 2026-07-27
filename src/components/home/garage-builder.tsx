@@ -39,11 +39,11 @@ export function GarageBuilder() {
             <button
               key={m.key}
               onClick={() => setActive(m)}
-              className="relative rounded-full border px-6 py-3 text-sm font-semibold transition"
+              className="relative rounded-full border px-5 py-2.5 text-sm font-semibold transition hover:border-black/40 sm:px-6 sm:py-3"
               style={{
-                borderColor: active.key === m.key ? m.tint : "rgba(255,255,255,0.15)",
-                color: active.key === m.key ? "#fff" : "rgba(255,255,255,0.65)",
-                background: active.key === m.key ? `${m.tint}22` : "transparent",
+                borderColor: active.key === m.key ? m.tint : "rgba(26,22,17,0.18)",
+                color: active.key === m.key ? "#fff" : "rgba(26,22,17,0.75)",
+                background: active.key === m.key ? m.tint : "transparent",
               }}
             >
               {m.label}
