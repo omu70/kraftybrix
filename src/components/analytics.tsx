@@ -35,11 +35,27 @@ export function Analytics() {
   );
 }
 
-/** Helper to fire ecommerce events from client components. */
+/** Internal event name → Meta Pixel standard event name. */
+const META_EVENTS: Record<string, string> = {
+  add_to_cart: "AddToCart",
+  begin_checkout: "InitiateCheckout",
+  add_payment_info: "AddPaymentInfo",
+  purchase: "Purchase",
+  view_item: "ViewContent",
+  search: "Search",
+};
+
+/** Fire an ecommerce event to both Google Analytics and Meta Pixel. */
 export function track(event: string, data?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   // @ts-expect-error gtag injected at runtime
   window.gtag?.("event", event, data);
+
+  // Meta Pixel: use the exact standard event name so it attributes in Ads.
+  const meta = META_EVENTS[event];
+  const payload = data?.value != null ? { currency: "INR", ...data } : data;
   // @ts-expect-error fbq injected at runtime
-  window.fbq?.("track", event, data);
+  if (meta) window.fbq?.("track", meta, payload);
+  // @ts-expect-error fbq injected at runtime
+  else window.fbq?.("trackCustom", event, payload);
 }

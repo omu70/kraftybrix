@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
@@ -47,6 +47,12 @@ export default function CheckoutPage() {
   const payNow = method === "PARTIAL_COD" ? Math.min(ADVANCE_FEE, total) : total;
   const codBalance = method === "PARTIAL_COD" ? Math.max(0, total - payNow) : 0;
 
+  // Meta Pixel: InitiateCheckout when the checkout opens with items in the cart.
+  useEffect(() => {
+    if (lines.length > 0) track("begin_checkout", { value: total });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function onApplyCoupon() {
     setCouponErr("");
     const res = await applyCoupon(coupon, subtotal);
@@ -56,6 +62,7 @@ export default function CheckoutPage() {
 
   async function placeOrder() {
     setPlacing(true);
+    track("add_payment_info", { value: total, method }); // Meta Pixel: AddPaymentInfo
     try {
       const res = await createOrder({
         address: form,
