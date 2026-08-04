@@ -39,51 +39,36 @@ export function Hero() {
       <div className="container-wide grid items-center gap-8 py-8 lg:grid-cols-2 lg:py-12">
         {/* copy */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-red/10 px-3 py-1.5 text-xs font-semibold text-brand-red">
-            <Star size={13} className="fill-brand-red" /> India's favourite brick-built cars
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-[0.12em] text-black/45">
+            <Star size={13} className="fill-brand-gold text-brand-gold" /> India&apos;s favourite brick-built cars
           </span>
-          <h1 className="mt-4 font-archivo text-[2rem] font-extrabold leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-6xl">
+          <h1 className="mt-5 font-archivo text-[2.4rem] font-extrabold leading-[1.02] tracking-tight text-cream sm:text-6xl lg:text-7xl">
             Build the supercars<br className="hidden sm:block" /> you love.
           </h1>
-          <p className="mt-3 max-w-md text-base text-black/60 sm:text-lg">
-            Premium building-block collectible cars — from ₹499.
+          <p className="mt-4 max-w-md text-base text-black/55 sm:text-lg">
+            Collector-grade block &amp; die-cast cars — from ₹499.
           </p>
 
-          {/* Bundle offers — two deals, front and centre */}
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <Link
-              href="/bundle"
-              className="group flex items-center gap-3 rounded-2xl border border-brand-red/30 bg-brand-red/[0.06] p-3 transition hover:border-brand-red/60"
-            >
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-red text-white"><Blocks size={18} /></span>
-              <div className="min-w-0">
-                <p className="text-sm font-bold leading-tight text-cream">3 build kits · ₹2199</p>
-                <p className="text-xs text-black/55">Snap-together cars</p>
-              </div>
-            </Link>
-            <Link
-              href="/bundle-ready"
-              className="group flex items-center gap-3 rounded-2xl border border-brand-gold/40 bg-brand-gold/[0.08] p-3 transition hover:border-brand-gold/70"
-            >
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-gold text-white"><Gift size={18} /></span>
-              <div className="min-w-0">
-                <p className="text-sm font-bold leading-tight text-cream">4 ready-built · ₹1999</p>
-                <p className="text-xs text-black/55">No building needed</p>
-              </div>
-            </Link>
-          </div>
-
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          {/* One primary CTA; bundles as quiet secondary chips */}
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link href="/collection">
               <Button size="lg" className="group">Shop the collection <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" /></Button>
             </Link>
           </div>
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            <Link href="/bundle" className="inline-flex items-center gap-1.5 rounded-full border border-black/15 px-4 py-2 text-sm font-semibold text-black/70 transition hover:border-black/35 hover:text-cream">
+              <Blocks size={15} /> Any 3 block cars · ₹2,199
+            </Link>
+            <Link href="/bundle-ready" className="inline-flex items-center gap-1.5 rounded-full border border-black/15 px-4 py-2 text-sm font-semibold text-black/70 transition hover:border-black/35 hover:text-cream">
+              <Gift size={15} /> Any 4 die-cast · ₹1,999
+            </Link>
+          </div>
 
-          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-black/60">
+          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-black/55">
             <span className="flex items-center gap-1.5"><Star size={15} className="fill-brand-gold text-brand-gold" /> 4.9 · 3,000+ builders</span>
-            <span className="flex items-center gap-1.5"><Truck size={15} className="text-brand-red" /> Free shipping ₹999+</span>
-            <span className="flex items-center gap-1.5"><BadgeIndianRupee size={15} className="text-brand-red" /> Partial COD ₹99</span>
-            <span className="flex items-center gap-1.5"><RotateCcw size={15} className="text-brand-red" /> 30-day returns</span>
+            <span className="flex items-center gap-1.5"><Truck size={15} className="text-black/40" /> Free shipping ₹999+</span>
+            <span className="flex items-center gap-1.5"><BadgeIndianRupee size={15} className="text-black/40" /> Partial COD ₹99</span>
+            <span className="flex items-center gap-1.5"><RotateCcw size={15} className="text-black/40" /> 30-day returns</span>
           </div>
         </motion.div>
 

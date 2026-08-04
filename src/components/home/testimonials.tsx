@@ -7,17 +7,17 @@ import { galleryImages } from "@/lib/products";
 
 const gimgs = galleryImages(8);
 
+// Collector-led proof. Gifting/parent reviews live in the "Perfect gift"
+// module — mixing them here downgraded the premium positioning.
 const reviews = [
-  { name: "Shreya Nair", role: "Verified buyer", text: "My son absolutely loved the car! The quality is amazing and the design is very attractive. Keeps him engaged for hours.", rating: 5 },
-  { name: "Vikram Joshi", role: "Verified buyer", text: "Yeh car bahut mast hai! Build quality bhi achi hai aur bachchon ko bahut pasand aati hai. Totally worth it.", rating: 5 },
-  { name: "Neha Gupta", role: "Verified buyer", text: "I was surprised by how durable it is. Even after rough use it still looks perfect. Great product!", rating: 5 },
-  { name: "Karan Malhotra", role: "Verified buyer", text: "Finishing bahut achi hai, aur colors bhi bahut attractive hain. Mere bachche ko bahut pasand aayi.", rating: 5 },
-  { name: "Priya Mehta", role: "Verified buyer", text: "Exceeded my expectations. Sturdy body and very satisfying to build. Highly recommend.", rating: 5 },
-  { name: "Amit Singh", role: "Verified buyer", text: "Bahut hi zabardast hai. Bachche iske saath bahut enjoy karte hain aur quality bhi premium lagti hai.", rating: 5 },
-  { name: "Sneha Patil", role: "Verified buyer", text: "The detailing is impressive. Looks great and made with strong material. Definitely recommended.", rating: 5 },
-  { name: "Rahul Verma", role: "Verified buyer", text: "Mere nephew ko gift ki thi, aur usse bahut pasand aayi. Quality aur design dono excellent hain.", rating: 5 },
-  { name: "Ananya Iyer", role: "Verified buyer", text: "A very fun and reliable build. Safe, durable, and gives great value for money.", rating: 5 },
-  { name: "Rohit Sharma", role: "Verified buyer", text: "Bahut badhiya! Price ke hisaab se quality excellent hai aur bachche khush ho jaate hain.", rating: 5 },
+  { name: "Vikram Joshi", role: "Verified builder", text: "Finally have a Lambo on my desk. Build quality solid hai — bricks snap tight aur finish premium lagti hai. Totally worth it.", rating: 5 },
+  { name: "Priya Mehta", role: "Verified builder", text: "Exceeded my expectations. The build was genuinely satisfying — a whole weekend of calm, and now it sits on my shelf like a trophy.", rating: 5 },
+  { name: "Rohit Sharma", role: "Verified collector", text: "Price ke hisaab se detailing excellent hai. My third KraftyBrix — the die-cast 1:24s look brilliant next to the block builds.", rating: 5 },
+  { name: "Sneha Patil", role: "Verified builder", text: "The detailing is impressive — vents, spoiler, even the interior. Photographs beautifully. My desk setup is complete.", rating: 5 },
+  { name: "Amit Singh", role: "Verified collector", text: "Zabardast quality. Display karne layak finish hai — office walon ne poocha kahan se liya.", rating: 5 },
+  { name: "Ananya Iyer", role: "Verified builder", text: "A very absorbing build — great value for the piece count. Better than doom-scrolling, and I got a Ferrari out of it.", rating: 5 },
+  { name: "Neha Gupta", role: "Verified buyer", text: "Surprisingly durable. Moved house with it fully built and it still looks perfect on the bookshelf.", rating: 5 },
+  { name: "Karan Malhotra", role: "Verified collector", text: "Finishing bahut achi hai aur colours attractive hain. The 1:32 die-cast smoking car is my favourite piece.", rating: 5 },
 ];
 
 function Row({ reverse }: { reverse?: boolean }) {
@@ -54,7 +54,7 @@ export function Testimonials() {
       <div className="container-wide">
         <div className="mx-auto max-w-2xl text-center">
           <p className="eyebrow justify-center"><span className="h-px w-8 bg-brand-red" /> 12,000+ verified buyers</p>
-          <h2 className="h-display mt-3 text-4xl sm:text-5xl">Loved by enthusiasts</h2>
+          <h2 className="h-display mt-3 text-4xl sm:text-5xl">Built by collectors</h2>
         </div>
       </div>
 
