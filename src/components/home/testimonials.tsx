@@ -58,9 +58,8 @@ export function Testimonials() {
         </div>
       </div>
 
-      <div className="mt-14 space-y-5 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+      <div className="mt-14 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
         <Row />
-        <Row reverse />
       </div>
     </section>
   );

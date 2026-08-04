@@ -105,7 +105,7 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="flex flex-1 flex-col px-2 pb-1 pt-4">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-[11px] uppercase tracking-wider text-muted">{product.category}</span>
-          <Stars rating={product.rating} count={product.reviewCount} size={12} />
+          {product.reviewCount > 0 && <Stars rating={product.rating} count={product.reviewCount} size={12} />}
         </div>
         <Link href={`/product/${product.slug}`}>
           <h3 className="mt-1 line-clamp-1 font-display text-lg font-semibold leading-tight hover:text-brand-red">
@@ -113,7 +113,11 @@ export function ProductCard({ product }: { product: Product }) {
           </h3>
         </Link>
         <div className="mt-0.5 flex items-center justify-between gap-2">
-          <p className="text-sm text-black/50">{product.pieces.toLocaleString("en-IN")} pieces</p>
+          <p className="text-sm text-black/50">
+            {product.pieces > 1
+              ? `${product.pieces.toLocaleString("en-IN")} pieces`
+              : "Ready-built · no assembly"}
+          </p>
           <DeliveryEstimate compact />
         </div>
 

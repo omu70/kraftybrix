@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useInView } from "framer-motion";
 
-/** Animated count-up that triggers when scrolled into view. */
+/**
+ * Count-up that RENDERS THE FINAL VALUE BY DEFAULT (SSR/no-JS safe — never
+ * shows "0★"). When it scrolls into view it briefly animates up to the value
+ * as a progressive enhancement. Honors prefers-reduced-motion.
+ */
 export function Counter({
   to,
   duration = 1.4,
@@ -17,10 +21,14 @@ export function Counter({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
-  const [val, setVal] = useState(0);
+  const [val, setVal] = useState(to); // default = final value, not 0
 
   useEffect(() => {
     if (!inView) return;
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVal(to);
+      return;
+    }
     let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {

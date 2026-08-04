@@ -33,6 +33,12 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lock page scroll while the mobile drawer is open.
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   return (
     <header
       className={cn(
@@ -120,25 +126,59 @@ export function Header() {
 
       <AnimatePresence>
         {mobileOpen && (
-          <motion.nav
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-black/10 bg-ink-900/95 backdrop-blur-xl lg:hidden"
-          >
-            <div className="container-wide flex flex-col gap-1 py-4">
-              {nav.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
+          <>
+            {/* scrim */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 z-[98] bg-black/60 lg:hidden"
+            />
+            {/* solid slide-in drawer */}
+            <motion.nav
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed inset-y-0 right-0 z-[99] flex w-[85%] max-w-sm flex-col bg-[#f4eee4] shadow-2xl lg:hidden"
+              aria-label="Menu"
+            >
+              <div className="flex items-center justify-between border-b border-black/10 px-5 py-4">
+                <span className="font-display text-lg font-bold">Menu</span>
+                <button
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-lg px-3 py-3 text-base font-medium text-black/80 hover:bg-black/[0.04]"
+                  aria-label="Close menu"
+                  className="grid h-11 w-11 place-items-center rounded-full bg-black/[0.05]"
                 >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </motion.nav>
+                  <X size={22} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-3 py-4">
+                {nav.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-xl px-4 py-4 text-lg font-semibold text-ink-900 text-black/85 active:bg-black/[0.06]"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="mt-4 border-t border-black/10 pt-4">
+                  <Link href="/search" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-black/70 active:bg-black/[0.06]">
+                    <Search size={19} /> Search
+                  </Link>
+                  <Link href="/account" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-black/70 active:bg-black/[0.06]">
+                    <User size={19} /> Account
+                  </Link>
+                  <Link href="/wishlist" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-black/70 active:bg-black/[0.06]">
+                    <Heart size={19} /> Wishlist
+                  </Link>
+                </div>
+              </div>
+            </motion.nav>
+          </>
         )}
       </AnimatePresence>
     </header>

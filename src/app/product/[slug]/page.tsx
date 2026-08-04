@@ -24,7 +24,9 @@ export async function generateMetadata({
   if (!product) return {};
   const price = product.salePrice ?? product.price;
   return {
-    title: `${product.name} — ${product.pieces.toLocaleString()} Piece Brick Model`,
+    title: product.pieces > 1
+      ? `${product.name} — ${product.pieces.toLocaleString("en-IN")} Piece Brick Model`
+      : `${product.name} — Ready-Built Die-Cast Model`,
     description: product.tagline,
     openGraph: {
       title: product.name,
@@ -52,7 +54,8 @@ export default async function ProductPage({
   const recommendations = related.length ? related : fallback;
 
   // Ready-built (metal, pre-assembled) cars have no piece count / build time.
-  const readyBuilt = product.pieces === 0;
+  // pieces <= 1 covers legacy DB rows saved with a "1 piece" placeholder.
+  const readyBuilt = product.pieces <= 1;
 
   const stats: {
     icon: LucideIcon;

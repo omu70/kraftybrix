@@ -12,7 +12,7 @@ import { formatPrice } from "@/lib/utils";
 import { ADVANCE_FEE, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import {
-  listAdminProducts, saveAdminProduct, deleteAdminProduct, seedCatalogue,
+  listAdminProducts, saveAdminProduct, deleteAdminProduct, seedCatalogue, recategorizeProducts,
   listAdminOrders, updateOrderStatus, adminStats, listSubscribers, getConfigStatus, testDatabase,
   updateStock, listCoupons, saveCoupon, deleteCoupon, addSubscriber, deleteSubscriber,
   type AdminProduct, type AdminOrder, type OrderStatus, type AdminStats, type AdminCoupon,
@@ -381,6 +381,20 @@ export default function AdminPage() {
                     <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
                     <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search…" className="rounded-lg border border-black/15 bg-ink-900 py-2 pl-9 pr-3 text-sm outline-none focus:border-brand-red" />
                   </div>
+                  {mode === "db" && (
+                    <button
+                      onClick={async () => {
+                        if (!confirm("Re-file every product under the new categories (Block / Die-Cast / RC / Monuments) with correct build time and size? This keeps all your products — it only fixes their category.")) return;
+                        flash("Re-categorizing…");
+                        const res = await recategorizeProducts();
+                        if (res.ok) { const r = await listAdminProducts(); setRows(r.rows); flash(`Re-categorized ${res.updated} products`); }
+                        else flash(res.error ?? "Error");
+                      }}
+                      className="rounded-full border border-brand-red/40 text-brand-red px-4 py-2 text-sm font-semibold hover:bg-brand-red/[0.06]"
+                    >
+                      Re-categorize all
+                    </button>
+                  )}
                   {mode === "db" && (
                     <button
                       onClick={async () => {

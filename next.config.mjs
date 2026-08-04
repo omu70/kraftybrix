@@ -7,6 +7,10 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   images: {
+    // Hostinger Node hosting: the built-in image optimizer needs `sharp` and
+    // fails intermittently without it (blank product images). Serve originals
+    // directly — S3/ImageKit already deliver optimized assets.
+    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },

@@ -88,7 +88,7 @@ export function Hero() {
         </motion.div>
 
         {/* product */}
-        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }} className="relative">
+        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }} className="relative max-lg:order-first">
           <div className="relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-2xl border border-black/10 bg-white sm:max-w-md">
             {off > 0 && <span className="absolute left-4 top-4 z-10 rounded-full bg-brand-red px-3 py-1 text-sm font-bold text-white">-{off}%</span>}
             <Link href={`/product/${CAR.slug}`}>

@@ -532,3 +532,87 @@ export async function getConfigStatus() {
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",
   };
 }
+
+/* ───────────  Re-categorize DB products to the new type system  ─────────── */
+
+const RECAT_TYPE_MAP: Record<string, string> = {"1930s american hot rod style cars ford":"B", "1954 mercedes benz 300 sl gullwing":"D24", "1976 fiat 131 abarth rally belgium":"B", "1983 1987 toyota sprinter trueno":"D32", "arc de triomphe":"M", "audi r8":"D32", "bmw bike":"B", "bmw e30 m3":"D24", "bmw x cocacola":"D24", "bugatti chiron":"D24", "cobra racing car blue":"D32", "cobra racing car red":"D32", "cobra racing car yellow":"D32", "crimson lightning somking car":"D32", "cyber punk purple blue":"B", "cyber punk suv purple blue":"B", "deep wonderer black":"D32", "deep wonderer blue":"D32", "deep wonderer red":"D32", "dodge challenger srt hellcat":"D24", "dodge challenger srt hellcat widebody":"D24", "dubai skyline":"M", "ferrari fxx k":"B", "ford mustang shelby gt500":"D32", "g wagon blue":"D32", "jeep 4x4":"R", "jeep wrangler rubicon":"D24", "kb defensor leaf green":"D32", "kb defensor orange":"D32", "koenigsegg one 1":"B", "lambo hurac n super trofeo evo":"B", "lambo si n fkp 37":"B", "lambo v12 vision gran turismo":"D24", "lamborghini revuelto":"D24", "lamborghini si n fkp":"D24", "lamborghini si n fkp 37":"R", "land rover discovery x":"B", "leaning tower of pisa":"M", "mc blaze gt":"B", "mclaren mp4":"B", "mclaren senna gt":"B", "mclaren senna gtr":"B", "mercedes amg gt black series":"D24", "mustang gt 550":"D32", "nissan skyline gt r r34":"D24", "orange mustang":"B", "pacific champion 85 smoking car":"D32", "porsche 911 rsr":"R", "purple lambo":"B", "rolls royce":"D24", "sunlight tracer smoking car":"D32", "tesla truck":"B", "tesla truck trolley bike":"D32", "thar black":"D32", "thar red":"D32", "tower bridge":"M", "white ghost smoking car":"D32", "yangwang u9":"D24"};
+
+function recatNorm(s: string): string {
+  let x = (s || "").replace(/\([^)]*\)/g, " ").toLowerCase();
+  x = x.replace(/[^a-z0-9]+/g, " ").trim();
+  for (const w of ["modified", "beast", "mode", "building", "blocks", "set", "the", "remote", "with", "attached", "and"]) {
+    x = x.replace(new RegExp(`\\b${w}\\b`, "g"), " ");
+  }
+  return x.replace(/\s+/g, " ").trim();
+}
+
+function recatAttrs(code: string): { cat: string; build: boolean; size: string } {
+  if (code === "R") return { cat: "RC Cars", build: true, size: "Collectible" };
+  if (code === "M") return { cat: "Monuments", build: true, size: "Collectible" };
+  if (code === "D24") return { cat: "Die-Cast Cars", build: false, size: "1:24" };
+  if (code === "D32") return { cat: "Die-Cast Cars", build: false, size: "1:32" };
+  return { cat: "Block Cars", build: true, size: "Collectible" };
+}
+
+function recatClassify(name: string, oldCat: string, pieces: number) {
+  for (const part of name.split("/")) {
+    const code = RECAT_TYPE_MAP[recatNorm(part)];
+    if (code) return recatAttrs(code);
+  }
+  const o = (oldCat || "").toLowerCase();
+  if (o.includes("landmark") || o.includes("monument")) return recatAttrs("M");
+  if (o.includes("smoking")) return recatAttrs("D32");
+  return pieces >= 50 ? recatAttrs("B") : recatAttrs("D32");
+}
+
+/**
+ * One-click migration: re-files every product in the database under the new
+ * category system (Block Cars / Die-Cast Cars / RC Cars / Monuments), sets the
+ * right build time (die-cast = none) and scale (1:24 / 1:32). Non-destructive —
+ * keeps all product data, prices, images and variants.
+ */
+export async function recategorizeProducts(): Promise<{ ok: boolean; updated?: number; counts?: Record<string, number>; error?: string }> {
+  if (!process.env.DATABASE_URL) return { ok: false, error: "No database connected." };
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const meta = [
+      { name: "Block Cars", slug: "block-cars", blurb: "Brick-built supercars you snap together yourself." },
+      { name: "Die-Cast Cars", slug: "die-cast-cars", blurb: "Pre-built metal models in 1:24 & 1:32 scale." },
+      { name: "RC Cars", slug: "rc-cars", blurb: "Build it, then drive it — remote-control brick cars." },
+      { name: "Monuments", slug: "monuments", blurb: "Landmark architecture, brick by brick." },
+    ];
+    const ids: Record<string, string> = {};
+    for (const c of meta) {
+      const row = await prisma.category.upsert({ where: { slug: c.slug }, update: { name: c.name, blurb: c.blurb }, create: c });
+      ids[c.name] = row.id;
+    }
+    const products = await prisma.product.findMany({ include: { category: true } });
+    const counts: Record<string, number> = { "Block Cars": 0, "Die-Cast Cars": 0, "RC Cars": 0, "Monuments": 0 };
+    for (const p of products) {
+      const t = recatClassify(p.name, p.category?.name ?? "", p.pieces);
+      const data: Record<string, unknown> = { categoryId: ids[t.cat] };
+      // Data tidy: a pasted image URL is not a product name. Salvage the URL
+      // as the product image and flag the name for the owner to fix.
+      if (/^https?:\/\//i.test(p.name)) {
+        if (!p.images?.length) data.images = [p.name.trim()];
+        data.name = "New Model — rename me in Admin";
+      }
+      if (t.build) {
+        const pcs = p.pieces > 1 ? p.pieces : p.price >= 3000 ? 1000 : p.price >= 1500 ? 500 : 300;
+        data.pieces = pcs;
+        data.buildHours = Math.max(1, Math.round(pcs / 300));
+        data.scale = "Collectible";
+      } else {
+        data.pieces = 0;
+        data.buildHours = 0;
+        data.scale = t.size;
+        data.materialOptions = ["Metal"];
+      }
+      await prisma.product.update({ where: { id: p.id }, data });
+      counts[t.cat]++;
+    }
+    return { ok: true, updated: products.length, counts };
+  } catch (e) {
+    return { ok: false, error: safeErr(e) };
+  }
+}

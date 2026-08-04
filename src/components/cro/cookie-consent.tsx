@@ -23,7 +23,9 @@ export function CookieConsent() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-x-3 bottom-3 z-[85] mx-auto max-w-2xl rounded-2xl border border-black/10 bg-ink-800/95 p-4 shadow-card backdrop-blur-xl sm:flex sm:items-center sm:gap-4">
+    // Sits above the mobile sticky add-to-cart bar (bottom-20) so it never
+    // covers a CTA; on desktop it can rest at the bottom edge.
+    <div className="fixed inset-x-3 bottom-20 z-[35] mx-auto max-w-2xl rounded-2xl border border-black/10 bg-ink-800/95 p-3 shadow-card backdrop-blur-xl sm:p-4 lg:bottom-3 sm:flex sm:items-center sm:gap-4">
       <p className="text-sm text-black/70">
         We use cookies to run the store and improve your experience. Read our{" "}
         <Link href="/cookies" className="font-medium text-brand-red hover:underline">Cookie Policy</Link>.

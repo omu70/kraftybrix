@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/store/cart";
 import { useWishlist } from "@/store/wishlist";
 import { track } from "@/components/analytics";
-import { LiveScarcity } from "@/components/cro/live-scarcity";
 import { DeliveryEstimate } from "@/components/product/delivery-estimate";
 
 export function BuyBox({ product }: { product: Product }) {
@@ -108,8 +107,6 @@ export function BuyBox({ product }: { product: Product }) {
           <span className="text-black/50">Out of stock</span>
         )}
       </div>
-
-      {product.inStock && <LiveScarcity productId={product.id} />}
 
       {/* auto delivery estimate */}
       <DeliveryEstimate className="mt-4" />
