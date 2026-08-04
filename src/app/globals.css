@@ -53,7 +53,9 @@
     @apply mx-auto w-full max-w-[1400px] px-6 lg:px-10;
   }
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.25em] text-muted;
+    /* Tier-2 label: small caps in a muted brand accent (not black) so section
+       labels stop competing with display headlines. */
+    @apply inline-flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-brand-red/75;
   }
   .h-display {
     @apply font-display font-bold leading-[0.95] tracking-tight;

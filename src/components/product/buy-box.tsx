@@ -15,6 +15,7 @@ import { DeliveryEstimate } from "@/components/product/delivery-estimate";
 
 export function BuyBox({ product }: { product: Product }) {
   const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
   const [color, setColor] = useState<ColorOption | null>(product.colorOptions?.[0] ?? null);
   const [material, setMaterial] = useState<string | null>(product.materialOptions?.[0] ?? null);
   const add = useCart((s) => s.add);
@@ -29,6 +30,8 @@ export function BuyBox({ product }: { product: Product }) {
   function addToCart() {
     add(product, qty, opts);
     track("add_to_cart", { id: product.id, qty, value: price * qty });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
   }
   function buyNow() {
     add(product, qty, opts);
@@ -123,7 +126,7 @@ export function BuyBox({ product }: { product: Product }) {
           </button>
         </div>
         <Button size="lg" onClick={addToCart} disabled={!product.inStock} className="flex-1">
-          <ShoppingBag size={18} /> Add to cart
+          {added ? <>Added ✓</> : <><ShoppingBag size={18} /> Add to cart</>}
         </Button>
         <button
           onClick={() => toggleWish(product.id)}
@@ -134,7 +137,7 @@ export function BuyBox({ product }: { product: Product }) {
         </button>
       </div>
 
-      <Button size="lg" variant="white" onClick={buyNow} disabled={!product.inStock} className="mt-3 w-full">
+      <Button size="lg" variant="outline" onClick={buyNow} disabled={!product.inStock} className="mt-3 w-full">
         <Zap size={18} /> Buy now
       </Button>
 
@@ -152,6 +155,15 @@ export function BuyBox({ product }: { product: Product }) {
         ))}
       </div>
 
+      {/* payment methods at the decision point */}
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        {["UPI", "Visa", "Mastercard", "RuPay", "COD"].map((m) => (
+          <span key={m} className="rounded-md border border-black/10 bg-white px-2.5 py-1 text-[11px] font-semibold text-black/60">
+            {m}
+          </span>
+        ))}
+      </div>
+
       {/* mobile sticky add-to-cart bar (premium mobile pattern) */}
       <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-black/10 bg-ink-900/95 px-4 py-3 backdrop-blur lg:hidden">
         <div className="min-w-0">
@@ -162,7 +174,7 @@ export function BuyBox({ product }: { product: Product }) {
           </p>
         </div>
         <Button size="lg" onClick={addToCart} disabled={!product.inStock} className="ml-auto flex-1">
-          <ShoppingBag size={18} /> Add to cart
+          {added ? <>Added ✓</> : <><ShoppingBag size={18} /> Add to cart</>}
         </Button>
       </div>
     </div>

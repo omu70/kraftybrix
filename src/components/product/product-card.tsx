@@ -45,11 +45,14 @@ export function ProductCard({ product }: { product: Product }) {
       style={{ transform: `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)` }}
       className="group relative flex h-full flex-col rounded-2xl border border-black/10 bg-ink-800 p-3 transition-shadow duration-300 hover:border-black/20 hover:shadow-card"
     >
-      {/* badges */}
+      {/* badges — discount + at most ONE status badge, so the image stays clear */}
       <div className="absolute left-5 top-5 z-10 flex flex-col gap-1.5">
         {off > 0 && <Badge tone="red">-{off}%</Badge>}
-        {product.isNew && <Badge tone="blue">New</Badge>}
-        {product.limited && <Badge tone="gold">Limited</Badge>}
+        {product.limited ? (
+          <Badge tone="gold">Limited</Badge>
+        ) : product.isNew ? (
+          <Badge tone="blue">New</Badge>
+        ) : null}
       </div>
 
       {/* wishlist */}
@@ -57,7 +60,7 @@ export function ProductCard({ product }: { product: Product }) {
         onClick={() => toggleWish(product.id)}
         aria-label="Toggle wishlist"
         className={cn(
-          "absolute right-5 top-5 z-10 grid h-9 w-9 place-items-center rounded-full border border-black/10 bg-ink-900/70 backdrop-blur transition",
+          "absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full border border-black/10 bg-ink-900/70 backdrop-blur transition",
           wished ? "text-brand-red" : "text-black/60 hover:text-cream"
         )}
       >

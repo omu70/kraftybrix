@@ -109,7 +109,12 @@ export default async function ProductPage({
         {/* breadcrumb */}
         <nav className="mb-6 flex items-center gap-2 text-sm text-black/45">
           <Link href="/" className="hover:text-cream">Home</Link> /
-          <Link href="/collection" className="hover:text-cream">Collection</Link> /
+          <Link
+            href={`/collection?category=${encodeURIComponent(product.category)}`}
+            className="hover:text-cream"
+          >
+            {product.category}
+          </Link> /
           <span className="text-black/70">{product.name}</span>
         </nav>
 
