@@ -2,8 +2,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmEffects } from "@/components/checkout/confirm-effects";
 
-type SP = { order?: string; demo?: string; paid?: string; due?: string };
+type SP = { order?: string; demo?: string; paid?: string; due?: string; payu?: string };
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
@@ -14,6 +15,7 @@ function Confirmed({ searchParams }: { searchParams: SP }) {
 
   return (
     <div className="container-wide grid min-h-[70vh] place-items-center pt-28 text-center">
+      <ConfirmEffects paid={paid} due={due} payu={!!searchParams.payu} />
       <div className="max-w-md">
         <CheckCircle2 className="mx-auto text-green-400" size={64} />
         <h1 className="h-display mt-6 text-4xl">Order confirmed</h1>

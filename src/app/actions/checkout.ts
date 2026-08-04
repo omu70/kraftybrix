@@ -83,6 +83,8 @@ type PersistArgs = {
   codBalance: number;
   couponCode?: string;
   razorpayOrderId?: string;
+  gateway?: string;
+  payuTxnId?: string;
   userId?: string | null;
   status: "PENDING" | "CONFIRMED";
 };
@@ -101,6 +103,8 @@ async function persistOrder(a: PersistArgs) {
         paymentMethod: a.paymentMethod,
         paymentStatus: a.paymentStatus,
         razorpayOrderId: a.razorpayOrderId ?? null,
+        gateway: a.gateway ?? "razorpay",
+        payuTxnId: a.payuTxnId ?? null,
         subtotal: a.pricing.subtotal,
         discount: a.pricing.discount,
         shipping: a.pricing.shipping,
@@ -261,4 +265,114 @@ export async function verifyPayment(input: {
     }
   }
   return { ok: valid };
+}
+
+/* ─────────────────────────── PayU (India) ─────────────────────────── */
+
+/**
+ * Start a PayU payment. Creates the order (PENDING) and returns the form
+ * fields + action URL; the client POSTs them to PayU's hosted checkout.
+ * Works for both ONLINE (full total) and PARTIAL_COD (₹99 advance).
+ */
+export async function createPayuOrder(input: z.infer<typeof checkoutSchema>, origin?: string) {
+  const parsed = checkoutSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: "Invalid checkout data." };
+
+  const { payuConfig, payuRequestHash } = await import("@/lib/payu");
+  const { key, salt, base, enabled } = payuConfig();
+  if (!enabled) return { ok: false as const, error: "PayU is not configured yet. Add PAYU_MERCHANT_KEY and PAYU_SALT." };
+
+  const { lines, couponCode, paymentMethod, address } = parsed.data;
+  const coupons = await getCoupons();
+  const pricing = priceOrder(lines, couponCode?.toUpperCase(), coupons);
+  const orderNumber = "KB" + Date.now().toString(36).toUpperCase();
+  const userId = await currentUserId();
+
+  const payNow = paymentMethod === "PARTIAL_COD" ? Math.min(ADVANCE_FEE, pricing.total) : pricing.total;
+  const codBalance = paymentMethod === "PARTIAL_COD" ? Math.max(0, pricing.total - payNow) : 0;
+
+  const txnid = orderNumber;
+  const amount = payNow.toFixed(2);
+  const productinfo = `KraftyBrix ${orderNumber}`;
+  const firstname = (address.fullName.trim().split(/\s+/)[0] || "Customer").slice(0, 60);
+  const email = address.email;
+  // Prefer the trusted, server-configured site URL; fall back to the request origin.
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || origin || "").replace(/\/$/, "");
+  const callback = `${site}/api/payu/callback`;
+  const hash = payuRequestHash({ key, txnid, amount, productinfo, firstname, email, salt });
+
+  await persistOrder({
+    orderNumber, address, lines, pricing, paymentMethod, couponCode, userId,
+    gateway: "payu", payuTxnId: txnid, status: "PENDING", paymentStatus: "PENDING",
+    amountPaid: 0, codBalance,
+  });
+
+  return {
+    ok: true as const,
+    action: base,
+    params: {
+      key, txnid, amount, productinfo, firstname, email,
+      phone: address.phone, surl: callback, furl: callback, hash,
+    },
+  };
+}
+
+/** Verify + settle a PayU callback. Returns where the browser should land. */
+export async function settlePayu(p: Record<string, string>): Promise<{
+  ok: boolean; orderNumber: string; payNow: number; codBalance: number;
+}> {
+  const { payuConfig, payuResponseHash } = await import("@/lib/payu");
+  const { key, salt } = payuConfig();
+  const expected = payuResponseHash({
+    key, txnid: p.txnid, amount: p.amount, productinfo: p.productinfo,
+    firstname: p.firstname, email: p.email, status: p.status, salt,
+    udf1: p.udf1, udf2: p.udf2, udf3: p.udf3, udf4: p.udf4, udf5: p.udf5,
+    additionalCharges: p.additionalCharges,
+  });
+  const valid = expected.toLowerCase() === (p.hash || "").toLowerCase();
+  const success = valid && p.status === "success";
+
+  let payNow = Number(p.amount) || 0;
+  let codBalance = 0;
+  let amountOk = true;
+
+  if (dbEnabled()) {
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      const existing = await prisma.order.findUnique({ where: { payuTxnId: p.txnid } });
+      if (existing) {
+        codBalance = existing.codBalance;
+        payNow = existing.total - existing.codBalance;
+        // Defence-in-depth: the amount PayU reports must cover what this order owed.
+        const paidEnough = Math.round(Number(p.amount)) >= payNow;
+        amountOk = paidEnough;
+        const alreadySettled = existing.paymentStatus === "PAID" || existing.paymentStatus === "PARTIAL";
+        if (success && paidEnough) {
+          if (!alreadySettled) {
+            const isPartial = existing.paymentMethod === "PARTIAL_COD";
+            const order = await prisma.order.update({
+              where: { payuTxnId: p.txnid },
+              data: {
+                status: "CONFIRMED",
+                paymentStatus: isPartial ? "PARTIAL" : "PAID",
+                amountPaid: existing.total - existing.codBalance,
+                payuPaymentId: p.mihpayid ?? null,
+              },
+            });
+            if (order.guestEmail) {
+              const addr = order.shippingAddress as { fullName?: string } | null;
+              await sendOrderEmail(order.guestEmail, addr?.fullName ?? "there", order.orderNumber, order.total, order.amountPaid, order.codBalance);
+            }
+          }
+        } else if (!alreadySettled) {
+          // Only a genuinely unpaid order can be flagged failed — never downgrade a paid one.
+          await prisma.order.update({ where: { payuTxnId: p.txnid }, data: { paymentStatus: "FAILED" } });
+        }
+      }
+    } catch (e) {
+      console.error("[payu] settle failed:", e);
+    }
+  }
+
+  return { ok: success && amountOk, orderNumber: p.txnid, payNow, codBalance };
 }

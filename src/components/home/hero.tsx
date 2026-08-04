@@ -10,7 +10,7 @@ import { HERO_BANNER } from "@/lib/constants";
 
 const CAR =
   products.find((p) => p.slug.includes("sian")) ??
-  products.find((p) => p.category === "Hypercars") ??
+  products.find((p) => p.category === "Block Cars") ??
   products[0];
 
 export function Hero() {

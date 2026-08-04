@@ -1,11 +1,8 @@
 export type Category =
-  | "Hypercars"
-  | "Supercars"
-  | "Racing Cars"
-  | "SUVs & Trucks"
-  | "Smoking Cars"
-  | "Landmarks"
-  | "Limited Editions";
+  | "Block Cars"
+  | "Die-Cast Cars"
+  | "RC Cars"
+  | "Monuments";
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Master";
 

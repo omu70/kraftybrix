@@ -9,10 +9,31 @@ import { useCart, cartSubtotal } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { ADVANCE_FEE, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { applyCoupon, createOrder, verifyPayment } from "@/app/actions/checkout";
+import { applyCoupon, createOrder, verifyPayment, createPayuOrder } from "@/app/actions/checkout";
 import { track } from "@/components/analytics";
 
 type Method = "ONLINE" | "PARTIAL_COD";
+type Gateway = "razorpay" | "payu";
+
+// Non-secret public keys — used only to know which gateways to offer.
+const RZP_AVAILABLE = !!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+const PAYU_AVAILABLE = !!process.env.NEXT_PUBLIC_PAYU_MERCHANT_KEY;
+
+/** Build a hidden form and POST the customer to PayU's hosted checkout. */
+function postToPayU(action: string, params: Record<string, string>) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = action;
+  for (const [k, v] of Object.entries(params)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = k;
+    input.value = String(v ?? "");
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
 
 type FormState = {
   fullName: string;
@@ -34,7 +55,9 @@ export default function CheckoutPage() {
   const [applied, setApplied] = useState<{ code: string; discount: number } | null>(null);
   const [couponErr, setCouponErr] = useState("");
   const [method, setMethod] = useState<Method>("PARTIAL_COD");
+  const [gateway, setGateway] = useState<Gateway>(PAYU_AVAILABLE ? "payu" : "razorpay");
   const [placing, setPlacing] = useState(false);
+  const bothGateways = RZP_AVAILABLE && PAYU_AVAILABLE;
   const [form, setForm] = useState<FormState>({
     fullName: "", phone: "", email: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
@@ -47,9 +70,14 @@ export default function CheckoutPage() {
   const payNow = method === "PARTIAL_COD" ? Math.min(ADVANCE_FEE, total) : total;
   const codBalance = method === "PARTIAL_COD" ? Math.max(0, total - payNow) : 0;
 
+  const [payuFailed, setPayuFailed] = useState(false);
+
   // Meta Pixel: InitiateCheckout when the checkout opens with items in the cart.
   useEffect(() => {
     if (lines.length > 0) track("begin_checkout", { value: total });
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("payu") === "failed") {
+      setPayuFailed(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -63,6 +91,27 @@ export default function CheckoutPage() {
   async function placeOrder() {
     setPlacing(true);
     track("add_payment_info", { value: total, method }); // Meta Pixel: AddPaymentInfo
+
+    const orderInput = {
+      address: form,
+      lines: lines.map((l) => ({ productId: l.productId, name: [l.name, l.color, l.material].filter(Boolean).join(" · "), price: l.price, qty: l.qty })),
+      couponCode: applied?.code,
+      paymentMethod: method,
+    };
+
+    // PayU: create the order, then redirect the browser to PayU's hosted page.
+    if (gateway === "payu" && PAYU_AVAILABLE) {
+      try {
+        const res = await createPayuOrder(orderInput, window.location.origin);
+        if (!res.ok) { alert(res.error); setPlacing(false); return; }
+        postToPayU(res.action, res.params); // navigates away; cart clears on the confirmation page
+      } catch {
+        alert("Could not start PayU payment. Please try again.");
+        setPlacing(false);
+      }
+      return;
+    }
+
     try {
       const res = await createOrder({
         address: form,
@@ -133,6 +182,11 @@ export default function CheckoutPage() {
       <p className="mt-2 flex items-center gap-2 text-sm text-black/50">
         <Lock size={14} /> Secure 256-bit encrypted checkout
       </p>
+      {payuFailed && (
+        <div className="mt-4 rounded-xl border border-brand-red/40 bg-brand-red/[0.06] px-4 py-3 text-sm text-black/75">
+          Your payment didn&apos;t go through and you were not charged. Please try again or choose another payment method.
+        </div>
+      )}
 
       <div className="mt-10 grid gap-10 pb-24 lg:grid-cols-[1fr_400px]">
         {/* form */}
@@ -174,6 +228,23 @@ export default function CheckoutPage() {
               <p className="mt-3 text-xs text-black/50">
                 Pay just {formatPrice(payNow)} now to lock your order — the balance of {formatPrice(codBalance)} is collected in cash when it arrives.
               </p>
+            )}
+
+            {bothGateways && (
+              <div className="mt-4">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-black/45">Pay securely via</p>
+                <div className="flex gap-2">
+                  {(["payu", "razorpay"] as Gateway[]).map((g) => (
+                    <button
+                      key={g}
+                      onClick={() => setGateway(g)}
+                      className={`rounded-full border px-4 py-2 text-sm font-medium capitalize transition ${gateway === g ? "border-brand-red bg-brand-red/10 text-brand-red" : "border-black/15 hover:border-black/30"}`}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </section>
         </div>

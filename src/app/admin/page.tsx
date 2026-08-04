@@ -5,6 +5,7 @@ import {
   LayoutDashboard, ShoppingCart, Package, Users, Ticket, Boxes, Mail,
   Settings, TrendingUp, IndianRupee, Plus, Pencil, Trash2, X, Search,
   Wallet, CreditCard, AlertTriangle, Database, CheckCircle2, Truck,
+  FolderTree, Star, BarChart3, ScrollText, Activity, PackageX, Receipt,
 } from "lucide-react";
 import { categories as catMeta } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
@@ -19,17 +20,50 @@ import {
 import { adminLogout } from "@/app/actions/admin-auth";
 import { useRouter } from "next/navigation";
 
-const nav = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { key: "products", label: "Products", icon: Package },
-  { key: "orders", label: "Orders", icon: ShoppingCart },
-  { key: "inventory", label: "Inventory", icon: Boxes },
-  { key: "customers", label: "Customers", icon: Users },
-  { key: "coupons", label: "Coupons", icon: Ticket },
-  { key: "subscribers", label: "Subscribers", icon: Mail },
-  { key: "settings", label: "Settings", icon: Settings },
-] as const;
-
+const navGroups: { title: string; items: { key: string; label: string; icon: typeof LayoutDashboard }[] }[] = [
+  {
+    title: "Store",
+    items: [
+      { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { key: "orders", label: "Orders", icon: ShoppingCart },
+      { key: "products", label: "Products", icon: Package },
+      { key: "categories", label: "Categories", icon: FolderTree },
+      { key: "reviews", label: "Reviews", icon: Star },
+      { key: "customers", label: "Customers", icon: Users },
+      { key: "inventory", label: "Inventory", icon: Boxes },
+    ],
+  },
+  {
+    title: "Marketing & growth",
+    items: [
+      { key: "discounts", label: "Discounts", icon: Ticket },
+      { key: "abandoned", label: "Abandoned carts", icon: PackageX },
+      { key: "analytics", label: "Analytics", icon: BarChart3 },
+      { key: "subscribers", label: "Subscribers", icon: Mail },
+    ],
+  },
+  {
+    title: "Money",
+    items: [
+      { key: "revenue", label: "Revenue & margins", icon: IndianRupee },
+      { key: "profit", label: "Profit per order", icon: Receipt },
+    ],
+  },
+  {
+    title: "Support & ops",
+    items: [
+      { key: "shipping", label: "Shipping", icon: Truck },
+      { key: "audit", label: "Audit log", icon: ScrollText },
+    ],
+  },
+  {
+    title: "Utility",
+    items: [
+      { key: "live", label: "Live", icon: Activity },
+      { key: "settings", label: "Settings", icon: Settings },
+    ],
+  },
+];
 const ORDER_STATUSES: OrderStatus[] = [
   "PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "RETURNED",
 ];
@@ -39,14 +73,21 @@ const statusTone = (s: string): "neutral" | "blue" | "green" | "amber" | "red" =
   : s === "SHIPPED" || s === "PROCESSING" ? "blue"
   : s === "CONFIRMED" ? "neutral"
   : s === "CANCELLED" || s === "RETURNED" ? "red"
-  : "amber"; // PENDING
+  : "amber";
 
 const payTone = (s: string) => (s === "PAID" ? "green" : s === "PARTIAL" ? "amber" : "neutral");
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
+const ago = (iso: string) => {
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+};
 
 const empty: AdminProduct = {
-  name: "", slug: "", brand: "KraftyBrix", category: "Supercars", tagline: "", description: "",
+  name: "", slug: "", brand: "KraftyBrix", category: "Block Cars", tagline: "", description: "",
   price: 0, salePrice: null, pieces: 0, buildHours: 0, difficulty: "Intermediate", ageRange: "14+", scale: "1:10",
   stock: 0, rating: 0, reviewCount: 0, imageUrl: "", gallery: [], whatsIncluded: [],
   colorOptions: [], materialOptions: [],
@@ -56,10 +97,11 @@ const empty: AdminProduct = {
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 type Config = Awaited<ReturnType<typeof getConfigStatus>>;
+type AuditEntry = { ts: string; action: string };
 
 export default function AdminPage() {
   const router = useRouter();
-  const [section, setSection] = useState<(typeof nav)[number]["key"]>("dashboard");
+  const [section, setSection] = useState<string>("dashboard");
   const [rows, setRows] = useState<AdminProduct[]>([]);
   const [mode, setMode] = useState<"db" | "demo">("demo");
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -72,6 +114,10 @@ export default function AdminPage() {
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
+  const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [costPct, setCostPct] = useState(45);
+
+  const logAudit = (action: string) => setAudit((a) => [{ ts: new Date().toISOString(), action }, ...a].slice(0, 100));
 
   useEffect(() => {
     listAdminProducts().then((r) => { setRows(r.rows); setMode(r.mode); });
@@ -80,6 +126,23 @@ export default function AdminPage() {
     listSubscribers().then((r) => setSubs(r.rows));
     listCoupons().then((r) => setCoupons(r.rows));
     getConfigStatus().then(setConfig);
+  }, []);
+
+  // Live: auto-refresh orders + stats + visitor count every 15s (pauses when hidden).
+  const [lastSync, setLastSync] = useState<string>(new Date().toISOString());
+  const [visitors, setVisitors] = useState<{ online: number; today: number }>({ online: 0, today: 0 });
+  useEffect(() => {
+    const fetchLive = () => fetch("/api/analytics/live").then((r) => r.json()).then((d) => setVisitors({ online: d.online ?? 0, today: d.today ?? 0 })).catch(() => {});
+    fetchLive();
+    const tick = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      Promise.all([listAdminOrders(), adminStats()]).then(([o, s]) => {
+        setOrders(o.rows); setStats(s.stats); setLastSync(new Date().toISOString());
+      });
+      fetchLive();
+    };
+    const id = setInterval(tick, 15000);
+    return () => clearInterval(id);
   }, []);
 
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2600); };
@@ -92,23 +155,27 @@ export default function AdminPage() {
       return exists ? cur.map((x) => (x.slug === p.slug ? p : x)) : [{ ...p, id: p.id ?? p.slug }, ...cur];
     });
     setEditing(null);
+    logAudit(`${p.id ? "Updated" : "Created"} product “${p.name}”`);
     flash(res.message ?? "Saved");
   }
   async function onDelete(p: AdminProduct) {
     if (!confirm(`Delete "${p.name}"?`)) return;
     await deleteAdminProduct(p.id ?? "");
     setRows((cur) => cur.filter((x) => x.slug !== p.slug));
+    logAudit(`Deleted product “${p.name}”`);
     flash("Deleted");
   }
   async function onStatusChange(o: AdminOrder, status: OrderStatus) {
     setOrders((cur) => cur.map((x) => (x.id === o.id ? { ...x, status } : x)));
     const res = await updateOrderStatus(o.id, status);
+    logAudit(`Order #${o.orderNumber} → ${status.toLowerCase()}`);
     flash(res.ok ? `${o.orderNumber} → ${status.toLowerCase()}` : res.error ?? "Error");
   }
   async function onStockSave(id: string, stock: number) {
     const res = await updateStock(id, stock);
     if (!res.ok) { flash(res.error ?? "Error"); return; }
     setRows((cur) => cur.map((x) => (x.id === id ? { ...x, stock } : x)));
+    logAudit(`Stock updated to ${stock}`);
     flash("Stock updated");
   }
   async function onSaveCoupon(c: AdminCoupon) {
@@ -116,12 +183,14 @@ export default function AdminPage() {
     if (!res.ok) { flash(res.error ?? "Error"); return; }
     const r = await listCoupons(); setCoupons(r.rows);
     setEditingCoupon(null);
+    logAudit(`Saved discount ${c.code}`);
     flash(res.message ?? "Saved");
   }
   async function onDeleteCoupon(c: AdminCoupon) {
     if (!confirm(`Delete coupon ${c.code}?`)) return;
     await deleteCoupon(c.code);
     setCoupons((cur) => cur.filter((x) => x.code !== c.code));
+    logAudit(`Deleted discount ${c.code}`);
     flash("Deleted");
   }
   async function onAddSub(email: string, name: string) {
@@ -146,13 +215,51 @@ export default function AdminPage() {
     for (const o of orders) {
       const key = o.email || o.customer;
       const cur = map.get(key) ?? { name: o.customer, email: o.email, phone: o.phone, orders: 0, spent: 0, last: o.createdAt };
-      cur.orders += 1;
-      cur.spent += o.total;
+      cur.orders += 1; cur.spent += o.total;
       if (o.createdAt > cur.last) cur.last = o.createdAt;
       map.set(key, cur);
     }
     return [...map.values()].sort((a, b) => b.spent - a.spent);
   }, [orders]);
+
+  // ── analytics
+  const last14 = useMemo(() => {
+    const days: { key: string; label: string; value: number }[] = [];
+    const now = new Date();
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now); d.setDate(now.getDate() - i);
+      days.push({ key: d.toISOString().slice(0, 10), label: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }), value: 0 });
+    }
+    const idx = Object.fromEntries(days.map((d, i) => [d.key, i]));
+    for (const o of orders) { const k = o.createdAt.slice(0, 10); if (k in idx) days[idx[k] as number].value += o.total; }
+    return days;
+  }, [orders]);
+
+  const statusCounts = useMemo(() =>
+    ORDER_STATUSES.map((s) => ({ label: s, value: orders.filter((o) => o.status === s).length })).filter((x) => x.value > 0),
+  [orders]);
+
+  const payMix = useMemo(() => {
+    const online = orders.filter((o) => o.paymentMethod !== "PARTIAL_COD").length;
+    const cod = orders.length - online;
+    return [{ label: "Online (full)", value: online }, { label: "Partial COD", value: cod }];
+  }, [orders]);
+
+  const catRows = useMemo(() =>
+    catMeta.map((c) => {
+      const items = rows.filter((r) => r.category === c.name);
+      return { name: c.name, slug: c.slug, count: items.length, stock: items.reduce((s, x) => s + x.stock, 0), low: items.filter((x) => x.stock <= 5).length };
+    }),
+  [rows]);
+
+  const abandoned = useMemo(() => orders.filter((o) => o.status === "PENDING" && o.paymentStatus !== "PAID"), [orders]);
+  const reviewRows = useMemo(() => [...rows].filter((r) => r.reviewCount > 0).sort((a, b) => b.reviewCount - a.reviewCount), [rows]);
+  const live = useMemo(() => [...orders].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 12), [orders]);
+  const shipReady = useMemo(() => orders.filter((o) => ["CONFIRMED", "PROCESSING"].includes(o.status)), [orders]);
+
+  const revenue = stats?.revenue ?? 0;
+  const estCogs = Math.round((revenue * costPct) / 100);
+  const estProfit = revenue - estCogs;
 
   return (
     <div className="container-wide pt-28 pb-24">
@@ -182,23 +289,41 @@ export default function AdminPage() {
         </div>
       )}
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[220px_1fr]">
-        <aside>
-          <nav className="space-y-1">
-            {nav.map((n) => (
-              <button
-                key={n.key}
-                onClick={() => setSection(n.key)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${section === n.key ? "bg-brand-red text-white" : "text-black/60 hover:bg-black/[0.04]"}`}
-              >
-                <n.icon size={17} /> {n.label}
-              </button>
+      {/* mobile section switcher */}
+      <div className="mt-6 lg:hidden">
+        <select value={section} onChange={(e) => setSection(e.target.value)} className="w-full rounded-xl border border-black/15 bg-ink-800 px-3 py-2.5 text-sm font-medium outline-none">
+          {navGroups.map((g) => (
+            <optgroup key={g.title} label={g.title}>
+              {g.items.map((n) => <option key={n.key} value={n.key}>{n.label}</option>)}
+            </optgroup>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-[230px_1fr]">
+        <aside className="hidden lg:block">
+          <nav className="sticky top-28 space-y-5">
+            {navGroups.map((g) => (
+              <div key={g.title}>
+                <p className="mb-1.5 px-3.5 text-[11px] font-semibold uppercase tracking-wider text-black/35">{g.title}</p>
+                <div className="space-y-0.5">
+                  {g.items.map((n) => (
+                    <button
+                      key={n.key}
+                      onClick={() => setSection(n.key)}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-sm font-medium transition ${section === n.key ? "bg-brand-red text-white" : "text-black/60 hover:bg-black/[0.04]"}`}
+                    >
+                      <n.icon size={16} /> {n.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
         </aside>
 
         <div className="space-y-8">
-          {/* ─────────── Dashboard ─────────── */}
+          {/* ─── Dashboard ─── */}
           {section === "dashboard" && (
             <>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -208,13 +333,21 @@ export default function AdminPage() {
                 <Kpi label="COD to collect" value={stats ? formatPrice(stats.pendingCod) : "—"} icon={Wallet} hint="Cash due on delivery" />
               </div>
 
+              <Card>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="font-display font-bold">Revenue · last 14 days</h3>
+                  <button onClick={() => setSection("analytics")} className="text-sm text-brand-red hover:underline">Analytics →</button>
+                </div>
+                <Bars data={last14} />
+              </Card>
+
               <div className="grid gap-4 sm:grid-cols-3">
                 <MiniStat label="Gross sales" value={stats ? formatPrice(stats.grossValue) : "—"} />
                 <MiniStat label="Low / out of stock" value={String(lowStock)} warn={lowStock > 0} />
                 <MiniStat label="Subscribers" value={String(subs.length)} />
               </div>
 
-              <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+              <Card>
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="font-display font-bold">Recent orders</h3>
                   <button onClick={() => setSection("orders")} className="text-sm text-brand-red hover:underline">View all</button>
@@ -234,13 +367,13 @@ export default function AdminPage() {
                     ))}
                   </Table>
                 )}
-              </div>
+              </Card>
             </>
           )}
 
-          {/* ─────────── Products ─────────── */}
+          {/* ─── Products ─── */}
           {section === "products" && (
-            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+            <Card>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <h3 className="font-display font-bold">Products ({filtered.length})</h3>
                 <div className="flex items-center gap-2">
@@ -301,12 +434,57 @@ export default function AdminPage() {
                   </tr>
                 ))}
               </Table>
-            </div>
+            </Card>
           )}
 
-          {/* ─────────── Orders ─────────── */}
+          {/* ─── Categories ─── */}
+          {section === "categories" && (
+            <Card>
+              <h3 className="mb-4 font-display font-bold">Categories ({catRows.length})</h3>
+              <Table head={["Category", "Products", "Total stock", "Low stock", ""]}>
+                {catRows.map((c) => (
+                  <tr key={c.slug} className="border-t border-black/5">
+                    <td className="py-3 font-medium">{c.name}</td>
+                    <td className="py-3">{c.count}</td>
+                    <td className="py-3">{c.stock}</td>
+                    <td className="py-3">{c.low > 0 ? <Badge tone="amber">{c.low} low</Badge> : <span className="text-black/40">—</span>}</td>
+                    <td className="py-3 text-right">
+                      <button onClick={() => { setSection("products"); setQuery(""); }} className="text-sm text-brand-red hover:underline">View products →</button>
+                    </td>
+                  </tr>
+                ))}
+              </Table>
+              <p className="mt-4 text-xs text-black/40">Categories are assigned per product in the product editor. Add a new category by picking it when you create or edit a product.</p>
+            </Card>
+          )}
+
+          {/* ─── Reviews ─── */}
+          {section === "reviews" && (
+            <Card>
+              <h3 className="mb-4 font-display font-bold">Reviews overview</h3>
+              {reviewRows.length === 0 ? (
+                <Empty>No reviews yet.</Empty>
+              ) : (
+                <Table head={["Product", "Rating", "Reviews", ""]}>
+                  {reviewRows.map((p) => (
+                    <tr key={p.slug} className="border-t border-black/5">
+                      <td className="py-3 font-medium">{p.name}</td>
+                      <td className="py-3">
+                        <span className="inline-flex items-center gap-1 font-medium"><Star size={14} className="fill-brand-gold text-brand-gold" /> {p.rating.toFixed(1)}</span>
+                      </td>
+                      <td className="py-3 text-black/60">{p.reviewCount}</td>
+                      <td className="py-3 text-right"><button onClick={() => setEditing(p)} className="text-sm text-brand-red hover:underline">Edit</button></td>
+                    </tr>
+                  ))}
+                </Table>
+              )}
+              <p className="mt-4 text-xs text-black/40">Ratings and review counts are set per product. Wire a review form on the storefront to collect these automatically.</p>
+            </Card>
+          )}
+
+          {/* ─── Orders ─── */}
           {section === "orders" && (
-            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+            <Card>
               <h3 className="mb-4 font-display font-bold">All orders ({orders.length})</h3>
               {orders.length === 0 ? (
                 <Empty>No orders yet.</Empty>
@@ -343,12 +521,62 @@ export default function AdminPage() {
                 </Table>
               )}
               {mode === "demo" && <p className="mt-4 text-xs text-black/40">Sample orders shown. Real orders appear here automatically once your database is connected.</p>}
-            </div>
+            </Card>
           )}
 
-          {/* ─────────── Inventory ─────────── */}
+          {/* ─── Abandoned carts ─── */}
+          {section === "abandoned" && (
+            <Card>
+              <h3 className="mb-1 font-display font-bold">Abandoned / unpaid checkouts ({abandoned.length})</h3>
+              <p className="mb-4 text-sm text-black/50">Orders that were started but never paid — reach out to recover the sale.</p>
+              {abandoned.length === 0 ? (
+                <Empty>Nothing to recover — every order is paid or progressing.</Empty>
+              ) : (
+                <Table head={["Order", "Customer", "Contact", "Value", "Started", ""]}>
+                  {abandoned.map((o) => (
+                    <tr key={o.id} className="border-t border-black/5">
+                      <td className="py-3 font-medium">#{o.orderNumber}</td>
+                      <td className="py-3 text-black/70">{o.customer}</td>
+                      <td className="py-3 text-black/60">{o.email || o.phone}</td>
+                      <td className="py-3 font-medium">{formatPrice(o.total)}</td>
+                      <td className="py-3 text-black/50">{ago(o.createdAt)}</td>
+                      <td className="py-3 text-right">
+                        {o.email && <a href={`mailto:${o.email}?subject=Complete your KraftyBrix order ${o.orderNumber}`} className="text-sm text-brand-red hover:underline">Email →</a>}
+                      </td>
+                    </tr>
+                  ))}
+                </Table>
+              )}
+            </Card>
+          )}
+
+          {/* ─── Analytics ─── */}
+          {section === "analytics" && (
+            <>
+              <Card>
+                <h3 className="mb-4 font-display font-bold">Revenue · last 14 days</h3>
+                <Bars data={last14} />
+              </Card>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card>
+                  <h3 className="mb-4 font-display font-bold">Orders by status</h3>
+                  {statusCounts.length ? <HBars data={statusCounts} /> : <Empty>No orders yet.</Empty>}
+                </Card>
+                <Card>
+                  <h3 className="mb-4 font-display font-bold">Payment method</h3>
+                  {orders.length ? <HBars data={payMix} /> : <Empty>No orders yet.</Empty>}
+                </Card>
+              </div>
+              <Card>
+                <h3 className="mb-4 font-display font-bold">Products per category</h3>
+                <HBars data={catRows.map((c) => ({ label: c.name, value: c.count }))} />
+              </Card>
+            </>
+          )}
+
+          {/* ─── Inventory ─── */}
           {section === "inventory" && (
-            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+            <Card>
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-display font-bold">Inventory</h3>
                 {lowStock > 0 && (
@@ -374,12 +602,12 @@ export default function AdminPage() {
                   </tr>
                 ))}
               </Table>
-            </div>
+            </Card>
           )}
 
-          {/* ─────────── Customers ─────────── */}
+          {/* ─── Customers ─── */}
           {section === "customers" && (
-            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+            <Card>
               <h3 className="mb-4 font-display font-bold">Customers ({customers.length})</h3>
               {customers.length === 0 ? (
                 <Empty>No customers yet.</Empty>
@@ -396,16 +624,16 @@ export default function AdminPage() {
                   ))}
                 </Table>
               )}
-            </div>
+            </Card>
           )}
 
-          {/* ─────────── Coupons ─────────── */}
-          {section === "coupons" && (
-            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+          {/* ─── Discounts ─── */}
+          {section === "discounts" && (
+            <Card>
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-display font-bold">Coupons ({coupons.length})</h3>
+                <h3 className="font-display font-bold">Discounts ({coupons.length})</h3>
                 <button onClick={() => setEditingCoupon({ code: "", type: "PERCENT", value: 10, minSpend: 0, active: true })} className="flex items-center gap-1.5 rounded-full bg-brand-red text-white px-4 py-2 text-sm font-semibold">
-                  <Plus size={16} /> Add coupon
+                  <Plus size={16} /> Add discount
                 </button>
               </div>
               <Table head={["Code", "Type", "Discount", "Min spend", "Active", ""]}>
@@ -425,13 +653,13 @@ export default function AdminPage() {
                   </tr>
                 ))}
               </Table>
-              {mode === "demo" && <p className="mt-4 text-xs text-black/40">Sample coupons shown. Connect the database to add and save your own.</p>}
-            </div>
+              {mode === "demo" && <p className="mt-4 text-xs text-black/40">Sample discounts shown. Connect the database to add and save your own.</p>}
+            </Card>
           )}
 
-          {/* ─────────── Subscribers ─────────── */}
+          {/* ─── Subscribers ─── */}
           {section === "subscribers" && (
-            <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+            <Card>
               <h3 className="mb-4 font-display font-bold">Newsletter subscribers ({subs.length})</h3>
               <SubAdd onAdd={onAddSub} />
               {subs.length === 0 ? (
@@ -450,17 +678,167 @@ export default function AdminPage() {
                   ))}
                 </Table>
               )}
-            </div>
+            </Card>
           )}
 
-          {/* ─────────── Settings ─────────── */}
+          {/* ─── Revenue & margins ─── */}
+          {section === "revenue" && (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <Kpi label="Revenue collected" value={formatPrice(revenue)} icon={IndianRupee} hint="Online payments" />
+                <Kpi label="Gross sales" value={stats ? formatPrice(stats.grossValue) : "—"} icon={TrendingUp} hint="Incl. COD balances" />
+                <Kpi label="COD outstanding" value={stats ? formatPrice(stats.pendingCod) : "—"} icon={Wallet} hint="Cash to collect" />
+                <Kpi label="Est. profit" value={formatPrice(estProfit)} icon={Receipt} hint={`After ${costPct}% cost`} />
+              </div>
+              <Card>
+                <h3 className="mb-4 font-display font-bold">Margin estimator</h3>
+                <label className="block text-sm">
+                  <span className="mb-2 block text-black/60">Estimated product + shipping cost: <b>{costPct}%</b> of revenue</span>
+                  <input type="range" min={0} max={90} value={costPct} onChange={(e) => setCostPct(Number(e.target.value))} className="w-full accent-brand-red" />
+                </label>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <MiniStat label="Revenue" value={formatPrice(revenue)} />
+                  <MiniStat label="Est. cost of goods" value={formatPrice(estCogs)} />
+                  <MiniStat label="Est. gross profit" value={formatPrice(estProfit)} />
+                </div>
+                <p className="mt-4 text-xs text-black/40">Set your real cost percentage to see estimated profit. Hook up per-product cost prices to make this exact.</p>
+              </Card>
+            </>
+          )}
+
+          {/* ─── Profit per order ─── */}
+          {section === "profit" && (
+            <Card>
+              <h3 className="mb-1 font-display font-bold">Profit per order</h3>
+              <p className="mb-4 text-sm text-black/50">Estimated using a {costPct}% cost assumption (adjust it in Revenue &amp; margins).</p>
+              {orders.length === 0 ? (
+                <Empty>No orders yet.</Empty>
+              ) : (
+                <Table head={["Order", "Revenue", "Est. cost", "Est. profit", "Margin"]}>
+                  {orders.map((o) => {
+                    const cost = Math.round((o.total * costPct) / 100);
+                    const profit = o.total - cost;
+                    const margin = o.total ? Math.round((profit / o.total) * 100) : 0;
+                    return (
+                      <tr key={o.id} className="border-t border-black/5">
+                        <td className="py-3 font-medium">#{o.orderNumber}</td>
+                        <td className="py-3">{formatPrice(o.total)}</td>
+                        <td className="py-3 text-black/60">{formatPrice(cost)}</td>
+                        <td className="py-3 font-medium text-green-600">{formatPrice(profit)}</td>
+                        <td className="py-3">{margin}%</td>
+                      </tr>
+                    );
+                  })}
+                </Table>
+              )}
+            </Card>
+          )}
+
+          {/* ─── Shipping ─── */}
+          {section === "shipping" && (
+            <>
+              <Card>
+                <h3 className="mb-4 font-display font-bold">Shipping rules</h3>
+                <dl className="grid gap-3 sm:grid-cols-3 text-sm">
+                  <ConfigRow icon={Truck} label="Free shipping over" value={formatPrice(FREE_SHIPPING_THRESHOLD)} />
+                  <ConfigRow icon={Truck} label="Flat shipping fee" value={formatPrice(SHIPPING_FEE)} />
+                  <ConfigRow icon={Wallet} label="Partial COD advance" value={formatPrice(ADVANCE_FEE)} />
+                </dl>
+              </Card>
+              <Card>
+                <h3 className="mb-4 font-display font-bold">Ready to ship ({shipReady.length})</h3>
+                {shipReady.length === 0 ? (
+                  <Empty>No orders waiting to ship.</Empty>
+                ) : (
+                  <Table head={["Order", "Customer", "Total", "Status", ""]}>
+                    {shipReady.map((o) => (
+                      <tr key={o.id} className="border-t border-black/5">
+                        <td className="py-3 font-medium">#{o.orderNumber}</td>
+                        <td className="py-3 text-black/70">{o.customer}</td>
+                        <td className="py-3">{formatPrice(o.total)}</td>
+                        <td className="py-3"><Badge tone={statusTone(o.status)}>{o.status}</Badge></td>
+                        <td className="py-3 text-right">
+                          <button onClick={() => onStatusChange(o, "SHIPPED")} className="rounded-full bg-brand-red px-3 py-1.5 text-xs font-semibold text-white">Mark shipped</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </Table>
+                )}
+              </Card>
+            </>
+          )}
+
+          {/* ─── Audit log ─── */}
+          {section === "audit" && (
+            <Card>
+              <h3 className="mb-1 font-display font-bold">Audit log</h3>
+              <p className="mb-4 text-sm text-black/50">Actions you take in this session (product edits, order changes, discounts).</p>
+              {audit.length === 0 ? (
+                <Empty>No actions yet this session.</Empty>
+              ) : (
+                <ul className="space-y-2">
+                  {audit.map((a, i) => (
+                    <li key={i} className="flex items-center justify-between rounded-xl border border-black/10 bg-ink-900 px-4 py-2.5 text-sm">
+                      <span className="text-black/75">{a.action}</span>
+                      <span className="text-xs text-black/40">{ago(a.ts)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          )}
+
+          {/* ─── Live ─── */}
+          {section === "live" && (
+            <Card>
+              <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-green-500/30 bg-green-500/[0.06] p-5">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-70" /><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" /></span>
+                    <span className="text-xs uppercase tracking-wider text-black/45">Shoppers online now</span>
+                  </div>
+                  <p className="mt-2 font-display text-3xl font-bold text-green-600">{visitors.online}</p>
+                </div>
+                <div className="rounded-2xl border border-black/10 bg-ink-800 p-5">
+                  <span className="text-xs uppercase tracking-wider text-black/45">Visitors today</span>
+                  <p className="mt-2 font-display text-3xl font-bold">{visitors.today}</p>
+                </div>
+              </div>
+              <div className="mb-1 flex items-center gap-2">
+                <h3 className="font-display font-bold">Live transactions</h3>
+              </div>
+              <p className="mb-4 text-xs text-black/40">Auto-refreshes every 15 seconds · last updated {ago(lastSync)}</p>
+              {live.length === 0 ? (
+                <Empty>No transactions yet — new orders appear here the moment they come in.</Empty>
+              ) : (
+                <ul className="space-y-2">
+                  {live.map((o) => (
+                    <li key={o.id} className="flex items-center justify-between gap-3 rounded-xl border border-black/10 bg-ink-900 px-4 py-3 text-sm">
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <b>#{o.orderNumber}</b>
+                        <span className="text-black/60">{o.customer}</span>
+                        <span className="font-medium">{formatPrice(o.total)}</span>
+                        <Badge tone={payTone(o.paymentStatus)}>{o.paymentStatus}</Badge>
+                        <span className="text-xs text-black/45">{o.paymentMethod === "PARTIAL_COD" ? "Partial COD" : "Online"}</span>
+                        <Badge tone={statusTone(o.status)}>{o.status}</Badge>
+                      </span>
+                      <span className="shrink-0 text-xs text-black/40">{ago(o.createdAt)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          )}
+
+          {/* ─── Settings ─── */}
           {section === "settings" && config && (
             <div className="space-y-6">
-              <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+              <Card>
                 <h3 className="mb-4 font-display font-bold">Go-live status</h3>
                 <div className="space-y-3">
                   <StatusRow icon={Database} label="Database (orders + products)" ok={config.database} okText="Connected" offText="Not connected — add DATABASE_URL" />
-                  <StatusRow icon={CreditCard} label="Razorpay payments" ok={config.razorpay} okText="Configured" offText="Test mode — add Razorpay keys" />
+                  <StatusRow icon={CreditCard} label="PayU payments" ok={config.payu} okText={config.payuLive ? "Live" : "Test mode"} offText="Add PAYU_MERCHANT_KEY + PAYU_SALT" />
+                  <StatusRow icon={CreditCard} label="Razorpay payments" ok={config.razorpay} okText="Configured" offText="Optional — add Razorpay keys" />
                   <StatusRow icon={Mail} label="Order emails (Resend)" ok={config.email} okText="Configured" offText="Optional — add RESEND_API_KEY" />
                   <StatusRow icon={CheckCircle2} label="Admin login protection" ok={config.adminProtected} okText="Protected" offText="Set ADMIN_SESSION to lock /admin" />
                 </div>
@@ -477,9 +855,9 @@ export default function AdminPage() {
                     </p>
                   )}
                 </div>
-              </div>
+              </Card>
 
-              <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">
+              <Card>
                 <h3 className="mb-4 font-display font-bold">Store configuration</h3>
                 <dl className="grid gap-3 sm:grid-cols-2 text-sm">
                   <ConfigRow icon={Wallet} label="Partial COD advance" value={formatPrice(ADVANCE_FEE)} />
@@ -488,7 +866,7 @@ export default function AdminPage() {
                   <ConfigRow icon={Settings} label="Store URL" value={config.siteUrl || "—"} />
                 </dl>
                 <p className="mt-4 text-xs text-black/40">These values are set in <code className="font-mono">src/lib/constants.ts</code> and Vercel environment variables.</p>
-              </div>
+              </Card>
             </div>
           )}
         </div>
@@ -506,6 +884,10 @@ export default function AdminPage() {
 }
 
 /* ───────────────────────── small UI helpers ───────────────────────── */
+
+function Card({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-2xl border border-black/10 bg-ink-800 p-6">{children}</div>;
+}
 
 function Kpi({ label, value, icon: Icon, hint }: { label: string; value: string; icon: typeof IndianRupee; hint?: string }) {
   return (
@@ -525,6 +907,41 @@ function MiniStat({ label, value, warn }: { label: string; value: string; warn?:
     <div className="rounded-2xl border border-black/10 bg-ink-800 p-5">
       <span className="text-xs uppercase tracking-wider text-black/45">{label}</span>
       <p className={`mt-2 font-display text-xl font-bold ${warn ? "text-amber-600" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
+function Bars({ data }: { data: { label: string; value: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.value));
+  return (
+    <div>
+      <div className="flex h-40 items-end gap-1.5">
+        {data.map((d, i) => (
+          <div key={i} className="group relative flex-1" title={`${d.label}: ${formatPrice(d.value)}`}>
+            <div className="w-full rounded-t bg-brand-red/75 transition group-hover:bg-brand-red" style={{ height: `${Math.max(2, (d.value / max) * 100)}%` }} />
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex gap-1.5 text-[10px] text-black/35">
+        {data.map((d, i) => <span key={i} className="flex-1 text-center">{i % 2 === 0 ? d.label.split(" ")[0] : ""}</span>)}
+      </div>
+    </div>
+  );
+}
+
+function HBars({ data }: { data: { label: string; value: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.value));
+  return (
+    <div className="space-y-2.5">
+      {data.map((d, i) => (
+        <div key={i} className="flex items-center gap-3 text-sm">
+          <span className="w-32 shrink-0 truncate text-black/60">{d.label}</span>
+          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-black/[0.06]">
+            <div className="h-full rounded-full bg-brand-red" style={{ width: `${(d.value / max) * 100}%` }} />
+          </div>
+          <span className="w-8 shrink-0 text-right font-medium">{d.value}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -729,7 +1146,7 @@ function CouponForm({ initial, onClose, onSave }: { initial: AdminCoupon; onClos
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-ink-900 shadow-card">
         <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
-          <h3 className="font-display text-lg font-bold">{initial.code ? "Edit coupon" : "New coupon"}</h3>
+          <h3 className="font-display text-lg font-bold">{initial.code ? "Edit discount" : "New discount"}</h3>
           <button onClick={onClose} aria-label="Close"><X /></button>
         </div>
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
@@ -747,7 +1164,7 @@ function CouponForm({ initial, onClose, onSave }: { initial: AdminCoupon; onClos
           </label>
         </div>
         <div className="border-t border-black/10 px-6 py-4">
-          <button onClick={() => onSave(f)} disabled={!f.code || !f.value} className="w-full rounded-full bg-brand-red text-white py-3 text-sm font-semibold disabled:opacity-50">Save coupon</button>
+          <button onClick={() => onSave(f)} disabled={!f.code || !f.value} className="w-full rounded-full bg-brand-red text-white py-3 text-sm font-semibold disabled:opacity-50">Save discount</button>
         </div>
       </div>
     </div>

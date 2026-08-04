@@ -9,12 +9,10 @@ import { ProductCard } from "@/components/product/product-card";
 import { Reveal } from "@/components/ui/reveal";
 
 const moods: { key: string; label: string; categories: Category[]; tint: string }[] = [
-  { key: "hyper", label: "Hypercar", categories: ["Hypercars"], tint: "#0066FF" },
-  { key: "super", label: "Supercar", categories: ["Supercars"], tint: "#FF2D20" },
-  { key: "racing", label: "Racing", categories: ["Racing Cars"], tint: "#ff5e3a" },
-  { key: "smoke", label: "Smoking Cars", categories: ["Smoking Cars"], tint: "#7a2fd6" },
-  { key: "suv", label: "SUV & Trucks", categories: ["SUVs & Trucks"], tint: "#1f6f3f" },
-  { key: "landmark", label: "Landmarks", categories: ["Landmarks"], tint: "#C9A24B" },
+  { key: "block", label: "Block Cars", categories: ["Block Cars"], tint: "#FF2D20" },
+  { key: "diecast", label: "Die-Cast", categories: ["Die-Cast Cars"], tint: "#0066FF" },
+  { key: "rc", label: "RC Cars", categories: ["RC Cars"], tint: "#1f6f3f" },
+  { key: "monument", label: "Monuments", categories: ["Monuments"], tint: "#C9A24B" },
 ];
 
 export function GarageBuilder() {

@@ -28,7 +28,7 @@ function mapRow(r: DbProduct): Product {
     slug: r.slug,
     name: r.name,
     brand: r.brand,
-    category: (r.category?.name ?? "Supercars") as Category,
+    category: (r.category?.name ?? "Block Cars") as Category,
     tagline: r.tagline,
     description: r.description,
     price: r.price,

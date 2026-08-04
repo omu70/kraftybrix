@@ -7,7 +7,7 @@ import { Search as SearchIcon, X } from "lucide-react";
 import type { Product } from "@/lib/types";
 import { ProductCard } from "@/components/product/product-card";
 
-const POPULAR = ["Lamborghini", "Ferrari", "Bugatti", "Hypercars", "Smoking", "Bundle"];
+const POPULAR = ["Lamborghini", "Ferrari", "Bugatti", "Block Cars", "Die-Cast", "Bundle"];
 
 export function SearchView({ products }: { products: Product[] }) {
   const params = useSearchParams();

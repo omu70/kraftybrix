@@ -12,10 +12,10 @@ import { Magnetic } from "@/components/ui/magnetic";
 
 const nav = [
   { label: "All Cars", href: "/collection" },
-  { label: "Build Kits", href: "/collection?type=kit" },
-  { label: "Ready-Built", href: "/collection?type=ready" },
+  { label: "Block Cars", href: "/collection?category=Block+Cars" },
+  { label: "Die-Cast", href: "/collection?category=Die-Cast+Cars" },
+  { label: "RC Cars", href: "/collection?category=RC+Cars" },
   { label: "Bundles", href: "/bundle" },
-  { label: "Smoking Cars", href: "/collection?category=Smoking+Cars" },
 ];
 
 export function Header() {

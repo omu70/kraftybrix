@@ -517,9 +517,16 @@ export async function listSubscribers(): Promise<{ mode: "db" | "demo"; rows: { 
 /* ─────────────────────────  Config status  ───────────────────────── */
 
 export async function getConfigStatus() {
+  const razorpay = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+  const payu = !!(process.env.PAYU_MERCHANT_KEY && process.env.PAYU_SALT);
+  const payuLive = (process.env.PAYU_MODE ?? "test").toLowerCase().startsWith("l") ||
+    (process.env.PAYU_MODE ?? "").toLowerCase().startsWith("prod");
   return {
     database: !!process.env.DATABASE_URL,
-    razorpay: !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET),
+    razorpay,
+    payu,
+    payuLive,
+    payments: razorpay || payu,
     email: !!process.env.RESEND_API_KEY,
     adminProtected: !!process.env.ADMIN_SESSION,
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",

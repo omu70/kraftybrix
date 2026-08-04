@@ -6,7 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { products } from "@/lib/products";
 
-const CAR = products.find((p) => p.category === "Hypercars") ?? products.find((p) => p.bestSeller) ?? products[0];
+const CAR = products.find((p) => p.category === "Block Cars") ?? products.find((p) => p.bestSeller) ?? products[0];
 
 /**
  * Scroll-scrubbed "drive": the car travels across a light studio road while

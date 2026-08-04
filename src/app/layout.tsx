@@ -8,6 +8,7 @@ import { PromoModal } from "@/components/cro/promo-modal";
 import { CookieConsent } from "@/components/cro/cookie-consent";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { Analytics } from "@/components/analytics";
+import { VisitorPing } from "@/components/analytics/visitor-ping";
 import { Providers } from "@/components/providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -82,6 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <PromoModal />
           <CookieConsent />
           <Analytics />
+          <VisitorPing />
         </Providers>
       </body>
     </html>

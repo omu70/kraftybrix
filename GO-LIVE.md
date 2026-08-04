@@ -1,63 +1,53 @@
 # KraftyBrix — Go-Live Checklist
 
-Everything the store needs to take real orders. No Supabase — a free Neon
-Postgres database + your Razorpay keys.
+Work top to bottom. Everything is set in **Vercel → Project → Settings → Environment Variables** (Production), then **Redeploy**.
 
-## 1. Database (free — Neon)
-1. Create a free project at https://neon.tech (no card required).
-2. Copy the **pooled** connection string.
-3. In Vercel → Project → Settings → Environment Variables, add:
-   ```
-   DATABASE_URL = postgresql://…  (your Neon pooled string)
-   ```
-4. Locally, put the same in `.env`, then run:
-   ```
-   npm run db:push     # creates all tables
-   npm run db:seed     # loads the 30 real products
-   ```
-   The admin flips from "Demo mode" to **"Live database"** automatically — add/edit/delete now persist.
+## 1. Database (required — fixes "db connection error")
+- [ ] `DATABASE_URL` = your **direct** Neon connection string
+      - Must be the **non-pooled** URL (no `-pooler` in the host).
+      - Keep `?sslmode=require`. **Remove** `&channel_binding=require` (it breaks Prisma).
+- [ ] Redeploy. The build runs `prisma db push`, which creates every table automatically.
+- [ ] Open `/admin` → **Settings → Test database connection** → should say connected.
+- [ ] `/admin → Products → Load sample products` (or add your own) to populate the DB.
 
-## 2. Payments (Razorpay — you have keys)
-Add to Vercel env vars (and `.env`):
-```
-RAZORPAY_KEY_ID = rzp_live_xxx        (or rzp_test_xxx to test first)
-RAZORPAY_KEY_SECRET = xxx
-NEXT_PUBLIC_RAZORPAY_KEY_ID = rzp_live_xxx
-```
-Checkout then opens the real Razorpay window. Test card: `4111 1111 1111 1111`, any future expiry/CVV, OTP `1111`. COD works with no keys.
+## 2. Payments — PayU (primary)
+- [ ] `PAYU_MERCHANT_KEY` = your PayU merchant key
+- [ ] `PAYU_SALT` = your PayU salt  *(server-only — never prefix with NEXT_PUBLIC)*
+- [ ] `PAYU_MODE` = `test` while testing, then `live` to take real money
+- [ ] `NEXT_PUBLIC_PAYU_MERCHANT_KEY` = same merchant key (lets the checkout offer PayU)
+- [ ] `NEXT_PUBLIC_SITE_URL` = `https://your-domain` (used for PayU success/failure return URLs)
+- [ ] In the PayU dashboard, set the **webhook / server-to-server URL** to
+      `https://your-domain/api/payu/webhook` (so orders record even if the shopper closes the tab).
+- [ ] Test a ₹99 Partial-COD order in `test` mode, confirm it lands in `/admin → Live transactions`.
+- [ ] Flip `PAYU_MODE=live`, redeploy, do one real ₹99 order, refund it in the PayU dashboard.
 
-## 3. Auth (optional at launch — guest checkout works without it)
-```
-NEXTAUTH_URL = https://kraftybrix.vercel.app
-NEXTAUTH_SECRET = (openssl rand -base64 32)
-GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET   # for Google login
-```
+Razorpay is optional and still supported — add `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`,
+`NEXT_PUBLIC_RAZORPAY_KEY_ID` and both gateways appear at checkout.
 
-## 4. Emails (optional — order confirmations)
-```
-RESEND_API_KEY = re_xxx
-RESEND_FROM_EMAIL = KraftyBrix <hello@yourdomain.com>
-```
+## 3. Accounts & email
+- [ ] `NEXTAUTH_SECRET` = a long random string (`openssl rand -base64 32`)
+- [ ] `NEXTAUTH_URL` = `https://your-domain`
+- [ ] `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` (for Google login) — optional
+- [ ] `RESEND_API_KEY` (order confirmation emails) — optional but recommended
+- [ ] `RESEND_FROM_EMAIL` = `KraftyBrix <hello@your-domain>`
 
-## 5. Analytics (optional)
-```
-NEXT_PUBLIC_GA_ID = G-xxxx
-NEXT_PUBLIC_META_PIXEL_ID = xxxx
-```
+## 4. Admin lock & tracking
+- [ ] `ADMIN_SESSION` = a strong secret → locks `/admin` behind login
+- [ ] `NEXT_PUBLIC_META_PIXEL_ID` (already defaults to your pixel `1937440843807692`)
+- [ ] Push your latest code and confirm Vercel builds green.
 
-## 6. Logo
-Drop your logo at `public/logo.png` (falls back to a text wordmark if absent).
+## 5. Final smoke test (do all of these once)
+- [ ] Home, collection, a product page, cart, checkout all load
+- [ ] Place a PARTIAL_COD order (₹99) → PayU → returns to "Order confirmed"
+- [ ] Place a full ONLINE order → PayU → confirmed
+- [ ] Order shows in `/admin → Orders` and `/admin → Live transactions`
+- [ ] Confirmation email arrives (if Resend set)
+- [ ] `/admin → Settings` shows Database + PayU as green
 
-## 7. Admin
-Visit `/admin` — Dashboard, Products (add/edit/delete/search), Orders, Inventory, Customers, Coupons.
-- **Demo mode** (no DATABASE_URL): fully clickable, changes aren't saved.
-- **Live** (DATABASE_URL set): every change persists to Postgres.
-> Protect `/admin` before launch: gate it behind NextAuth with `role: ADMIN`
-> (the schema already has a `role` field) or Vercel password protection.
-
-## 8. Deploy
-Push to `main` → Vercel auto-builds. Confirm the deployment is green, hard-refresh.
-
----
-### Launch-day minimum
-1 (database) + 2 (Razorpay) + 8 (deploy). Everything else is optional polish.
+## Security (already built in)
+- PayU **salt stays server-side**; the browser only ever sees the non-secret merchant key + a one-way hash.
+- The amount is **computed on the server** and bound into the request hash — customers can't tamper with the price.
+- The callback is **verified with PayU's reverse hash** plus an amount check before any order is marked paid; a paid order can never be downgraded by a replayed/forged callback.
+- Razorpay payments are verified with an HMAC signature.
+- `/admin` and all admin actions are gated behind `ADMIN_SESSION`.
+- Keep `.env` out of git (it already is). Never paste live keys into chat or commits.

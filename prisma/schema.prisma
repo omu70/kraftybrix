@@ -123,6 +123,9 @@ model Order {
   paymentStatus   PaymentStatus @default(PENDING)
   razorpayOrderId String?
   razorpayPaymentId String?
+  gateway         String?      @default("razorpay") // razorpay | payu
+  payuTxnId       String?      @unique
+  payuPaymentId   String?
   subtotal        Int
   discount        Int          @default(0)
   shipping        Int          @default(0)
@@ -237,5 +240,18 @@ model Subscriber {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
+  phone     String?
+  source    String?  // popup | newsletter | checkout
   createdAt DateTime @default(now())
+}
+
+/** Lightweight live-visitor presence for the admin "Live" panel. */
+model LiveVisitor {
+  id        String   @id            // anonymous visitor token
+  path      String?
+  country   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([updatedAt])
 }

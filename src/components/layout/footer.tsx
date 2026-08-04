@@ -7,10 +7,11 @@ const cols = [
     title: "Shop",
     links: [
       ["All Cars", "/collection"],
-      ["Build Kits", "/collection?type=kit"],
-      ["Ready-Built", "/collection?type=ready"],
-      ["Kit bundle · 3 for ₹2199", "/bundle"],
-      ["Ready-built bundle · 4 for ₹1999", "/bundle-ready"],
+      ["Block Cars", "/collection?category=Block+Cars"],
+      ["Die-Cast Cars", "/collection?category=Die-Cast+Cars"],
+      ["Monuments", "/collection?category=Monuments"],
+      ["Block-car bundle · 3 for ₹2199", "/bundle"],
+      ["Die-cast bundle · 4 for ₹1999", "/bundle-ready"],
     ],
   },
   {
