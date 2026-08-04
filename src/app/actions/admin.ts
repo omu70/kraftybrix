@@ -597,6 +597,8 @@ export async function recategorizeProducts(): Promise<{ ok: boolean; updated?: n
         if (!p.images?.length) data.images = [p.name.trim()];
         data.name = "New Model — rename me in Admin";
       }
+      // Collector positioning: age 14+ everywhere (no more "4+" on 1,000-pc builds).
+      if (!p.ageRange || p.ageRange.trim().startsWith("4")) data.ageRange = "14+";
       if (t.build) {
         const pcs = p.pieces > 1 ? p.pieces : p.price >= 3000 ? 1000 : p.price >= 1500 ? 500 : 300;
         data.pieces = pcs;
