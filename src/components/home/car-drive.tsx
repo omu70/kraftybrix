@@ -39,7 +39,7 @@ export function CarDrive() {
     <section
       ref={section}
       className="relative min-h-[100svh] overflow-hidden"
-      style={{ background: "linear-gradient(180deg,#F4EEE4 0%,#ffffff 62%,#eef1f6 100%)" }}
+      style={{ background: "linear-gradient(180deg,#ffffff 0%,#ffffff 62%,#f7f7f8 100%)" }}
     >
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 55% at 50% 28%, rgba(245,166,35,0.12), transparent 70%)" }} />
 

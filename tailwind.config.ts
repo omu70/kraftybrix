@@ -15,14 +15,14 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Warm cream premium surface scale (Motoblox-style editorial light)
+        // Clean white surface scale (premium, product-first)
         ink: {
           DEFAULT: "#FFFFFF",
-          900: "#F4EEE4", // warm cream page background
+          900: "#FFFFFF", // page background
           800: "#FFFFFF", // cards / elevated
-          700: "#EFE8DC",
-          600: "#E4DCCD",
-          500: "#D8CFBD",
+          700: "#F7F7F8", // subtle tinted panels
+          600: "#EFEFF1",
+          500: "#E4E4E7",
         },
         charcoal: {
           DEFAULT: "#15120E", // dark hero / "inside the kit" bands
@@ -36,9 +36,9 @@ const config: Config = {
           orange: "#E8662A",
           white: "#FFFFFF",
         },
-        cream: "#1A1611", // warm near-black primary text on cream
-        border: "rgba(26,22,17,0.12)",
-        muted: "rgba(26,22,17,0.55)",
+        cream: "#141414", // primary text on white
+        border: "rgba(20,20,20,0.12)",
+        muted: "rgba(20,20,20,0.55)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Space Grotesk", "sans-serif"],

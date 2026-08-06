@@ -17,16 +17,12 @@
     -webkit-font-smoothing: antialiased;
     /* clip (not hidden) prevents stray horizontal overflow without breaking GSAP pinning */
     overflow-x: clip;
-    background: #f4eee4;
+    background: #ffffff;
   }
   body {
     @apply bg-ink-900 text-cream font-sans antialiased;
     overflow-x: clip;
-    background-image: radial-gradient(
-      120% 80% at 50% -10%,
-      rgba(0, 102, 255, 0.06) 0%,
-      transparent 55%
-    );
+    background-color: #ffffff;
   }
   ::selection {
     background: rgba(255, 45, 32, 0.22);

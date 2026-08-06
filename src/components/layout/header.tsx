@@ -141,7 +141,7 @@ export function Header() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed inset-y-0 right-0 z-[99] flex w-[85%] max-w-sm flex-col bg-[#f4eee4] shadow-2xl lg:hidden"
+              className="fixed inset-y-0 right-0 z-[99] flex w-[85%] max-w-sm flex-col bg-white shadow-2xl lg:hidden"
               aria-label="Menu"
             >
               <div className="flex items-center justify-between border-b border-black/10 px-5 py-4">

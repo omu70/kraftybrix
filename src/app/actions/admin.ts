@@ -20,6 +20,23 @@ import type { Product } from "@/lib/types";
 
 const dbEnabled = () => !!process.env.DATABASE_URL;
 
+/**
+ * Server-side admin guard — defence in depth. Every admin action calls this,
+ * so store/customer data stays protected even if a route guard is bypassed
+ * or an env var is misconfigured. Fails closed in production.
+ */
+async function requireAdmin() {
+  const expected = process.env.ADMIN_SESSION;
+  const isProd = process.env.NODE_ENV === "production";
+  if (!expected) {
+    if (isProd) throw new Error("Admin is not configured. Set ADMIN_SESSION and ADMIN_PASSWORD.");
+    return; // local dev convenience only
+  }
+  const { cookies } = await import("next/headers");
+  const token = (await cookies()).get("kb_admin")?.value;
+  if (token !== expected) throw new Error("Not authorised.");
+}
+
 async function prisma() {
   const { prisma } = await import("@/lib/prisma");
   return prisma;
@@ -96,7 +113,9 @@ function toAdminRow(p: Product): AdminProduct {
   };
 }
 
-export async function listAdminProducts(): Promise<{ mode: "db" | "demo"; rows: AdminProduct[] }> {
+export async function listAdminProducts(): Promise<{
+  mode: "db" | "demo"; rows: AdminProduct[] }> {
+  await requireAdmin();
   if (dbEnabled()) {
     try {
       const db = await prisma();
@@ -144,6 +163,7 @@ export async function listAdminProducts(): Promise<{ mode: "db" | "demo"; rows: 
 }
 
 export async function saveAdminProduct(input: AdminProduct) {
+  await requireAdmin();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Please check the fields — name, price, pieces and a valid image URL are required." };
   if (!dbEnabled()) {
@@ -185,6 +205,7 @@ export async function saveAdminProduct(input: AdminProduct) {
 
 /** One-click: load the 30 real KraftyBrix products into the database. */
 export async function seedCatalogue() {
+  await requireAdmin();
   if (!dbEnabled()) return { ok: false as const, error: "Connect a database first (add DATABASE_URL)." };
   try {
     const db = await prisma();
@@ -228,6 +249,7 @@ export async function seedCatalogue() {
 /* ─────────────────────────  Inventory  ───────────────────────── */
 
 export async function updateStock(id: string, stock: number) {
+  await requireAdmin();
   if (!dbEnabled()) return { ok: true as const, mode: "demo" as const };
   try {
     const db = await prisma();
@@ -260,7 +282,9 @@ const couponSchema = z.object({
   active: z.boolean().default(true),
 });
 
-export async function listCoupons(): Promise<{ mode: "db" | "demo"; rows: AdminCoupon[] }> {
+export async function listCoupons(): Promise<{
+  mode: "db" | "demo"; rows: AdminCoupon[] }> {
+  await requireAdmin();
   if (dbEnabled()) {
     try {
       const db = await prisma();
@@ -280,6 +304,7 @@ export async function listCoupons(): Promise<{ mode: "db" | "demo"; rows: AdminC
 }
 
 export async function saveCoupon(input: AdminCoupon) {
+  await requireAdmin();
   const parsed = couponSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Enter a code, type and value." };
   if (!dbEnabled()) return { ok: true as const, mode: "demo" as const, message: "Connect the database to save coupons." };
@@ -299,6 +324,7 @@ export async function saveCoupon(input: AdminCoupon) {
 }
 
 export async function deleteCoupon(code: string) {
+  await requireAdmin();
   if (!dbEnabled()) return { ok: true as const };
   try {
     const db = await prisma();
@@ -313,6 +339,7 @@ export async function deleteCoupon(code: string) {
 /* ─────────────────────────  Subscribers (manage)  ───────────────────────── */
 
 export async function addSubscriber(email: string, name?: string) {
+  await requireAdmin();
   if (!z.string().email().safeParse(email).success) return { ok: false as const, error: "Enter a valid email." };
   if (!dbEnabled()) return { ok: true as const, mode: "demo" as const };
   try {
@@ -326,6 +353,7 @@ export async function addSubscriber(email: string, name?: string) {
 }
 
 export async function deleteSubscriber(email: string) {
+  await requireAdmin();
   if (!dbEnabled()) return { ok: true as const };
   try {
     const db = await prisma();
@@ -338,7 +366,9 @@ export async function deleteSubscriber(email: string) {
 }
 
 /** One-click database diagnostic. Reports the exact reason in plain English. */
-export async function testDatabase(): Promise<{ ok: boolean; message: string }> {
+export async function testDatabase(): Promise<{
+  ok: boolean; message: string }> {
+  await requireAdmin();
   if (!dbEnabled()) return { ok: false, message: "No DATABASE_URL is set in Vercel yet. Add it, then Redeploy." };
   try {
     const db = await prisma();
@@ -360,6 +390,7 @@ export async function testDatabase(): Promise<{ ok: boolean; message: string }> 
 }
 
 export async function deleteAdminProduct(id: string) {
+  await requireAdmin();
   if (!dbEnabled()) return { ok: true as const, mode: "demo" as const };
   try {
     const db = await prisma();
@@ -400,7 +431,9 @@ const demoOrders: AdminOrder[] = [
   { id: "d4", orderNumber: "KB7H2K6", customer: "Sana Trivedi", email: "sana@example.com", phone: "96•••••773", total: 2899, amountPaid: 2899, codBalance: 0, paymentMethod: "ONLINE", paymentStatus: "PAID", status: "DELIVERED", createdAt: new Date(Date.now() - 26e6).toISOString(), items: [{ name: "Apex Hypercar", quantity: 1, price: 2899 }] },
 ];
 
-export async function listAdminOrders(): Promise<{ mode: "db" | "demo"; rows: AdminOrder[] }> {
+export async function listAdminOrders(): Promise<{
+  mode: "db" | "demo"; rows: AdminOrder[] }> {
+  await requireAdmin();
   if (dbEnabled()) {
     try {
       const db = await prisma();
@@ -438,6 +471,7 @@ export async function listAdminOrders(): Promise<{ mode: "db" | "demo"; rows: Ad
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus) {
+  await requireAdmin();
   if (!dbEnabled()) return { ok: true as const, mode: "demo" as const };
   try {
     const db = await prisma();
@@ -460,7 +494,9 @@ export type AdminStats = {
   pendingCod: number;     // cash still to collect on delivery
 };
 
-export async function adminStats(): Promise<{ mode: "db" | "demo"; stats: AdminStats }> {
+export async function adminStats(): Promise<{
+  mode: "db" | "demo"; stats: AdminStats }> {
+  await requireAdmin();
   if (dbEnabled()) {
     try {
       const db = await prisma();
@@ -494,7 +530,9 @@ export async function adminStats(): Promise<{ mode: "db" | "demo"; stats: AdminS
 
 /* ─────────────────────────  Subscribers  ───────────────────────── */
 
-export async function listSubscribers(): Promise<{ mode: "db" | "demo"; rows: { email: string; name: string | null; createdAt: string }[] }> {
+export async function listSubscribers(): Promise<{
+  mode: "db" | "demo"; rows: { email: string; name: string | null; createdAt: string }[] }> {
+  await requireAdmin();
   if (dbEnabled()) {
     try {
       const db = await prisma();
@@ -571,7 +609,9 @@ function recatClassify(name: string, oldCat: string, pieces: number) {
  * right build time (die-cast = none) and scale (1:24 / 1:32). Non-destructive —
  * keeps all product data, prices, images and variants.
  */
-export async function recategorizeProducts(): Promise<{ ok: boolean; updated?: number; counts?: Record<string, number>; error?: string }> {
+export async function recategorizeProducts(): Promise<{
+  ok: boolean; updated?: number; counts?: Record<string, number>; error?: string }> {
+  await requireAdmin();
   if (!process.env.DATABASE_URL) return { ok: false, error: "No database connected." };
   try {
     const { prisma } = await import("@/lib/prisma");

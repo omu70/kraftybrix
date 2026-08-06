@@ -30,8 +30,6 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
-  // three.js / r3f transpile safety
-  transpilePackages: ["three"],
   async headers() {
     return [
       {

@@ -22,7 +22,7 @@ export function GarageBuilder() {
     .slice(0, 3);
 
   return (
-    <section id="garage" className="relative border-y border-black/10 bg-ink-800/40 py-16 sm:py-24">
+    <section id="garage" className="relative border-y border-black/10 bg-ink-700 py-16 sm:py-24">
       <div className="container-wide">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
