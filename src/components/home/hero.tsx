@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { ArrowRight, Star, Truck, BadgeIndianRupee, RotateCcw, Gift, Blocks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { products } from "@/lib/products";
@@ -37,8 +36,8 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden bg-ink-900 pt-24">
       <div className="container-wide grid items-center gap-8 py-8 lg:grid-cols-2 lg:py-12">
-        {/* copy */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        {/* copy — visible by default; no opacity gating (never render blank) */}
+        <div>
           <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-[0.12em] text-black/45">
             <Star size={13} className="fill-brand-gold text-brand-gold" /> India&apos;s favourite brick-built cars
           </span>
@@ -68,12 +67,12 @@ export function Hero() {
             <span className="flex items-center gap-1.5"><Star size={15} className="fill-brand-gold text-brand-gold" /> 4.9 · 3,000+ builders</span>
             <span className="flex items-center gap-1.5"><Truck size={15} className="text-black/40" /> Free shipping ₹999+</span>
             <span className="flex items-center gap-1.5"><BadgeIndianRupee size={15} className="text-black/40" /> Partial COD ₹99</span>
-            <span className="flex items-center gap-1.5"><RotateCcw size={15} className="text-black/40" /> 30-day returns</span>
+            <span className="flex items-center gap-1.5"><RotateCcw size={15} className="text-black/40" /> 7-day returns</span>
           </div>
-        </motion.div>
+        </div>
 
         {/* product */}
-        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }} className="relative max-lg:order-first">
+        <div className="relative max-lg:order-first">
           <div className="relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-2xl border border-black/10 bg-white sm:max-w-md">
             {off > 0 && <span className="absolute left-4 top-4 z-10 rounded-full bg-brand-red px-3 py-1 text-sm font-bold text-white">-{off}%</span>}
             <Link href={`/product/${CAR.slug}`}>
@@ -87,7 +86,7 @@ export function Hero() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

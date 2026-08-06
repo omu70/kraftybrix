@@ -146,7 +146,7 @@ export function BuyBox({ product }: { product: Product }) {
         {[
           { icon: ShieldCheck, label: "100% secure checkout" },
           { icon: Truck, label: "Free insured shipping" },
-          { icon: RotateCcw, label: "30-day returns" },
+          { icon: RotateCcw, label: "7-day returns" },
         ].map((t) => (
           <div key={t.label} className="flex flex-col items-center gap-2">
             <t.icon size={20} className="text-brand-red" />

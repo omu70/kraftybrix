@@ -13,7 +13,7 @@ export const HERO_BANNER = "";
 export const FREE_SHIPPING_THRESHOLD = 999;
 
 /** Flat shipping fee below the free-shipping threshold (₹). */
-export const SHIPPING_FEE = 49;
+export const SHIPPING_FEE = 99;
 
 /** Active discount codes. Single source of truth for checkout + admin. */
 export const COUPONS: Record<string, { type: "PERCENT" | "FIXED"; value: number }> = {

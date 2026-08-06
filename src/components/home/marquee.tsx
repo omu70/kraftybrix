@@ -6,7 +6,7 @@ import gsap from "gsap";
 const ITEMS = [
   "Collector-grade detail",
   "Aerospace-grade ABS bricks",
-  "30-day easy returns",
+  "7-day easy returns",
   "Ships in 24 hours",
   "Partial COD — pay ₹99 now",
   "Free shipping over ₹999",

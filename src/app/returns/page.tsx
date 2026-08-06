@@ -5,8 +5,8 @@ export default function Page() {
   return (
     <PolicyPage title="Returns & Refunds">
       <p>We want you to love your build. If something isn’t right, here’s how we make it right.</p>
-      <h2>30-day returns</h2>
-      <p>Unopened kits can be returned within 30 days of delivery for a full refund. The kit must be in original, sealed condition.</p>
+      <h2>7-day returns</h2>
+      <p>Unopened kits can be returned within 7 days of delivery for a full refund. The kit must be in original, sealed condition.</p>
       <h2>Damaged or missing pieces</h2>
       <p>If a piece is missing or defective on arrival, send a photo and your order number to <a href="mailto:hello@kraftybrix.com">hello@kraftybrix.com</a> and we’ll ship replacements free — no return needed.</p>
       <h2>How to start a return</h2>

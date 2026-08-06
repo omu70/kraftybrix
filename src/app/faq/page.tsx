@@ -19,7 +19,7 @@ export default function Page() {
       <p>Free shipping on orders of ₹999 and above. A flat ₹49 applies below that.</p>
 
       <h2>Can I return a kit?</h2>
-      <p>Yes — we offer 30-day hassle-free returns on unopened kits. See our <a href="/returns">Returns policy</a> for details.</p>
+      <p>Yes — we offer 7-day hassle-free returns on unopened kits. See our <a href="/returns">Returns policy</a> for details.</p>
 
       <h2>Are the bricks compatible with other brands?</h2>
       <p>Our bricks use the standard clutch system, so they&apos;re compatible with most major building-block brands.</p>

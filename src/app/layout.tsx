@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, Archivo } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { MobileTabs } from "@/components/layout/mobile-tabs";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { PromoModal } from "@/components/cro/promo-modal";
 import { CookieConsent } from "@/components/cro/cookie-consent";

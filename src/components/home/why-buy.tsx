@@ -18,7 +18,7 @@ const promises = [
   { icon: ShieldCheck, label: "100% secure checkout" },
   { icon: Truck, label: "Free express shipping ₹999+" },
   { icon: BadgeIndianRupee, label: "Partial COD — ₹99 now" },
-  { icon: RotateCcw, label: "30-day easy returns" },
+  { icon: RotateCcw, label: "7-day easy returns" },
 ];
 
 export function WhyBuy() {

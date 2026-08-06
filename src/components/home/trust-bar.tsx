@@ -7,7 +7,7 @@ const items = [
   { icon: Star, title: "4.9 / 5 rating", sub: "3,000+ happy builders" },
   { icon: Truck, title: "Free express shipping", sub: "On orders over ₹999" },
   { icon: BadgeIndianRupee, title: "Partial COD", sub: "Pay ₹99 now, rest on delivery" },
-  { icon: ShieldCheck, title: "30-day returns", sub: "Hassle-free & easy" },
+  { icon: ShieldCheck, title: "7-day returns", sub: "Hassle-free & easy" },
   { icon: Lock, title: "100% secure checkout", sub: "Razorpay · UPI · Cards" },
 ];
 

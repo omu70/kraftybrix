@@ -48,6 +48,18 @@
   }
 }
 
+/* Safety net: never let a scroll/entrance animation leave content invisible.
+   If motion JS fails or is disabled, everything still renders. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 @layer components {
   .container-wide {
     @apply mx-auto w-full max-w-[1400px] px-6 lg:px-10;
