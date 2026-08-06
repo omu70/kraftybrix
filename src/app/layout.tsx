@@ -80,6 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <MobileTabs />
           <CartDrawer />
           <PromoModal />
           <CookieConsent />

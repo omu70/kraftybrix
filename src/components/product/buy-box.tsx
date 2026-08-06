@@ -165,7 +165,7 @@ export function BuyBox({ product }: { product: Product }) {
       </div>
 
       {/* mobile sticky add-to-cart bar (premium mobile pattern) */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-black/10 bg-ink-900/95 px-4 py-3 backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-[68px] z-[46] flex items-center gap-3 border-t border-black/10 bg-ink-900/95 px-4 py-3 backdrop-blur lg:hidden lg:bottom-0">
         <div className="min-w-0">
           <p className="truncate text-[11px] text-black/50">{product.name}</p>
           <p className="font-display font-bold leading-tight">
