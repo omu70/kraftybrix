@@ -10,6 +10,7 @@ export default function ReadyBundlePage() {
       eligible={readyBuilt()}
       eyebrow="Ready-built bundle"
       label="4-Car Display Bundle"
+      hidePrices
       title={
         <>
           Any 4 ready-built cars.{" "}

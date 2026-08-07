@@ -18,6 +18,7 @@ export function BundleView({
   title,
   subtitle,
   label,
+  hidePrices = false,
 }: {
   pick: number;
   price: number;
@@ -26,6 +27,8 @@ export function BundleView({
   title: ReactNode;
   subtitle: string;
   label: string;
+  /** Hide per-product prices — the bundle price is the only price that matters. */
+  hidePrices?: boolean;
 }) {
   const [picked, setPicked] = useState<string[]>([]);
   const addBundle = useCart((s) => s.addBundle);
@@ -93,7 +96,9 @@ export function BundleView({
                   <Image src={p.images[0].url} alt={p.name} fill sizes="240px" className="object-contain p-2 transition-transform duration-500 group-hover:scale-105" />
                 </div>
                 <p className="mt-2 line-clamp-1 text-sm font-semibold">{p.name}</p>
-                <p className="text-xs text-black/45 line-through">{formatPrice(p.salePrice ?? p.price)}</p>
+                {!hidePrices && (
+                  <p className="text-xs text-black/45 line-through">{formatPrice(p.salePrice ?? p.price)}</p>
+                )}
               </button>
             );
           })}
@@ -119,8 +124,8 @@ export function BundleView({
                   <p className="font-display font-bold">{complete ? "Bundle ready!" : `Pick ${pick - picked.length} more`}</p>
                   <p className="text-sm text-black/55">
                     <span className="font-semibold text-cream">{formatPrice(price)}</span>
-                    {savings > 0 && <span className="ml-2 text-green-600">save {formatPrice(savings)}</span>}
-                    {normalTotal > 0 && <span className="ml-2 text-black/40 line-through">{formatPrice(normalTotal)}</span>}
+                    {!hidePrices && savings > 0 && <span className="ml-2 text-green-600">save {formatPrice(savings)}</span>}
+                    {!hidePrices && normalTotal > 0 && <span className="ml-2 text-black/40 line-through">{formatPrice(normalTotal)}</span>}
                   </p>
                 </div>
               </div>
