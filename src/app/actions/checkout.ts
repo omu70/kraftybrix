@@ -273,6 +273,18 @@ export async function verifyPayment(input: {
 /* ─────────────────────────── PayU (India) ─────────────────────────── */
 
 /**
+ * Which gateways are usable right now — read on the SERVER at request time.
+ * (NEXT_PUBLIC_* vars are inlined at build time, so a key added after the build
+ * would look missing to the browser. This avoids that trap entirely.)
+ */
+export async function paymentConfig(): Promise<{ payu: boolean; razorpay: boolean; live: boolean }> {
+  const payu = !!(process.env.PAYU_MERCHANT_KEY && process.env.PAYU_SALT);
+  const razorpay = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+  const mode = (process.env.PAYU_MODE ?? "test").toLowerCase();
+  return { payu, razorpay, live: mode.startsWith("l") || mode.startsWith("prod") };
+}
+
+/**
  * Start a PayU payment. Creates the order (PENDING) and returns the form
  * fields + action URL; the client POSTs them to PayU's hosted checkout.
  * Works for both ONLINE (full total) and PARTIAL_COD (₹99 advance).

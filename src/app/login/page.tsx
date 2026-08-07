@@ -90,7 +90,8 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-4 text-center text-xs text-black/40">
-          Prefer not to sign in? <Link href="/checkout" className="text-brand-blue hover:underline">Guest checkout</Link> is always available.
+          You don&apos;t need an account to order —{" "}
+          <Link href="/collection" className="text-brand-blue hover:underline">keep shopping</Link> and check out as a guest.
         </p>
       </div>
     </div>

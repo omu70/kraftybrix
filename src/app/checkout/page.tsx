@@ -9,15 +9,11 @@ import { useCart, cartSubtotal } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { ADVANCE_FEE, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { applyCoupon, createOrder, verifyPayment, createPayuOrder } from "@/app/actions/checkout";
+import { applyCoupon, createOrder, verifyPayment, createPayuOrder, paymentConfig } from "@/app/actions/checkout";
 import { track } from "@/components/analytics";
 
 type Method = "ONLINE" | "PARTIAL_COD";
 type Gateway = "razorpay" | "payu";
-
-// Non-secret public keys — used only to know which gateways to offer.
-const RZP_AVAILABLE = !!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-const PAYU_AVAILABLE = !!process.env.NEXT_PUBLIC_PAYU_MERCHANT_KEY;
 
 /** Build a hidden form and POST the customer to PayU's hosted checkout. */
 function postToPayU(action: string, params: Record<string, string>) {
@@ -55,9 +51,20 @@ export default function CheckoutPage() {
   const [applied, setApplied] = useState<{ code: string; discount: number } | null>(null);
   const [couponErr, setCouponErr] = useState("");
   const [method, setMethod] = useState<Method>("PARTIAL_COD");
-  const [gateway, setGateway] = useState<Gateway>(PAYU_AVAILABLE ? "payu" : "razorpay");
+  const [gateway, setGateway] = useState<Gateway>("payu");
   const [placing, setPlacing] = useState(false);
-  const bothGateways = RZP_AVAILABLE && PAYU_AVAILABLE;
+  const [gw, setGw] = useState<{ payu: boolean; razorpay: boolean; live: boolean } | null>(null);
+
+  // Ask the server which gateways are configured (runtime, not build time).
+  useEffect(() => {
+    paymentConfig()
+      .then((c) => { setGw(c); setGateway(c.payu ? "payu" : "razorpay"); })
+      .catch(() => setGw({ payu: false, razorpay: false, live: false }));
+  }, []);
+
+  const payuAvailable = gw?.payu ?? false;
+  const bothGateways = !!gw?.payu && !!gw?.razorpay;
+  const noGateway = gw !== null && !gw.payu && !gw.razorpay;
   const [form, setForm] = useState<FormState>({
     fullName: "", phone: "", email: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
@@ -100,7 +107,7 @@ export default function CheckoutPage() {
     };
 
     // PayU: create the order, then redirect the browser to PayU's hosted page.
-    if (gateway === "payu" && PAYU_AVAILABLE) {
+    if (gateway === "payu" && payuAvailable) {
       try {
         const res = await createPayuOrder(orderInput, window.location.origin);
         if (!res.ok) { alert(res.error); setPlacing(false); return; }
@@ -192,6 +199,13 @@ export default function CheckoutPage() {
       {payuFailed && (
         <div className="mt-4 rounded-xl border border-brand-red/40 bg-brand-red/[0.06] px-4 py-3 text-sm text-black/75">
           Your payment didn&apos;t go through and you were not charged. Please try again or choose another payment method.
+        </div>
+      )}
+      {noGateway && (
+        <div className="mt-4 rounded-xl border border-amber-400/50 bg-amber-400/[0.10] px-4 py-3 text-sm text-black/75">
+          <b>Payments aren&apos;t configured yet.</b> Add <code className="font-mono">PAYU_MERCHANT_KEY</code> and{" "}
+          <code className="font-mono">PAYU_SALT</code> in your hosting environment variables, then rebuild and restart.
+          Orders placed now are recorded but not charged.
         </div>
       )}
 
