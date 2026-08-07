@@ -64,6 +64,8 @@ function priceOrder(lines: { price: number; qty: number }[], code?: string, coup
   if (code && coupons[code]) {
     const c = coupons[code];
     discount = c.type === "PERCENT" ? Math.round((subtotal * c.value) / 100) : c.value;
+    // Never let a coupon exceed the cart value (no free orders from a big FIXED code).
+    discount = Math.min(discount, subtotal);
   }
   const shipping = subtotal - discount >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
   const total = Math.max(0, subtotal - discount + shipping);
@@ -154,7 +156,8 @@ export async function applyCoupon(code: string, subtotal: number) {
   const coupons = await getCoupons();
   const c = coupons[code.toUpperCase()];
   if (!c) return { ok: false as const, error: "Invalid coupon code." };
-  const discount = c.type === "PERCENT" ? Math.round((subtotal * c.value) / 100) : c.value;
+  const raw = c.type === "PERCENT" ? Math.round((subtotal * c.value) / 100) : c.value;
+  const discount = Math.min(raw, subtotal); // cap at cart value
   return { ok: true as const, code: code.toUpperCase(), discount };
 }
 

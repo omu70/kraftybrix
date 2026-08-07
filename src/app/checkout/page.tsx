@@ -159,10 +159,17 @@ export default function CheckoutPage() {
     }
   }
 
-  const formValid = useMemo(
-    () => form.fullName && form.phone && form.email && form.line1 && form.city && form.state && form.pincode,
-    [form]
-  );
+  const REQUIRED: { key: keyof FormState; label: string }[] = [
+    { key: "fullName", label: "Full name" },
+    { key: "phone", label: "Phone" },
+    { key: "email", label: "Email" },
+    { key: "line1", label: "Address" },
+    { key: "city", label: "City" },
+    { key: "state", label: "State" },
+    { key: "pincode", label: "PIN code" },
+  ];
+  const missing = REQUIRED.filter((f) => !String(form[f.key] ?? "").trim());
+  const formValid = missing.length === 0;
 
   if (lines.length === 0) {
     return (
@@ -194,14 +201,14 @@ export default function CheckoutPage() {
           <section>
             <h2 className="mb-4 font-display text-xl font-bold">Shipping address</h2>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field name="fullName" placeholder="Full name" form={form} setForm={setForm} />
-              <Field name="phone" placeholder="Phone" form={form} setForm={setForm} />
-              <Field name="email" placeholder="Email" form={form} setForm={setForm} className="sm:col-span-2" />
-              <Field name="line1" placeholder="Address line 1" form={form} setForm={setForm} className="sm:col-span-2" />
+              <Field name="fullName" placeholder="Full name *" form={form} setForm={setForm} required />
+              <Field name="phone" placeholder="Phone *" form={form} setForm={setForm} required />
+              <Field name="email" placeholder="Email *" form={form} setForm={setForm} className="sm:col-span-2" required />
+              <Field name="line1" placeholder="Address line 1 *" form={form} setForm={setForm} className="sm:col-span-2" required />
               <Field name="line2" placeholder="Address line 2 (optional)" form={form} setForm={setForm} className="sm:col-span-2" />
-              <Field name="city" placeholder="City" form={form} setForm={setForm} />
-              <Field name="state" placeholder="State" form={form} setForm={setForm} />
-              <Field name="pincode" placeholder="PIN code" form={form} setForm={setForm} />
+              <Field name="city" placeholder="City *" form={form} setForm={setForm} required />
+              <Field name="state" placeholder="State *" form={form} setForm={setForm} required />
+              <Field name="pincode" placeholder="PIN code *" form={form} setForm={setForm} required />
             </div>
           </section>
 
@@ -304,7 +311,14 @@ export default function CheckoutPage() {
             <Button size="lg" className="mt-6 w-full" disabled={!formValid || placing} onClick={placeOrder}>
               {placing ? "Processing…" : method === "PARTIAL_COD" ? `Pay ${formatPrice(payNow)} to confirm` : `Pay ${formatPrice(total)}`}
             </Button>
-            {!formValid && <p className="mt-2 text-center text-xs text-black/40">Fill in your shipping details to continue</p>}
+            {!formValid && (
+              <p className="mt-2 text-center text-xs text-black/55">
+                Still needed:{" "}
+                <span className="font-semibold text-brand-red">
+                  {missing.map((m) => m.label).join(", ")}
+                </span>
+              </p>
+            )}
           </div>
         </aside>
       </div>
@@ -312,13 +326,19 @@ export default function CheckoutPage() {
   );
 }
 
-function Field({ name, placeholder, form, setForm, className }: { name: keyof FormState; placeholder: string; form: FormState; setForm: Dispatch<SetStateAction<FormState>>; className?: string }) {
+function Field({ name, placeholder, form, setForm, className, required }: { name: keyof FormState; placeholder: string; form: FormState; setForm: Dispatch<SetStateAction<FormState>>; className?: string; required?: boolean }) {
+  const [touched, setTouched] = useState(false);
+  const empty = required && !String(form[name] ?? "").trim();
   return (
     <input
       value={form[name]}
       onChange={(e) => setForm({ ...form, [name]: e.target.value })}
+      onBlur={() => setTouched(true)}
       placeholder={placeholder}
-      className={`rounded-lg border border-black/15 bg-ink-900 px-4 py-3 text-sm outline-none focus:border-brand-red ${className ?? ""}`}
+      aria-required={required}
+      className={`rounded-lg border bg-ink-900 px-4 py-3 text-sm outline-none focus:border-brand-red ${
+        touched && empty ? "border-brand-red/60 bg-brand-red/[0.04]" : "border-black/15"
+      } ${className ?? ""}`}
     />
   );
 }

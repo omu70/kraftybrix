@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Logo } from "@/components/layout/logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Heart, User, Menu, X, Search } from "lucide-react";
@@ -38,6 +39,11 @@ export function Header() {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
+
+  // Portal target — the header uses backdrop-blur, which would otherwise trap
+  // the drawer's fixed positioning inside the (short) header box.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <header
@@ -124,10 +130,11 @@ export function Header() {
         </div>
       </div>
 
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            {/* scrim */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {mobileOpen && (
+            <>
+              {/* scrim */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -160,7 +167,7 @@ export function Header() {
                     key={item.label}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className="block rounded-xl px-4 py-4 text-lg font-semibold text-ink-900 text-black/85 active:bg-black/[0.06]"
+                    className="block rounded-xl px-4 py-4 text-lg font-semibold text-[#141414] active:bg-black/[0.06]"
                   >
                     {item.label}
                   </Link>
@@ -178,9 +185,11 @@ export function Header() {
                 </div>
               </div>
             </motion.nav>
-          </>
-        )}
-      </AnimatePresence>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </header>
   );
 }
