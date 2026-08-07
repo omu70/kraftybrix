@@ -10,6 +10,7 @@ export default function BundlePage() {
       eligible={buildKits()}
       eyebrow="Build-kit bundle"
       label="3-Kit Garage Bundle"
+      hidePrices
       title={
         <>
           Any 3 build kits.{" "}
