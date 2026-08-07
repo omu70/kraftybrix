@@ -73,7 +73,11 @@ export function BuyBox({ product }: { product: Product }) {
             {product.colorOptions.map((c) => (
               <button
                 key={c.name + c.hex}
-                onClick={() => setColor(c)}
+                onClick={() => {
+                  setColor(c);
+                  // tell the gallery to show this colour's photo
+                  if (c.image) window.dispatchEvent(new CustomEvent("kb:colour", { detail: { image: c.image } }));
+                }}
                 title={c.name}
                 aria-label={c.name}
                 className={`h-9 w-9 rounded-full border-2 transition ${color?.name === c.name ? "border-brand-red ring-2 ring-brand-red/30" : "border-black/15 hover:border-black/40"}`}

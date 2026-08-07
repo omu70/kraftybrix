@@ -603,6 +603,90 @@ function recatClassify(name: string, oldCat: string, pieces: number) {
   return pieces >= 50 ? recatAttrs("B") : recatAttrs("D32");
 }
 
+/** Best-effort colour name for a variant: from its name, its Colour spec, or description. */
+function variantColour(name: string, _hex: string, description: string): string | null {
+  const words = ["Red", "Black", "White", "Blue", "Green", "Purple", "Yellow", "Orange",
+    "Grey", "Gray", "Silver", "Pink", "Gold", "Golden", "Tana", "Northern Aurora"];
+  const hay = `${name} ${description}`;
+  for (const w of words) {
+    if (new RegExp(`\\b${w}\\b`, "i").test(hay)) return w === "Gray" ? "Grey" : w;
+  }
+  return null;
+}
+
+/** Normalised model name — colour/variant markers stripped, for duplicate detection. */
+function dupKey(name: string): string {
+  let n = (name || "").replace(/\([^)]*\)/g, " ").replace(/\b\d+\s*pcs\b/gi, "");
+  n = n.replace(/["“”]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  for (const w of ["modified", "beast", "mode", "car", "cars", "the", "building", "blocks", "set"]) {
+    n = n.replace(new RegExp(`\\b${w}\\b`, "g"), " ");
+  }
+  return n.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Merge duplicate listings of the same model (colour variants saved as separate
+ * products) into one product, combining their photos into a single gallery.
+ * Keeps the richest listing, deletes the extras. Skips anything already ordered.
+ */
+export async function mergeDuplicateProducts(): Promise<{
+  ok: boolean; merged?: number; groups?: number; skipped?: number; error?: string }> {
+  await requireAdmin();
+  if (!process.env.DATABASE_URL) return { ok: false, error: "No database connected." };
+  try {
+    const db = await prisma();
+    const all = await db.product.findMany({ orderBy: { createdAt: "asc" } });
+    const groups = new Map<string, typeof all>();
+    for (const p of all) {
+      const k = dupKey(p.name);
+      if (!k) continue;
+      groups.set(k, [...(groups.get(k) ?? []), p]);
+    }
+    let merged = 0, skipped = 0, groupCount = 0;
+    for (const [, items] of groups) {
+      if (items.length < 2) continue;
+      groupCount++;
+      // richest first: most images, then cheapest
+      items.sort((a, b) => b.images.length - a.images.length || (a.salePrice ?? a.price) - (b.salePrice ?? b.price));
+      const keep = items[0];
+      const drop = items.slice(1);
+      const images = Array.from(new Set([...keep.images, ...drop.flatMap((d) => d.images)])).slice(0, 8);
+      const reviewCount = items.reduce((s, x) => s + x.reviewCount, 0);
+      const stock = items.reduce((s, x) => s + x.stock, 0);
+
+      // Turn the merged listings into selectable colour options on one product.
+      const existing = Array.isArray(keep.colorOptions)
+        ? (keep.colorOptions as { name: string; hex: string; image?: string }[])
+        : [];
+      const opts = [...existing];
+      const seenName = new Set(opts.map((o) => o.name.toLowerCase()));
+      for (const it of items) {
+        const colour = variantColour(it.name, it.bodyColor, it.description);
+        if (!colour || seenName.has(colour.toLowerCase())) continue;
+        seenName.add(colour.toLowerCase());
+        opts.push({ name: colour, hex: it.bodyColor || "#9AA0A8", image: it.images[0] ?? "" });
+      }
+      await db.product.update({
+        where: { id: keep.id },
+        data: { images, reviewCount, stock, ...(opts.length > 1 ? { colorOptions: opts } : {}) },
+      });
+      for (const d of drop) {
+        const ordered = await db.orderItem.count({ where: { productId: d.id } });
+        if (ordered > 0) { skipped++; continue; } // never delete a product with order history
+        await db.wishlist.deleteMany({ where: { productId: d.id } });
+        await db.review.deleteMany({ where: { productId: d.id } });
+        await db.product.delete({ where: { id: d.id } });
+        merged++;
+      }
+    }
+    revalidatePath("/admin");
+    revalidatePath("/collection");
+    return { ok: true, merged, groups: groupCount, skipped };
+  } catch (e) {
+    return { ok: false, error: safeErr(e) };
+  }
+}
+
 /**
  * One-click migration: re-files every product in the database under the new
  * category system (Block Cars / Die-Cast Cars / RC Cars / Monuments), sets the

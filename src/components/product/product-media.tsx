@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { BrickCarArt } from "@/components/brand/brick-car-art";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,18 @@ export function ProductMedia({
   const [err, setErr] = useState(false);
   const current = gallery[active];
   const hasPhoto = !!current && !err;
+
+  // Selecting a colour in the buy box jumps the gallery to that colour's photo.
+  useEffect(() => {
+    const onColour = (e: Event) => {
+      const url = (e as CustomEvent<{ image?: string }>).detail?.image;
+      if (!url) return;
+      const idx = gallery.findIndex((g) => g.url === url);
+      if (idx >= 0) { setActive(idx); setErr(false); }
+    };
+    window.addEventListener("kb:colour", onColour);
+    return () => window.removeEventListener("kb:colour", onColour);
+  }, [gallery]);
 
   return (
     <div>
